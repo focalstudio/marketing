@@ -1,0 +1,24 @@
+# App-stream config for WildFocus. The renderer and the weekly drafter both read it.
+name: WildFocus
+repo: focalstudio/WildFocus
+ref: dev
+concept: Disconnect. Chill, cozy, slow — the opposite of a feed.
+mood: [calm, cozy, unhurried, warm]
+style: low-poly 3D, soft paper lighting, pastel greens and sky blue
+assets:
+  backdrop: public/landscape.png        # portrait, already close to 9:16
+  cast: src/assets/animals/*.png        # transparent PNGs, one per animal
+  hero: src/assets/animals/rabbit.png
+palette:
+  accent: "#4a7c59"                     # sage, from src/theme.ts
+  page: "#fafafa"
+music: ambient, soft piano or lo-fi, no vocals, 60–80 bpm
+video:
+  aspect: "9:16"
+  seconds: [15, 30]
+cadence: 2 per week
+caption_cta: Free on iOS and Android.
+links:
+  app_store: TODO      # paste the App Store URL
+  play_store: TODO     # paste the Google Play URL
+ai_label: true         # set the platform's "AI-generated" flag where it exists

@@ -1,0 +1,6 @@
+node_modules/
+.DS_Store
+out/
+*.mp4
+!inbox/**/*.mp4
+.env

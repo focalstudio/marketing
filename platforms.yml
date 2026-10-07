@@ -1,0 +1,35 @@
+# Machine-readable copy of PLATFORMS.md. The publisher walks `order` top to bottom.
+# Only platforms that post automatically for free belong here.
+order:
+  - id: x
+    tier: S
+    route: buffer
+    streams: [kit, app]
+  - id: youtube
+    tier: S
+    route: buffer
+    streams: [app]
+    media: video
+  - id: bluesky
+    tier: A
+    route: direct
+    streams: [kit, app]
+  - id: devto
+    tier: A
+    route: direct
+    streams: [kit]
+    kind: article
+  - id: tiktok
+    tier: B
+    route: buffer
+    streams: [app]
+    media: video
+  - id: threads
+    tier: B
+    route: direct
+    streams: [kit, app]
+  - id: instagram
+    tier: C
+    route: direct
+    streams: [app]
+    media: video
