@@ -74,7 +74,7 @@ Step 3 fetches the channel IDs through the API, so you don't need to copy them.
 5. Generate a user token for each in the app dashboard. Exchange it for a **long-lived
    (60-day)** token. The dashboard's token tool does this, or you can call the
    `access_token?grant_type=th_exchange_token` / `ig_exchange_token` endpoints.
-6. Secrets: `THREADS_USER_ID`, `THREADS_TOKEN`, `IG_USER_ID`, `IG_TOKEN`.
+6. Secrets: `THREADS_USER_ID`, `THREADS_TOKEN`, `IG_USER_ID`, `IG_TOKEN` (skipped: Instagram is off).
 
 The tokens expire after 60 days. Step 3 adds a weekly refresh job. That job writes the
 new token back with the bot App token, so the **focalstudio bot** App will need
@@ -85,18 +85,11 @@ new token back with the bot App token, so the **focalstudio bot** App will need
 2. Settings → Extensions → **DEV Community API Keys** → Generate.
 3. Secret: `DEVTO_API_KEY`.
 
-## 5. Video hosting (15 min)
-Buffer and Instagram need every video at a public URL. Pick one:
-- **Cloudflare R2** (recommended). The 10 GB free tier covers this, but activating R2
-  needs a payment card on file.
-  1. Create bucket `focal-media`.
-  2. Bucket → Settings → enable the **public r2.dev URL**.
-  3. R2 → Manage API tokens → create a token with **Object Read & Write**, scoped to
-     that bucket only.
-  4. Secrets: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`,
-     `R2_PUBLIC_URL`.
-- **No card**: a separate *public* repo, `focalstudio/media`, whose GitHub Release assets
-  serve as the public URLs. Nothing else to set up, because the bot token can upload there.
+## 5. Video hosting: done
+Videos are committed to the public `focalstudio/media` repo and served from
+`https://raw.githubusercontent.com/focalstudio/media/main/<file>`. Buffer needs a direct,
+public, non-redirecting HTTPS URL, and GitHub release downloads redirect, so raw URLs are
+used instead. No Cloudflare account and no extra secrets. Keep each file under 50 MB.
 
 ## 6. GitHub plumbing (10 min)
 - **Bot App**: `FOCALSTUDIO_BOT_APP_ID` and `FOCALSTUDIO_BOT_PRIVATE_KEY` are already org
@@ -122,7 +115,7 @@ Buffer and Instagram need every video at a public URL. Pick one:
 - `BUFFER_API_KEY`
 - `BLUESKY_HANDLE`, `BLUESKY_APP_PASSWORD`
 - `THREADS_USER_ID`, `THREADS_TOKEN`
-- `IG_USER_ID`, `IG_TOKEN`
+- `IG_USER_ID`, `IG_TOKEN` (skipped: Instagram is off)
 - `DEVTO_API_KEY`
 - either the five `R2_*` secrets or the media repo
 - `CLAUDE_CODE_OAUTH_TOKEN`
