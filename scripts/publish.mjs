@@ -99,7 +99,9 @@ async function checkBufferSchema() {
   }
   await dumpField("Mutation", "createPost");
   await dumpField("Query", "posts");
-  await dumpType("PostsFiltersInput", new Set(), 1);
+  for (const n of ["PostsFiltersInput", "PostStatus", "DateTimeComparator", "PostSortInput"]) {
+    await dumpType(n, new Set(), 1);
+  }
   for (const n of ["MutationError", "PostActionSuccess", "Post", "PostsResults", "PostsEdge"]) {
     const d = await buffer(`{ __type(name: "${n}") { kind possibleTypes { name } fields { name type { ${TYPE_REF} } } } }`);
     const t = d.__type;
