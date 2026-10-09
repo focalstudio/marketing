@@ -1,14 +1,15 @@
 name: publish
 
 # Posts whatever in queue/ is due, then commits published.json so nothing posts twice.
-# Buffer posts are scheduled up to 7 days ahead; direct posts (Bluesky, dev.to, Threads,
-# Instagram) go out on the first hourly run after their time.
+# Buffer posts are scheduled up to 7 days ahead. Direct posts (Bluesky, dev.to, Threads,
+# Instagram) go out on the push run if their time is within 15 min; otherwise the twice-daily
+# fallback (08:07 and 20:07 UTC) picks them up. Hourly would cost ~720 Actions minutes a month.
 on:
   push:
     branches: [main]
     paths: ["queue/**"]
   schedule:
-    - cron: "7 * * * *"
+    - cron: "7 8,20 * * *"
   workflow_dispatch:
     inputs:
       dry_run:

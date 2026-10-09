@@ -89,12 +89,14 @@ test("Bluesky facets use UTF-8 byte offsets", () => {
   assert.equal(tag.features[0].tag, "ship");
 });
 
-test("due logic: Buffer 7-day window, direct only when due, stale after 48 h", () => {
+test("due logic: Buffer 7-day window, direct up to 15 min early, stale after 48 h", () => {
   const now = Date.parse("2026-10-09T12:00:00Z");
   const h = 3600e3;
   assert.equal(dueState("buffer", now + 6 * 24 * h, now), "due");
   assert.equal(dueState("buffer", now + 8 * 24 * h, now), "later");
-  assert.equal(dueState("direct", now + h, now), "later");
+  const min = 60e3;
+  assert.equal(dueState("direct", now + 14 * min, now), "due");
+  assert.equal(dueState("direct", now + 16 * min, now), "later");
   assert.equal(dueState("direct", now - h, now), "due");
   assert.equal(dueState("direct", now - 49 * h, now), "stale");
 });

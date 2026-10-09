@@ -42,7 +42,10 @@ Optional: Bluesky gets this instead.
   Threads 500, YouTube title 100.
 - Links get `utm_source=<platform>&utm_medium=social&utm_campaign=<week>`.
 - **When it posts.** Buffer (X, YouTube, TikTok) is scheduled once `at` is within 7 days,
-  at most 10 queued per channel. Direct platforms post on the first hourly run after `at`.
+  at most 10 queued per channel, and Buffer posts it at the exact time. Direct platforms
+  (Bluesky, dev.to, Threads, Instagram) post on the push run if `at` is within 15 min;
+  otherwise on the next fallback run at 08:07 or 20:07 UTC, so up to ~12 h late. For an
+  exact time days ahead, use a Buffer platform or push near the time.
   Anything more than 48 h overdue is reported as stale, not posted.
 - Each post that goes out is added to `published.json`, and a re-run skips it.
 
@@ -53,8 +56,8 @@ node scripts/publish.mjs publish --dry-run --drafts  # also preview drafts
 node --test scripts/*.test.mjs
 ```
 
-In Actions, `publish` runs on every push to `queue/`, every hour, and on demand (dry run by
-default). `check` proves the keys work. `check` with `refresh` reports token lifetimes.
+In Actions, `publish` runs on every push to `queue/`, twice a day as a fallback (08:07 and
+20:07 UTC), and on demand (dry run by default). `check` proves the keys work. `check` with `refresh` reports token lifetimes.
 
 ## Status
 

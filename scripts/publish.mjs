@@ -201,6 +201,7 @@ const DAY = 24 * HOUR;
 const BUFFER_WINDOW = 7 * DAY; // only schedule the next 7 days on Buffer
 const BUFFER_CAP = 10; // Buffer free plan: at most 10 scheduled posts per channel
 const BUFFER_LEAD = 10 * 60e3; // a Buffer post whose time has passed goes out this far from now
+const DIRECT_EARLY = 15 * 60e3; // direct posts may go out this far before their time
 const STALE = 48 * HOUR; // unposted for this long after its time: report it, don't post it
 const MAX_MEDIA = 50 * 1024 * 1024;
 const BUFFER_SERVICE = { x: "twitter" }; // platforms.yml id -> Buffer service, where they differ
@@ -531,7 +532,7 @@ function loadPublished() {
 export function dueState(route, atMs, now) {
   if (atMs < now - STALE) return "stale";
   if (route === "buffer") return atMs <= now + BUFFER_WINDOW ? "due" : "later";
-  return atMs <= now ? "due" : "later";
+  return atMs <= now + DIRECT_EARLY ? "due" : "later";
 }
 
 function buildJobs(order, posts, done, now) {
