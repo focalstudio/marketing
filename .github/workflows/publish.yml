@@ -1,0 +1,64 @@
+name: publish
+
+# Posts whatever in queue/ is due, then commits published.json so nothing posts twice.
+# Buffer posts are scheduled up to 7 days ahead; direct posts (Bluesky, dev.to, Threads,
+# Instagram) go out on the first hourly run after their time.
+on:
+  push:
+    branches: [main]
+    paths: ["queue/**"]
+  schedule:
+    - cron: "7 * * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Print the requests and send nothing
+        type: boolean
+        default: true
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # Latest main, not the triggering commit: a run that waited on the concurrency group
+      # must see the published.json the previous run just pushed.
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Publish
+        run: node scripts/publish.mjs publish ${{ inputs.dry_run && '--dry-run' || '' }}
+        env:
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+          BLUESKY_HANDLE: ${{ secrets.BLUESKY_HANDLE }}
+          BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
+          DEVTO_API_KEY: ${{ secrets.DEVTO_API_KEY }}
+          THREADS_TOKEN: ${{ secrets.THREADS_TOKEN }}
+          THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+      # Runs even when a platform failed, so the ones that did post are still recorded.
+      - name: Record published.json
+        if: always() && !inputs.dry_run
+        run: |
+          git diff --quiet -- published.json && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add published.json
+          git commit -q -m "chore: record published posts"
+          for i in 1 2 3; do
+            git pull -q --rebase origin main && git push -q origin HEAD:main && exit 0
+            sleep 5
+          done
+          echo "::error::could not push published.json; fix this before the next run or posts may repeat"
+          exit 1

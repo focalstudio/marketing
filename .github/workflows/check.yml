@@ -1,8 +1,16 @@
 name: check
 
 # Read-only: proves every key works and dumps Buffer's input schema. Posts nothing.
+# `refresh` asks Meta how long the Threads and Instagram tokens would last after a refresh.
+# It reports only: the refreshed token is discarded and no secret is changed.
 on:
   workflow_dispatch:
+    inputs:
+      command:
+        description: What to run
+        type: choice
+        options: [check, refresh]
+        default: check
 
 permissions:
   contents: read
@@ -16,7 +24,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node scripts/publish.mjs check
+      - run: node scripts/publish.mjs ${{ inputs.command || 'check' }}
         env:
           BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
           BLUESKY_HANDLE: ${{ secrets.BLUESKY_HANDLE }}
