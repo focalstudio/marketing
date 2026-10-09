@@ -1,0 +1,60 @@
+name: refresh-tokens
+
+# Renews the 60-day Threads and Instagram tokens and writes them back to the repo secrets
+# through the focal-studio-cross-repo-bot App (it needs Secrets: read & write). Weekly, so a
+# token is never more than 7 days old when it's refreshed. A token that fails to refresh
+# leaves its secret unchanged and turns the run red, so GitHub emails the failure.
+on:
+  schedule:
+    - cron: "17 6 * * 1" # Mondays 06:17 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: refresh-tokens
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Minted before the refresh, so a broken App setup fails before Meta issues new tokens.
+      - uses: actions/create-github-app-token@v2
+        id: app
+        with:
+          app-id: ${{ secrets.FOCALSTUDIO_BOT_APP_ID }}
+          private-key: ${{ secrets.FOCALSTUDIO_BOT_PRIVATE_KEY }}
+          owner: focalstudio
+          repositories: marketing
+          permission-secrets: write
+      # Masks each new token, then writes it to $RUNNER_TEMP/{threads,ig}_token. Nothing prints it.
+      - name: Refresh
+        run: node scripts/publish.mjs refresh
+        env:
+          THREADS_TOKEN: ${{ secrets.THREADS_TOKEN }}
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+      # Runs even when one refresh failed, so the other still gets saved. Values go in on stdin.
+      - name: Save secrets
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+        run: |
+          set -euo pipefail
+          for pair in THREADS_TOKEN:threads_token IG_TOKEN:ig_token; do
+            name="${pair%%:*}"
+            file="$RUNNER_TEMP/${pair#*:}"
+            if [ ! -s "$file" ]; then
+              echo "$name: not refreshed, secret unchanged"
+              continue
+            fi
+            gh secret set "$name" --repo "$GITHUB_REPOSITORY" < "$file"
+            rm -f "$file"
+            echo "$name: saved"
+          done

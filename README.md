@@ -57,7 +57,7 @@ node --test scripts/*.test.mjs
 ```
 
 In Actions, `publish` runs on every push to `queue/`, twice a day as a fallback (08:07 and
-20:07 UTC), and on demand (dry run by default). `check` proves the keys work. `check` with `refresh` reports token lifetimes.
+20:07 UTC), and on demand (dry run by default). `check` proves the keys work. `check` with `refresh` reports token lifetimes; `refresh-tokens` renews the Threads and Instagram tokens every Monday.
 
 ## Status
 
