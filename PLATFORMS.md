@@ -31,7 +31,7 @@ that the publisher reads, so change both together.
 4. dev.to — direct (articles only)
 5. TikTok — Buffer
 6. Threads — direct
-7. Instagram Reels — direct (**switched off**: Meta's developer login needs a real-name Facebook account; post by hand for now)
+7. Instagram Reels — direct
 
 Buffer's free plan gives 3 channels: **X, YouTube, TikTok**. Those three are the ones whose
 direct APIs cost money (X) or post privately until the app passes an audit (YouTube,

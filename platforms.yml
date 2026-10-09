@@ -30,7 +30,6 @@ order:
     streams: [kit, app]
   - id: instagram
     tier: C
-    enabled: false   # skipped: Meta developer login needs a real-name Facebook account
     route: direct
     streams: [app]
     media: video
