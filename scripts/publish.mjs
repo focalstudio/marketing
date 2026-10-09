@@ -99,6 +99,14 @@ async function checkBufferSchema() {
   }
   await dumpField("Mutation", "createPost");
   await dumpField("Query", "posts");
+  await dumpType("PostsFiltersInput", new Set(), 1);
+  for (const n of ["MutationError", "PostActionSuccess", "Post", "PostsResults", "PostsEdge"]) {
+    const d = await buffer(`{ __type(name: "${n}") { kind possibleTypes { name } fields { name type { ${TYPE_REF} } } } }`);
+    const t = d.__type;
+    if (!t) { console.log(`   ${n}: not found`); continue; }
+    console.log(`   ${n} (${t.kind})${t.possibleTypes ? ` = ${t.possibleTypes.map((p) => p.name).join(" | ")}` : ""}`);
+    for (const f of t.fields ?? []) console.log(`     ${f.name}: ${typeStr(f.type)}`);
+  }
 }
 
 // ---------- Bluesky ----------
