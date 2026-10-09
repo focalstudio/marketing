@@ -192,7 +192,7 @@ async function checkInstagram() {
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PUBLISHED = join(ROOT, "published.json");
-const MEDIA_BASE = "https://raw.githubusercontent.com/focalstudio/media/main/";
+export const MEDIA_BASE = "https://raw.githubusercontent.com/focalstudio/media/main/";
 const BSKY = "https://bsky.social/xrpc";
 const THREADS_API = "https://graph.threads.net/v1.0";
 const IG_API = "https://graph.instagram.com/v21.0";
@@ -203,7 +203,7 @@ const BUFFER_CAP = 10; // Buffer free plan: at most 10 scheduled posts per chann
 const BUFFER_LEAD = 10 * 60e3; // a Buffer post whose time has passed goes out this far from now
 const DIRECT_EARLY = 15 * 60e3; // direct posts may go out this far before their time
 const STALE = 48 * HOUR; // unposted for this long after its time: report it, don't post it
-const MAX_MEDIA = 50 * 1024 * 1024;
+export const MAX_MEDIA = 50 * 1024 * 1024;
 const BUFFER_SERVICE = { x: "twitter" }; // platforms.yml id -> Buffer service, where they differ
 const FIELDS = new Set(["stream", "platforms", "at", "media", "thumb", "title", "ai", "article", "tags", "draft"]);
 
@@ -351,8 +351,8 @@ export const textFor = (post, id) => post.texts[id] || post.texts.default || "";
 
 export const URL_RE = /https?:\/\/[^\s<>"'`]*[^\s<>"'`.,;:!?)\]]/g;
 const TAG_RE = /(^|\s)#([\p{L}\p{N}_]*[\p{L}_][\p{L}\p{N}_]*)/gu;
-const isVideo = (p) => /\.(mp4|mov|m4v)$/i.test(p.split("?")[0]);
-const isImage = (p) => /\.(png|jpe?g|webp|gif)$/i.test(p.split("?")[0]);
+export const isVideo = (p) => /\.(mp4|mov|m4v)$/i.test(p.split("?")[0]);
+export const isImage = (p) => /\.(png|jpe?g|webp|gif)$/i.test(p.split("?")[0]);
 export const mediaUrl = (v) =>
   /^https:\/\//.test(v) ? v : MEDIA_BASE + v.split("/").map(encodeURIComponent).join("/");
 
