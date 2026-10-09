@@ -813,22 +813,31 @@ def end_card(A, tc, pool):
     if n >= 2:
         y0 = 84 - n // 2 + round(1.2 * math.sin(tp * 2))
         x0 = 68 - n // 2
-        ic = icon_px(n)
+        ic = icon_px(n)  # only the footprint is used, for the pixel-art drop shadow; the real logo is overlaid in to_rgb
         blit(a, tuple((x, y + 3, ROSED) for x, y, _ in ic), x0, y0)
-        blit(a, ic, x0, y0)
     draw_text(a, "WILDFOCUS", 134, (2, 3), WHITE, t=tc, t0=0.9, stagger=0.025)
     draw_text(a, "FREE ON iOS.", 158, 2, G2, t=tc, t0=1.3, stagger=0.02)
     pool.draw(a, kinds=(1,), dark=ROSED)
     return a
 
 
+def logo(tc):
+    """The exact app icon, composited at full output resolution (never pixelated): (size_px, cx, cy) or None."""
+    tp = pose_t(tc)
+    n = round(56 * 8 * clamp(back_out(prog(tc, 0.25, 0.95), 1.4), 0, 1.3))
+    if n < 16:
+        return None
+    return n, 68 * 8, 84 * 8 + round(1.2 * math.sin(tp * 2) * 8)
+
+
 def frame(A, t, pool):
-    """-> (logical canvas, camera crop or None, text overlay or None)"""
+    """-> (logical canvas, camera crop or None, text overlay or None, logo spec or None)"""
     if t >= 13.0:
         card = end_card(A, t - 13.0, pool)
         u = prog(t, 13.0, 13.4)
+        lg = logo(t - 13.0)
         if u >= 1:
-            return card, None, None
+            return card, None, None, lg
         wd = world(A, t, pool)  # camera is back to 1x by now: dissolve through the Bayer matrix
         lvl = ease_io(u) * 16
         for y in range(LH):
@@ -836,7 +845,7 @@ def frame(A, t, pool):
             for x in range(LW):
                 if row[x & 3] < lvl:
                     wd[y * LW + x] = card[y * LW + x]
-        return wd, None, None
+        return wd, None, None, lg
     ov = None
     if t < 3.2 or 9.3 <= t < 13.0:
         ov = bytearray([T]) * (LW * LH)
@@ -849,10 +858,10 @@ def frame(A, t, pool):
             a = ease_out(prog(t, 9.3, 9.7)) * (1 - prog(t, 12.7, 13.0))
             draw_text(ov, "...AND MAKE", 30, 2, CREAM, alpha=a, dy=round(4 * (1 - ease_out(prog(t, 9.3, 9.8)))))
             draw_text(ov, "A NEW FRIEND.", 48, 2, WHITE, alpha=a, dy=round(4 * (1 - ease_out(prog(t, 9.5, 10.0)))))
-    return world(A, t, pool), camera(t), ov
+    return world(A, t, pool), camera(t), ov, None
 
 
-def to_rgb(canvas, crop, ov):
+def to_rgb(canvas, crop, ov, lg=None):
     im = Image.frombytes("P", (LW, LH), bytes(canvas))
     im.putpalette(FLAT)
     im = im.convert("RGB").resize((W, H), Image.NEAREST, box=crop)
@@ -861,6 +870,10 @@ def to_rgb(canvas, crop, ov):
         o.putpalette(FLAT)
         m = Image.frombytes("L", (LW, LH), bytes(ov).translate(OPAQUE))
         im.paste(o.convert("RGB").resize((W, H), Image.NEAREST), (0, 0), m.resize((W, H), Image.NEAREST))
+    if lg is not None:
+        n, cx, cy = lg
+        ic = rounded_icon(n)
+        im.paste(ic, (cx - n // 2, cy - n // 2), ic)
     return im
 
 
@@ -902,9 +915,11 @@ def main():
         for tt in sys.argv[3].split(","):
             pool = Pool()
             pool.step_to(round(float(tt) * FPS))
-            canvas, crop, ov = frame(A, float(tt), pool)
-            im = to_rgb(canvas, crop, ov)
+            canvas, crop, ov, lg = frame(A, float(tt), pool)
+            im = to_rgb(canvas, crop, ov)  # palette check runs before the logo overlay: the logo is deliberately exact
             check_palette(canvas, ov, im)
+            if lg is not None:
+                im = to_rgb(canvas, crop, ov, lg)
             im.save(os.path.join(outdir, f"p_{float(tt):05.2f}.png"))
         return
     out = sys.argv[1]
