@@ -74,11 +74,31 @@ async function checkBuffer() {
   return `${orgs.length} org(s), ${lines.length} channel(s)\n   ${lines.join("\n   ")}`;
 }
 
+async function dumpField(typeName, fieldName) {
+  const d = await buffer(
+    `{ __type(name: "${typeName}") { fields { name args { name type { ${TYPE_REF} } } type { ${TYPE_REF} } } } }`,
+  );
+  const f = d.__type?.fields?.find((x) => x.name === fieldName);
+  if (!f) return console.log(`   ${typeName}.${fieldName}: not found`);
+  const args = f.args.map((a) => `${a.name}: ${typeStr(a.type)}`).join(", ");
+  console.log(`   ${typeName}.${fieldName}(${args}): ${typeStr(f.type)}`);
+  const ret = baseName(f.type);
+  const u = await buffer(`{ __type(name: "${ret}") { kind possibleTypes { name } fields { name } } }`);
+  if (u.__type?.possibleTypes) console.log(`   ${ret} = ${u.__type.possibleTypes.map((p) => p.name).join(" | ")}`);
+  else if (u.__type?.fields) console.log(`   ${ret} { ${u.__type.fields.map((x) => x.name).join(" ")} }`);
+  for (const a of f.args) await dumpType(baseName(a.type), new Set(), 1);
+}
+
 async function checkBufferSchema() {
   need("BUFFER_API_KEY");
   for (const n of ["Service", "CreatePostInput", "PostInputMetaData", "AssetInput", "VideoAssetInput"]) {
     await dumpType(n);
   }
+  for (const n of ["ShareMode", "SchedulingType", "TwitterPostMetadataInput", "VideoMetadataInput", "ImageAssetInput"]) {
+    await dumpType(n);
+  }
+  await dumpField("Mutation", "createPost");
+  await dumpField("Query", "posts");
 }
 
 // ---------- Bluesky ----------
