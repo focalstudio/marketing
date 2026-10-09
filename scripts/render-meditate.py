@@ -118,6 +118,19 @@ class Cv:
             for (x, y), r in zip(sp, rs):
                 self.d.ellipse([(x - r - k) * S, (y - r - k) * S, (x + r + k) * S, (y + r + k) * S], fill=ring)
 
+    def shape(self, shapes, fill, ow=7):
+        """Merged silhouette: outline every part first, then fill every part, so joins show no seams."""
+        for col, e in ((OUT, ow), (fill, 0)) if ow else ((fill, 0),):
+            for s in shapes:
+                if s[0] == "e":
+                    _, cx, cy, rx, ry = s
+                    self.d.ellipse([(cx - rx - e) * S, (cy - ry - e) * S, (cx + rx + e) * S, (cy + ry + e) * S], fill=col)
+                elif s[0] == "t":
+                    _, sp, wf = s
+                    for i, (x, y) in enumerate(sp):
+                        r = wf(i / (len(sp) - 1)) / 2 + e
+                        self.d.ellipse([(x - r) * S, (y - r) * S, (x + r) * S, (y + r) * S], fill=col)
+
     def arc(self, box, a0, a1, width=7, fill=OUT):
         x0, y0, x1, y1 = box
         self.d.arc([x0 * S, y0 * S, x1 * S, y1 * S], a0, a1, fill=fill, width=int(width * S))
@@ -128,114 +141,210 @@ class Cv:
 
 def eye(c, x, y, r=14, look=3):
     c.ell(x, y, r, r * 1.2, WHITE, ow=4)
-    c.ell(x + look, y + 2, r * 0.45, r * 0.55, OUT, ow=0)
-    c.ell(x + look - 2, y - 2, r * 0.15, r * 0.15, WHITE, ow=0)
+    c.ell(x + look, y + 2, r * 0.48, r * 0.6, OUT, ow=0)
+    c.ell(x + look - 2, y - 3, r * 0.17, r * 0.17, WHITE, ow=0)
 
 
-# --- characters (each returns (sprite, anchor_x, anchor_y), facing right where it matters) -
+def lid(c, x, y, r, sx=1):  # closed eye: a thick downward curve with one lash
+    c.arc((x - r, y - r * 0.8, x + r, y + r * 0.8), 20, 160, width=7)
+    a = math.radians(20 if sx > 0 else 160)
+    ex, ey = x + r * math.cos(a), y + r * 0.8 * math.sin(a)
+    c.tube(bez((ex, ey), (ex + sx * 5, ey - 4), (ex + sx * 10, ey - 9), 8), 6, 4, OUT, ow=0)
+
+
+def blinking(t, off=0.0):
+    return (t + off) % 3.3 < 0.13
+
+
+def heart(cx, cy, k):
+    return [(cx + k * 16 * math.sin(a) ** 3, cy - k * (13 * math.cos(a) - 5 * math.cos(2 * a) - 2 * math.cos(3 * a) - math.cos(4 * a)))
+            for a in (i / 40 * 2 * math.pi for i in range(40))]
+
+
+def attach(body, head, pivot, at, ang):
+    """Rotate the head sprite about its neck pivot and paste it so the pivot lands on `at`."""
+    head = head.rotate(ang, center=pivot, resample=Image.BICUBIC)
+    body.alpha_composite(head, (int(at[0] - pivot[0]), int(at[1] - pivot[1])))
+    return body
+
+
+# --- characters (each returns (sprite, anchor_x, anchor_y); animals face right) --------
 
 def rabbit(t, wind, eyes):
     c = Cv(500, 560)
     b = (math.sin(t * 2 * math.pi / 3) + 1) / 2  # breath, 3 s cycle
     for sx, ph in ((-1, 0.0), (1, 1.7)):
-        tipx = 250 + sx * 85 + 20 * wind + (3 + 9 * wind) * math.sin(t * (1.5 + 11 * wind) + ph)
-        c.tube(bez((250 + sx * 45, 178), (250 + sx * 88, 95), (tipx, 36)), 60, 46, FUR)
-        c.tube(bez((250 + sx * 45, 180), (250 + sx * 86, 105), (tipx, 60)), 34, 22, FURS, ow=0)
-    c.ell(170, 497, 105, 44, PANT)
-    c.ell(330, 497, 105, 44, PANT)
-    c.ell(300, 522, 45, 28, FUR)
-    c.ell(200, 522, 45, 28, FUR)
-    c.ell(250, 398 - 3 * b, 100 + 3 * b, 112 + 3 * b, HOOD)
-    c.poly([(190, 440), (310, 440), (298, 488), (202, 488)], HOODD, ow=5)
-    c.ell(250, 322, 92, 36, HOODD)
+        tipx = 250 + sx * 78 + 20 * wind + (3 + 9 * wind) * math.sin(t * (1.5 + 11 * wind) + ph)
+        sp = bez((250 + sx * 36, 190), (250 + sx * 82, 112), (tipx, 42))
+        c.shape([("t", sp, lambda u: 46 + 18 * math.sin(math.pi * u * 0.92))], FUR)
+        c.shape([("t", sp[6:], lambda u: 18 + 12 * math.sin(math.pi * (0.2 + 0.8 * u) * 0.92))], FURS, ow=0)
+    c.ell(250, 262, 122, 104, HOOD)  # hood framing the head
+    c.ell(250, 500, 150, 40, PANT)
+    c.shape([("t", bez((372, 494), (300, 522), (196, 526)), lambda u: 54 - 12 * u)], PANT)  # back shin
+    c.ell(182, 528, 34, 20, FUR)
+    c.shape([("t", bez((128, 494), (200, 520), (306, 522)), lambda u: 54 - 12 * u)], PANT)  # front shin
+    c.ell(322, 522, 34, 20, FUR)
+    k = 1 + 0.03 * b
+    c.shape([("e", 250, 398, 72 * k, 64 * k), ("e", 250, 446, 96 * k, 60 * k)], HOOD)
+    c.ell(250, 344, 64, 18, HOODD)
     for sx in (-1, 1):
-        c.tube(bez((250 + sx * 82, 362), (250 + sx * 112, 420), (250 + sx * 134, 470)), 42, 38, HOOD)
-        c.ell(250 + sx * 138, 480, 25, 22, FUR)
-        c.tube(bez((250 + sx * 28, 345), (250 + sx * 30, 372), (250 + sx * 27 + wind * 6, 392)), 9, 9, CREAM, ow=3)
-    c.ell(250, 235, 118, 102, FUR)
+        x1 = 250 + sx * 20 + wind * 6
+        c.tube(bez((250 + sx * 20, 350), (250 + sx * 23, 372), (x1, 394)), 8, 8, CREAM, ow=3)
+        c.ell(x1, 398, 6, 6, CREAM, ow=3)
+    for sx in (-1, 1):  # short bent arms, paws together in the lap
+        c.shape([("t", bez((250 + sx * 62, 392), (250 + sx * 104, 452), (250 + sx * 34, 470)), lambda u: 40 - 6 * u)], HOOD)
     for sx in (-1, 1):
-        c.ell(250 + sx * 82, 266, 22, 14, FURS, ow=0)
+        c.ell(250 + sx * 19, 472, 24, 19, FUR)
+    c.poly([(230, 178), (240, 146), (252, 172), (264, 150), (270, 180)], FUR, ow=5)  # forehead tuft
+    c.shape([("e", 250, 250, 100, 86), ("e", 250, 276, 88, 62)], FUR)
+    for sx in (-1, 1):
+        ex = 250 + sx * 38
+        c.ell(250 + sx * 66, 290, 18, 11, FURS, ow=0)
         if eyes > 0.5:
-            eye(c, 250 + sx * 45, 238, 25, 4)
+            c.ell(ex, 246, 27, 32, WHITE, ow=6)
+            c.ell(ex + sx * -3, 254, 12, 14, OUT, ow=0)
+            c.ell(ex + sx * -3 - 4, 248, 4, 4, WHITE, ow=0)
         else:
-            c.arc((250 + sx * 45 - 30, 214, 250 + sx * 45 + 30, 258), 25, 155)
-    c.ell(250, 266, 15, 10, (240, 130, 150), ow=4)
-    c.arc((222, 262, 278, 296), 25, 155, width=6)
-    c.poly([(240, 284), (260, 284), (260, 302), (240, 302)], WHITE, ow=4)
+            lid(c, ex, 252, 24, sx)
+        for i, (dx, dy) in enumerate(((44, 292), (54, 298), (46, 304))):
+            c.ell(250 + sx * dx, dy, 3, 3, OUT, ow=0)
+    c.poly(heart(250, 284, 0.85), (240, 120, 150), ow=4)
+    c.arc((234, 284, 252, 304), 20, 160, width=5)
+    c.arc((248, 284, 266, 304), 20, 160, width=5)
+    c.poly([(242, 302), (249, 302), (249, 313), (242, 313)], WHITE, ow=3)
+    c.poly([(251, 302), (258, 302), (258, 313), (251, 313)], WHITE, ow=3)
     return c.img(), 250, 548
 
 
-def fox(ph, wag):
-    c = Cv(520, 360)
-    sw = math.sin(ph) * 24
-    FOX, LEG, LEGF = (238, 128, 48), (96, 58, 40), (136, 84, 56)
-    for x, dx, col in ((185, -sw, LEGF), (305, -sw, LEGF), (150, sw, LEG), (335, sw, LEG)):
-        c.tube(bez((x, 250), (x + dx * 0.5, 292), (x + dx, 330)), 36, 28, col, ow=6)
-        c.ell(x + dx + 10, 332, 22, 12, col, ow=6)
-    tx = 76 + wag * 14
-    c.tube(bez((140, 205), (80, 220), (tx, 118)), 54, 96, FOX)
-    c.ell(tx, 104, 34, 36, CREAM)
-    c.ell(230, 215, 115, 62, FOX)
-    c.ell(262, 244, 66, 26, CREAM, ow=0)
-    c.poly([(318, 130), (326, 48), (378, 108)], FOX)
-    c.poly([(326, 118), (331, 70), (360, 108)], (150, 70, 40), ow=0)
-    c.poly([(362, 112), (396, 44), (414, 130)], FOX)
-    c.ell(355, 165, 68, 57, FOX)
-    c.poly([(395, 138), (478, 182), (402, 214)], FOX)
-    c.poly([(408, 192), (470, 188), (404, 214)], CREAM, ow=0)
-    c.ell(476, 182, 14, 12, OUT, ow=0)
-    eye(c, 384, 152, 15, 4)
-    return c.img(), 260, 350
+FOX, FOXD, SOCK = (238, 128, 48), (204, 100, 42), (74, 48, 40)
+DEER, DEERD, DCREAM, ANT = (206, 146, 86), (166, 112, 66), (250, 234, 204), (128, 86, 52)
+HOG, SPINE, HFACE = (150, 112, 86), (98, 72, 58), (244, 214, 172)
 
 
-def deer(ph):
-    c = Cv(500, 540)
-    sw = math.sin(ph) * 22
-    DEER, DEERD, ANT = (206, 146, 86), (150, 100, 60), (120, 80, 48)
-    for x, dx, col in ((172, -sw, DEERD), (305, -sw, DEERD), (130, sw, DEERD), (270, sw, DEERD)):
-        c.tube(bez((x, 335), (x + dx * 0.5, 428), (x + dx, 515)), 30, 20, col, ow=6)
-        c.ell(x + dx + 4, 520, 14, 8, OUT, ow=0)
-    c.ell(92, 278, 22, 15, CREAM)
-    c.tube(bez((290, 290), (335, 225), (350, 150)), 68, 52, DEER)
-    c.ell(215, 300, 120, 64, DEER)
-    for x, y in ((170, 275), (215, 262), (250, 292), (190, 318)):
-        c.ell(x, y, 9, 7, CREAM, ow=0)
-    c.tube(bez((350, 90), (345, 52), (366, 16)), 12, 8, ANT, ow=5)
-    c.tube(bez((347, 62), (330, 50), (316, 34)), 9, 7, ANT, ow=4)
-    c.tube(bez((354, 44), (374, 38), (392, 22)), 9, 7, ANT, ow=4)
-    c.tube(bez((338, 98), (308, 92), (292, 70)), 36, 24, DEER)
-    c.tube(bez((336, 98), (310, 92), (298, 76)), 20, 12, FURS, ow=0)
-    c.ell(366, 118, 50, 41, DEER)
-    c.ell(414, 134, 34, 26, (232, 200, 150))
-    c.ell(440, 128, 11, 9, OUT, ow=0)
-    eye(c, 380, 108, 14, 4)
-    return c.img(), 250, 524
+def fox_head(blink):
+    c = Cv(240, 220)
+    hx, hy = 100, 130
+    c.poly([(hx - 48, hy - 24), (hx - 40, hy - 104), (hx + 2, hy - 46)], FOX)
+    c.poly([(hx + 2, hy - 48), (hx + 30, hy - 112), (hx + 48, hy - 34)], FOX)
+    c.poly([(hx - 36, hy - 36), (hx - 33, hy - 84), (hx - 12, hy - 50)], SOCK, ow=0)
+    c.poly([(hx + 13, hy - 50), (hx + 29, hy - 92), (hx + 37, hy - 44)], SOCK, ow=0)
+    c.shape([("e", hx, hy, 62, 54), ("t", bez((hx + 20, hy + 6), (hx + 60, hy + 14), (hx + 98, hy + 22)), lambda u: 60 - 44 * u)], FOX)
+    c.ell(hx - 8, hy + 30, 40, 20, CREAM, ow=0)
+    c.shape([("t", bez((hx + 30, hy + 24), (hx + 64, hy + 30), (hx + 92, hy + 27)), lambda u: 24 - 14 * u)], CREAM, ow=0)
+    c.ell(hx + 100, hy + 20, 11, 9, OUT, ow=0)
+    if blink:
+        lid(c, hx + 26, hy - 4, 16)
+    else:
+        eye(c, hx + 26, hy - 8, 17, 5)
+    return c.img(), (80, 170)
 
 
-def hedgehog(ph):
-    c = Cv(360, 270)
-    cx, cy = 150, 168
-    pts = []
-    for k in range(17):  # spiky dome over the back
-        a = math.radians(188 + 164 * k / 16)
-        for r in ((142, 1.0), (104, 1.0)) if k < 16 else ((142, 1.0),):
-            pts.append((cx + r[0] * math.cos(a) * 1.0, cy + r[0] * math.sin(a) * 0.82))
-        if k < 16:
-            a2 = math.radians(188 + 164 * (k + 0.5) / 16)
-            pts[-1] = (cx + 104 * math.cos(a2), cy + 104 * 0.82 * math.sin(a2))
-            pts[-2] = (cx + 142 * math.cos(a), cy + 142 * 0.82 * math.sin(a))
-    c.poly(pts + [(cx + 80, cy + 10), (cx - 80, cy + 10)], (90, 64, 50))
-    wob = math.sin(ph) * 5
-    for x, dx in ((110, -wob), (200, wob)):
-        c.ell(x + dx, 242, 26, 14, (70, 50, 40))
-    c.ell(cx, cy, 118, 76, (124, 90, 68))
-    c.ell(262, 190, 62, 52, (240, 206, 160))
-    c.ell(238, 134, 17, 19, (240, 206, 160))
-    c.ell(312, 206, 36, 27, (240, 206, 160))
-    c.ell(340, 202, 11, 10, OUT, ow=0)
-    c.ell(240, 218, 18, 11, FURS, ow=0)
-    eye(c, 286, 172, 15, 4)
-    return c.img(), 180, 260
+def fox(ph, sat, blink, tilt, wag):
+    c = Cv(480, 380)
+    if not sat:
+        sw = math.sin(ph) * 20
+        legs = [(205, -sw, FOXD), (290, sw, FOXD), (180, sw, FOX), (265, -sw, FOX)]
+        for x, dx, col in legs:
+            c.shape([("t", bez((x, 262), (x + dx * 0.5, 300), (x + dx, 335)), lambda u: 28 - 4 * u)], col)
+            c.shape([("t", bez((x + dx * 0.6, 312), (x + dx * 0.8, 324), (x + dx, 335)), lambda u: 25 - 3 * u)], SOCK, ow=0)
+            c.ell(x + dx + 6, 338, 15, 8, SOCK, ow=5)
+        tail = bez((152, 240), (90, 236), (76 + wag * 8, 176))
+        c.shape([("t", tail, lambda u: 26 + 64 * math.sin(math.pi * u * 0.8))], FOX)
+        c.shape([("t", tail[22:], lambda u: 26 + 64 * math.sin(math.pi * (0.73 + 0.27 * u) * 0.8))], CREAM, ow=0)
+        c.ell(230, 255, 82, 46, FOX)
+        c.ell(245, 282, 50, 14, CREAM, ow=0)
+        at = (290, 220)
+    else:
+        c.ell(196, 340, 32, 9, SOCK, ow=5)
+        c.shape([("e", 210, 300, 56, 42), ("e", 255, 258, 52, 64)], FOX)
+        c.ell(278, 270, 24, 38, CREAM, ow=0)
+        for x in (262, 290):
+            c.shape([("t", bez((x, 296), (x, 318), (x + 2, 336)), lambda u: 24)], FOX)
+            c.shape([("t", bez((x, 318), (x + 1, 328), (x + 2, 336)), lambda u: 22)], SOCK, ow=0)
+            c.ell(x + 6, 339, 14, 7, SOCK, ow=5)
+        tail = bez((170, 318), (196, 352), (300 + wag * 6, 342))
+        c.shape([("t", tail, lambda u: 24 + 40 * math.sin(math.pi * u * 0.85))], FOX)
+        c.shape([("t", tail[21:], lambda u: 24 + 40 * math.sin(math.pi * (0.7 + 0.3 * u) * 0.85))], CREAM, ow=0)
+        at = (285, 205)
+    head, pv = fox_head(blink)
+    return attach(c.img(), head, pv, at, tilt), 230, 346
+
+
+def deer_head(blink):
+    c = Cv(270, 240)
+    hx, hy = 140, 140
+    for sp in (bez((hx - 30, hy - 30), (hx - 70, hy - 62), (hx - 104, hy - 56)), bez((hx + 18, hy - 38), (hx + 50, hy - 80), (hx + 84, hy - 90))):
+        c.shape([("t", sp, lambda u: 14 + 26 * math.sin(math.pi * u))], DEER)
+        c.shape([("t", sp[5:-4], lambda u: 6 + 14 * math.sin(math.pi * (0.15 + 0.7 * u)))], FURS, ow=0)
+    for sp in (bez((hx - 6, hy - 48), (hx - 9, hy - 62), (hx - 12, hy - 76)), bez((hx + 16, hy - 48), (hx + 18, hy - 60), (hx + 22, hy - 74))):
+        c.tube(sp, 14, 11, ANT, ow=5)
+    c.shape([("e", hx, hy, 58, 50), ("e", hx + 48, hy + 22, 34, 26)], DEER)
+    c.ell(hx + 52, hy + 27, 26, 17, DCREAM, ow=0)
+    c.ell(hx + 78, hy + 18, 10, 8, OUT, ow=0)
+    if blink:
+        lid(c, hx + 16, hy - 2, 17)
+    else:
+        eye(c, hx + 16, hy - 6, 18, 5)
+        c.tube(bez((hx + 32, hy - 22), (hx + 37, hy - 27), (hx + 42, hy - 31), 8), 5, 4, OUT, ow=0)
+    return c.img(), (hx - 10, hy + 44)
+
+
+def deer(ph, sat, blink, tilt):
+    c = Cv(480, 470)
+    if not sat:
+        sw = math.sin(ph) * 18
+        for x, dx, col in ((185, -sw, DEERD), (290, sw, DEERD), (160, sw, DEER), (265, -sw, DEER)):
+            c.shape([("t", bez((x, 325), (x + dx * 0.5, 380), (x + dx, 428)), lambda u: 22 - 6 * u)], col, ow=6)
+            c.ell(x + dx + 2, 432, 11, 7, SOCK, ow=4)
+        c.ell(132, 282, 16, 12, DCREAM)
+        c.shape([("e", 220, 300, 90, 50), ("t", bez((268, 300), (285, 255), (292, 215)), lambda u: 54 - 10 * u)], DEER)
+        for x, y in ((180, 280), (215, 268), (245, 288), (195, 305)):
+            c.ell(x, y, 8, 6, DCREAM, ow=0)
+        c.ell(292, 288, 20, 26, DCREAM, ow=0)
+        at = (292, 215)
+    else:
+        c.ell(125, 372, 16, 12, DCREAM)
+        c.ell(150, 420, 38, 13, DEERD, ow=6)
+        c.shape([("e", 215, 385, 92, 46), ("t", bez((266, 380), (284, 336), (290, 300)), lambda u: 54 - 10 * u)], DEER)
+        for x, y in ((175, 366), (210, 356), (240, 374), (190, 390)):
+            c.ell(x, y, 8, 6, DCREAM, ow=0)
+        c.ell(290, 378, 20, 22, DCREAM, ow=0)
+        c.ell(300, 420, 42, 13, DEERD, ow=6)
+        c.ell(338, 422, 10, 7, SOCK, ow=4)
+        at = (290, 300)
+    head, pv = deer_head(blink)
+    return attach(c.img(), head, pv, at, tilt), 240, 442
+
+
+def hedgehog(ph, sat, blink, tilt):
+    c = Cv(340, 270)
+    cx, cy = 150, 170
+    pts, n = [(cx, cy + 30)], 13
+    for k in range(n):
+        for j, (rx, ry) in enumerate(((96, 78), (130, 108))):
+            a = math.radians(160 + 170 * (k + 0.5 * j) / n)
+            pts.append((cx + rx * math.cos(a), cy + ry * math.sin(a)))
+    c.poly(pts + [(cx + 96 * math.cos(math.radians(330)), cy + 78 * math.sin(math.radians(330)))], SPINE)
+    lift = 0 if sat else math.sin(ph) * 5
+    for x, dy in ((118, -max(0, lift)), (190, -max(0, -lift))):
+        c.ell(x, 236 + dy, 22, 12, SOCK, ow=5)
+    c.ell(cx, cy + 8, 104, 70, HOG)
+    for i in range(14):  # spine ticks on the back
+        a = math.radians(175 + 150 * (i % 7) / 6)
+        r = 0.55 if i < 7 else 0.85
+        x, y = cx - 10 + 100 * r * math.cos(a), cy + 10 + 66 * r * math.sin(a)
+        c.tube(bez((x, y), (x - 6, y - 5), (x - 12, y - 10), 6), 5, 4, SPINE, ow=0)
+    face, pv = Cv(200, 180), (40, 120)
+    fx, fy = 70, 90
+    face.ell(fx - 18, fy - 46, 14, 15, HFACE, ow=6)
+    face.shape([("e", fx, fy, 56, 48), ("t", bez((fx + 18, fy + 10), (fx + 48, fy + 18), (fx + 74, fy + 20)), lambda u: 44 - 24 * u)], HFACE)
+    face.ell(fx + 78, fy + 18, 11, 10, OUT, ow=0)
+    face.ell(fx + 4, fy + 20, 14, 9, FURS, ow=0)
+    if blink:
+        lid(face, fx + 8, fy - 8, 15)
+    else:
+        eye(face, fx + 8, fy - 12, 17, 5)
+    return attach(c.img(), face.img(), pv, (202, 216), tilt), 170, 252
 
 
 def leaf_sprite(col):
@@ -342,13 +451,15 @@ def tuft_layer(A, t, front):
     return lay.resize((W, H - y0), Image.LANCZOS)
 
 
-def animal(t, t0, dur, x0, x1):
+def friend(t, t0, dur, x0, x1):
     p = prog(t, t0, t0 + dur)
-    x = x0 + (x1 - x0) * ease_out(p)
-    moving = 0 < p < 1
+    x = x0 + (x1 - x0) * (1 - (1 - p) ** 2)
     tt = t - (t0 + dur)
-    sq = 1 + 0.08 * math.sin(tt * 14) * math.exp(-tt * 5) if tt > 0 else 1.0
-    return x, moving, sq
+    sat = tt >= 0
+    sq = 1 + 0.1 * math.sin(tt * 14) * math.exp(-tt * 5) if sat else 1.0
+    tilt = (8 * ease_out(prog(tt, 0.3, 0.9)) + 2 * math.sin(t * 1.7)) if sat else 0.0
+    bob = 0 if sat else abs(math.sin(t * 11)) * 8
+    return x, sat, sq, tilt, bob
 
 
 def world(A, t):
@@ -358,27 +469,27 @@ def world(A, t):
     blit(img, tuft_layer(A, t, False), 0, 1300)
     w = wind(t)
 
-    dx, dmv, dsq = animal(t, 9.4, 2.0, 1400, 880)
+    dx, dsat, dsq, dtilt, dbob = friend(t, 9.4, 2.0, 1400, 880)
     if t >= 9.4:
-        spr, ax, ay = deer(t * 9)
-        blit(img, A.shadow.resize((300, 60)), dx - 150, 1490)
-        put(img, spr, ax, ay, dx, 1500 - (abs(math.sin(t * 9)) * 8 if dmv else 0), 0.8 * (2 - dsq), 0.8 * dsq, flip=True)
+        spr, ax, ay = deer(t * 10, dsat, blinking(t, 0.9), dtilt)
+        blit(img, A.shadow.resize((300, 60)), dx - 150, 1474)
+        put(img, spr, ax, ay, dx, 1500 - dbob, 0.8 * (2 - dsq), 0.8 * dsq, flip=True)
 
     blit(img, A.rock, 540 - 220, 1480 - 186)
     spr, ax, ay = rabbit(t, w, prog(t, 11.6, 11.8) * (1 if t < 13 else 0))
     put(img, spr, ax, ay, 540, 1420)
 
-    fx, fmv, fsq = animal(t, 9.0, 1.6, -300, 215)
+    fx, fsat, fsq, ftilt, fbob = friend(t, 9.0, 1.6, -300, 215)
     if t >= 9.0:
-        spr, ax, ay = fox(t * 12 if fmv else 0, math.sin(t * 7) if not fmv else 0)
-        blit(img, A.shadow.resize((340, 60)), fx - 170, 1530)
-        put(img, spr, ax, ay, fx, 1560 - (abs(math.sin(t * 12)) * 8 if fmv else 0), 0.85 * (2 - fsq), 0.85 * fsq)
+        spr, ax, ay = fox(t * 12, fsat, blinking(t, 0.0), ftilt, math.sin(t * 5))
+        blit(img, A.shadow.resize((340, 60)), fx - 170, 1532)
+        put(img, spr, ax, ay, fx, 1560 - fbob, 0.85 * (2 - fsq), 0.85 * fsq)
 
-    hx, hmv, hsq = animal(t, 9.8, 2.1, 1400, 730)
+    hx, hsat, hsq, htilt, hbob = friend(t, 9.8, 2.1, 1400, 730)
     if t >= 9.8:
-        spr, ax, ay = hedgehog(t * 10 if hmv else 0)
-        blit(img, A.shadow.resize((260, 50)), hx - 130, 1680)
-        put(img, spr, ax, ay, hx, 1700 - (abs(math.sin(t * 10)) * 6 if hmv else 0), 1.0 * (2 - hsq), 1.0 * hsq, flip=True)
+        spr, ax, ay = hedgehog(t * 12, hsat, blinking(t, 1.9), htilt)
+        blit(img, A.shadow.resize((260, 50)), hx - 130, 1676)
+        put(img, spr, ax, ay, hx, 1700 - hbob * 0.5, 1.0 * (2 - hsq), 1.0 * hsq, flip=True)
 
     blit(img, tuft_layer(A, t, True), 0, 1300)
     return img
