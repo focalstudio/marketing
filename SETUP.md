@@ -74,7 +74,7 @@ Step 3 fetches the channel IDs through the API, so you don't need to copy them.
 5. Generate a user token for each in the app dashboard. Exchange it for a **long-lived
    (60-day)** token. The dashboard's token tool does this, or you can call the
    `access_token?grant_type=th_exchange_token` / `ig_exchange_token` endpoints.
-6. Secrets: `THREADS_USER_ID`, `THREADS_TOKEN`, `IG_USER_ID`, `IG_TOKEN` (skipped: Instagram is off).
+6. Secrets: `THREADS_USER_ID`, `THREADS_TOKEN`, `IG_USER_ID`, `IG_TOKEN`.
 
 The tokens expire after 60 days. Step 3 adds a weekly refresh job. That job writes the
 new token back with the bot App token, so the **focalstudio bot** App will need
@@ -115,7 +115,7 @@ used instead. No Cloudflare account and no extra secrets. Keep each file under 5
 - `BUFFER_API_KEY`
 - `BLUESKY_HANDLE`, `BLUESKY_APP_PASSWORD`
 - `THREADS_USER_ID`, `THREADS_TOKEN`
-- `IG_USER_ID`, `IG_TOKEN` (skipped: Instagram is off)
+- `IG_USER_ID`, `IG_TOKEN`
 - `DEVTO_API_KEY`
 - either the five `R2_*` secrets or the media repo
 - `CLAUDE_CODE_OAUTH_TOKEN`

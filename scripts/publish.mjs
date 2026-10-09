@@ -116,6 +116,28 @@ async function checkThreads() {
   return `logged in as ${b.username}`;
 }
 
+// ---------- Instagram ----------
+async function instagram(path, fields) {
+  const url = new URL(`https://graph.instagram.com/v21.0/${path}`);
+  url.searchParams.set("fields", fields);
+  url.searchParams.set("access_token", env("IG_TOKEN"));
+  const res = await fetch(url);
+  const b = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(`HTTP ${res.status} ${b.error?.message ?? ""}`);
+  return b;
+}
+
+async function checkInstagram() {
+  need("IG_TOKEN", "IG_USER_ID");
+  const me = await instagram("me", "user_id,username,account_type");
+  if (me.user_id !== env("IG_USER_ID")) throw new Error("token user does not match IG_USER_ID");
+  // Reading the publishing limit needs instagram_business_content_publish, so this proves the scope.
+  const lim = await instagram(`${me.user_id}/content_publishing_limit`, "quota_usage,config");
+  const used = lim.data?.[0]?.quota_usage ?? "?";
+  const total = lim.data?.[0]?.config?.quota_total ?? "?";
+  return `logged in as ${me.username} (${me.account_type}), publish quota ${used}/${total}`;
+}
+
 // ---------- CLI ----------
 const cmd = process.argv[2];
 if (cmd === "check") {
@@ -123,6 +145,7 @@ if (cmd === "check") {
   await step("Bluesky: login", checkBluesky);
   await step("dev.to: login", checkDevto);
   await step("Threads: token", checkThreads);
+  await step("Instagram: token + publish scope", checkInstagram);
   console.log("\nBuffer input schema (what createPost accepts):");
   await step("Buffer: schema introspection", checkBufferSchema);
   const failed = results.filter((r) => !r.ok);
