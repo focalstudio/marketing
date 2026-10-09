@@ -3,6 +3,7 @@
 //   node scripts/publish.mjs check                read-only: proves each key works, dumps Buffer's schema
 //   node scripts/publish.mjs plan                 lists what is due, in platforms.yml order; posts nothing
 //   node scripts/publish.mjs publish [--dry-run]  posts everything due; --dry-run prints the requests instead
+//   node scripts/publish.mjs publish --dry-run --drafts   also previews drafts, as if they were due now
 //   node scripts/publish.mjs refresh              reports how long the Threads and Instagram tokens last
 //
 // The queue format is in README.md. Nothing here ever prints a secret.
@@ -498,7 +499,7 @@ export function loadPlatforms() {
   return { order, byId: Object.fromEntries(order.map((p) => [p.id, p])) };
 }
 
-function loadQueue(byId) {
+function loadQueue(byId, withDrafts = false) {
   const posts = [];
   const invalid = [];
   let drafts = 0;
@@ -509,8 +510,10 @@ function loadQueue(byId) {
       const { errors, warnings } = validate(post, byId);
       post.warnings = warnings;
       if (errors.length) invalid.push({ file, errors });
-      else if (post.meta.draft) drafts++;
-      else posts.push(post);
+      else if (post.meta.draft) {
+        drafts++;
+        if (withDrafts) posts.push(post);
+      } else posts.push(post);
     } catch (e) {
       invalid.push({ file, errors: [e.message] });
     }
@@ -537,7 +540,7 @@ function buildJobs(order, posts, done, now) {
     if (cfg.enabled === false) continue;
     const mine = posts.filter((p) => p.meta.platforms.includes(cfg.id)).sort((a, b) => a.atMs - b.atMs);
     for (const post of mine) {
-      const state = done.has(key(post.file, cfg.id)) ? "posted" : dueState(cfg.route, post.atMs, now);
+      const state = post.meta.draft ? "draft" : done.has(key(post.file, cfg.id)) ? "posted" : dueState(cfg.route, post.atMs, now);
       jobs.push({ cfg, post, state });
     }
   }
@@ -545,7 +548,7 @@ function buildJobs(order, posts, done, now) {
 }
 
 function reportQueue(order, posts, invalid, drafts, jobs) {
-  say(`Queue: ${posts.length} post(s) ready, ${drafts} draft(s), ${invalid.length} invalid`);
+  say(`Queue: ${posts.filter((p) => !p.meta.draft).length} post(s) ready, ${drafts} draft(s), ${invalid.length} invalid`);
   for (const { file, errors } of invalid) say(`❌ ${file}\n   ${errors.join("\n   ")}`);
   for (const p of posts) for (const w of p.warnings) say(`⚠️  ${p.file}: ${w}`);
   for (const cfg of order) {
@@ -876,10 +879,10 @@ function plan() {
   return invalid.length ? 1 : 0;
 }
 
-async function publish(dryRun) {
+async function publish(dryRun, withDrafts) {
   const now = Date.now();
   const { order, byId } = loadPlatforms();
-  const { posts, invalid, drafts } = loadQueue(byId);
+  const { posts, invalid, drafts } = loadQueue(byId, withDrafts);
   const pub = loadPublished();
   const jobs = buildJobs(order, posts, pub.done, now);
   if (dryRun) say("DRY RUN: nothing is sent. Each request below is printed with secrets as ***.\n");
@@ -888,7 +891,7 @@ async function publish(dryRun) {
   let ok = 0;
   let failed = invalid.length;
   let deferred = 0;
-  for (const job of jobs.filter((j) => j.state === "due")) {
+  for (const job of jobs.filter((j) => j.state === "due" || j.state === "draft")) {
     const { cfg, post } = job;
     say(`\n▶ ${cfg.id} · ${post.file}`);
     try {
@@ -945,7 +948,11 @@ async function main([cmd, ...args]) {
     return failed.length ? 1 : 0;
   }
   if (cmd === "plan" && !args.length) return plan();
-  if (cmd === "publish" && args.every((a) => a === "--dry-run")) return publish(args.includes("--dry-run"));
+  const dry = args.includes("--dry-run");
+  const drafts = args.includes("--drafts");
+  if (cmd === "publish" && args.every((a) => a === "--dry-run" || a === "--drafts") && (dry || !drafts)) {
+    return publish(dry, drafts);
+  }
   if (cmd === "refresh" && !args.length) {
     await step("Threads: token lifetime", () =>
       refreshToken("https://graph.threads.net/refresh_access_token", "th_refresh_token", "THREADS_TOKEN"),
@@ -955,7 +962,7 @@ async function main([cmd, ...args]) {
     );
     return results.some((r) => !r.ok) ? 1 : 0;
   }
-  console.error("usage: node scripts/publish.mjs check | plan | publish [--dry-run] | refresh");
+  console.error("usage: node scripts/publish.mjs check | plan | publish [--dry-run [--drafts]] | refresh");
   return 2;
 }
 

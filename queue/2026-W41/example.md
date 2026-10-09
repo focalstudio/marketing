@@ -1,7 +1,7 @@
 ---
 # Example only: draft: true means it is validated but never posted.
 stream: kit
-platforms: [bluesky, threads]
+platforms: [x, bluesky, threads]
 at: 2026-10-12T09:00:00Z
 title: "Example post"
 ai: false

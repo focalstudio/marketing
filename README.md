@@ -49,6 +49,7 @@ Optional: Bluesky gets this instead.
 ```
 node scripts/publish.mjs plan                # what is due; no secrets needed
 node scripts/publish.mjs publish --dry-run   # print every request, secrets as ***
+node scripts/publish.mjs publish --dry-run --drafts  # also preview drafts
 node --test scripts/*.test.mjs
 ```
 
