@@ -20,7 +20,7 @@ video:
 cadence: 3 per week
 days: [mon, wed, fri]    # posting days, UTC
 time: "20:00"
-styles: [toon, lowpoly, pixel, ink]
+styles: [toon, lowpoly, pixel, ink, appart]
 # Copy per storyboard in video/clips/. hooks[i] pairs with titles[i]; a clip's hook rotates as it is reused.
 # `styles` limits a clip to the styles it renders in (default: the app's styles above).
 clips:

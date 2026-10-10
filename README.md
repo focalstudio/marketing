@@ -72,7 +72,7 @@ python3 -m unittest discover -s video/tests -t .                                
 
 - [video/clips/](video/clips/) holds the storyboards: beats, timings, copy, chimes and positions, as plain data. Each one
   has a `.md` with the prompt behind it. A clip never imports a style. Small per-style tuning goes in its `OVERRIDES`.
-- [video/styles/](video/styles/) holds one drawing kit per style (`toon`, `lowpoly`, `pixel`, `ink`). Each one implements
+- [video/styles/](video/styles/) holds one drawing kit per style (`toon`, `lowpoly`, `pixel`, `ink`, `appart`). Each one implements
   the contract in [base.py](video/styles/base.py): the scene kinds `title`, `world` and `end`, `text_line`, and the
   shared pose API `rabbit / fox / deer / hedgehog`.
 - [video/kit/](video/kit/) holds what everything shares: easing, the exact app icon and font (`brand`), the ffmpeg
