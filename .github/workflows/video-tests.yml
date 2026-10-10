@@ -1,7 +1,7 @@
 name: video-tests
 
-# The renderer on Linux: kit tests and goldens, the node script tests, and one real render (meditate in ink), uploaded
-# as an artifact. The app icon comes from a sparse checkout of the private app repo, read with the Focal Studio bot.
+# The renderer on Linux: kit tests and goldens, the node script tests, and two real renders (meditate in ink and in appart),
+# each uploaded as an artifact. The app icon comes from a sparse checkout of the private app repo, read with the Focal Studio bot.
 on:
   pull_request:
     paths: [video/**, apps/**, scripts/**, .github/workflows/video-tests.yml]
@@ -50,7 +50,12 @@ jobs:
       - run: python3 -m unittest discover -s video/tests -t . -v
       - run: node --test scripts/*.test.mjs
       - run: python3 -m video.render meditate --style ink out/meditate-ink.mp4
+      - run: python3 -m video.render meditate --style appart out/meditate-appart.mp4
       - uses: actions/upload-artifact@v4
         with:
           name: meditate-ink
           path: out/meditate-ink.mp4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: meditate-appart
+          path: out/meditate-appart.mp4

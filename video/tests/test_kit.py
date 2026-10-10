@@ -11,8 +11,8 @@ from video.styles import base
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 GOLD = os.path.join(HERE, "goldens")
-PAIRS = [("meditate", "toon"), ("meditate", "lowpoly"), ("meditate", "pixel")]
-STYLES = ["toon", "lowpoly", "pixel", "ink"]
+PAIRS = [("meditate", "toon"), ("meditate", "lowpoly"), ("meditate", "pixel"), ("meditate", "appart")]
+STYLES = ["toon", "lowpoly", "pixel", "ink", "appart"]
 CLIPS = ["meditate"]
 TIMES = [1, 4, 6, 10, 12.5, 14.5]
 HAVE_ICON = os.path.exists(brand.icon_path("wildfocus"))
@@ -77,6 +77,74 @@ class PoseAPI(unittest.TestCase):
                     self.assertIsNotNone(sty.fox(3.0, 1.0, sat, False, 4.0, 0.5))
                     self.assertIsNotNone(sty.deer(3.0, 1.0, sat, False, 4.0))
                     self.assertIsNotNone(sty.hedgehog(3.0, 1.0, sat, False, 4.0))
+
+
+@unittest.skipUnless(HAVE_ICON, "app icon missing")
+class Appart(unittest.TestCase):
+    """The storyboard motions and props, through a synthetic board (a clip for PR 4 will use the same keys)."""
+
+    def board(self, **sc):
+        return dict(dur=20.0, audio=None, scenes=[dict(name="w", start=0.0, kind="world", **sc)])
+
+    def draw(self, t, **sc):
+        sty = core.load("meditate", "appart")[1]
+        A = sty.assets()
+        return sty.scene(A, self.board(**sc)["scenes"][0], t, t)
+
+    def diff(self, a, b):
+        return ImageChops.difference(a, b).getbbox()
+
+    def test_motions(self):
+        base = self.draw(0.0)
+        for name, a, t0, t1 in [
+            ("pop", dict(kind="owl", motion="pop", enter=1.0, x=540, y=1400), 0.9, 2.0),
+            ("hop", dict(kind="bat", motion="hop", enter=1.0, dur=2.0, x0=200, x1=800, y=1400, hops=3, apex=120), 0.9, 2.5),
+            ("slide", dict(kind="fox", motion="slide", enter=1.0, dur=2.0, x0=200, x1=800, y=1400), 0.9, 2.5),
+            ("peek", dict(kind="deer", motion="peek", enter=1.0, dur=1.0, x=540, y=1400, ridge=1400), 0.9, 2.5),
+        ]:
+            with self.subTest(motion=name):
+                self.assertIsNone(self.diff(self.draw(t0, cast=dict(a=a)).convert("RGB"), base.convert("RGB")))
+                self.assertTrue(self.diff(self.draw(t1, cast=dict(a=a)).convert("RGB"), base.convert("RGB")))
+
+    def test_peek_hides_below_the_ridge(self):
+        a = dict(kind="deer", motion="peek", enter=0.0, dur=2.0, x=540, y=1500, ridge=1500, shadow=False)
+        base = self.draw(0.0).convert("RGB")
+        bbox = self.diff(self.draw(0.3, cast=dict(a=a)).convert("RGB"), base)
+        self.assertIsNotNone(bbox)
+        self.assertLessEqual(bbox[3], 1500)
+
+    def test_freeze_stops_motion(self):
+        a = dict(kind="fox", motion="slide", enter=0.0, dur=4.0, x0=100, x1=900, y=1400, bob=0, freeze=[(1.0, 2.0)])
+        base = self.draw(0.0).convert("RGB")
+        left = lambda t: self.diff(self.draw(t, cast=dict(a=a)).convert("RGB"), base)[0]
+        self.assertGreater(abs(left(0.5) - left(1.0)), 30)  # moving before the freeze
+        self.assertLess(abs(left(1.2) - left(1.8)), 12)  # stands (jitters) during it
+        self.assertGreater(abs(left(3.0) - left(1.8)), 30)  # and moves on after
+
+    def test_props(self):
+        day = self.draw(0.0).convert("RGB")
+        lum = lambda im: sum(ImageStat.Stat(im.crop((0, 0, 1080, 600))).mean)
+        night = self.draw(4.0, sky=dict(dusk=(0, 1), night=(1, 2), stars=dict(n=60, fade=(2, 3)))).convert("RGB")
+        self.assertLess(lum(night), lum(day) * 0.6)
+        tm = dict(x=540, y=300, run=(0, 4), fade=(0, 0.1))
+        self.assertTrue(self.diff(self.draw(0.5, timer=tm).convert("RGB"), self.draw(3.5, timer=tm).convert("RGB")))
+        ph = dict(x=540, y=1500, buzz=[(1, 2)])
+        self.assertTrue(self.diff(self.draw(1.01, phone=ph).convert("RGB"), self.draw(2.5, phone=ph).convert("RGB")))
+        self.assertTrue(self.diff(self.draw(1.01, phone=ph).convert("RGB"), self.draw(1.06, phone=ph).convert("RGB")))
+        ct = dict(x=540, y=300, steps=[(0.5, "Day 1/7"), (2.0, "Day 3/7")])
+        self.assertIsNone(self.diff(self.draw(0.2, counter=ct).convert("RGB"), day))
+        self.assertTrue(self.diff(self.draw(1.5, counter=ct).convert("RGB"), self.draw(3.0, counter=ct).convert("RGB")))
+
+    def test_unknown_cast_name(self):
+        from video.styles.base import Unsupported
+        with self.assertRaises(Unsupported):
+            self.draw(1.0, cast=dict(a=dict(kind="dragon", x=500, y=1400)))
+
+    def test_style_names_no_app(self):
+        with open(os.path.join(HERE, "..", "styles", "appart.py")) as f:
+            src = f.read().lower()
+        for n in {brand.app_config(a)["name"].lower() for a in brand.apps()} | {"landscape", "animals"}:
+            self.assertNotIn(n, src)
 
 
 @unittest.skipUnless(HAVE_ICON, "app icon missing")
@@ -179,6 +247,15 @@ class Brand(unittest.TestCase):
         self.env(APP_REPO_DIR="/app", WILDFOCUS_REPO="/alias")
         self.assertEqual(brand.repo_dir("wildfocus"), "/app")
         self.assertEqual(brand.icon_path("wildfocus"), os.path.join("/app", brand.app_config("wildfocus")["icon"]))
+
+    def test_assets(self):
+        a = brand.app_section("wildfocus", "assets")
+        self.assertEqual(set(a), {"backdrop", "cast", "hero"})
+        if HAVE_ICON:
+            names = brand.cast_paths("wildfocus")
+            self.assertGreaterEqual(len(names), 41)
+            self.assertTrue({"owl", "bat", "snow_leopard", "rabbit"} <= set(names))
+            self.assertTrue(brand.asset_path("backdrop", "wildfocus").endswith("landscape.png"))
 
     def test_font_is_committed_and_bold(self):
         self.assertTrue(os.path.exists(brand.FONT), brand.FONT)

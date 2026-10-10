@@ -92,4 +92,23 @@ OVERRIDES = {
             ])],
         ),
     ),
+    "appart": dict(  # the app's own PNGs: scale = fraction of a 360 px actor
+        meadow=dict(
+            hero=dict(kind="rabbit", x=540, y=1420, scale=1.25, shadow=(380, 60, 70)),
+            cast=dict(deer=dict(x1=900, y=1480, scale=1.05, shadow=(330, 56, 70)),
+                      fox=dict(x1=230, y=1560, scale=1.05, flip=True, shadow=(340, 58, 70)),
+                      hedgehog=dict(x1=690, y=1720, scale=0.7, shadow=(220, 44, 70))),
+            text=[
+                dict(show=(0, 3.2), fade_out=(2.7, 3.1), lines=[
+                    dict(s="Stop scrolling.", y=330, size=132, pop=(0.2, 0.8)),
+                    dict(s="Breathe.", y=490, size=132, pop=(1.3, 1.9)),
+                ]),
+                dict(show=(9.3, 13.0), fade_in=(9.3, 9.9), fade_out=(12.7, 13.0), lines=[
+                    dict(s="...and make", y=300, size=112, rise=(9.3, 9.9), dy=24),
+                    dict(s="a new friend.", y=430, size=112, rise=(9.5, 10.1), dy=24),
+                ]),
+            ],
+        ),
+        end=dict(mascot=dict(kind="rabbit", scale=1.15, x=540, y=1800)),
+    ),
 }

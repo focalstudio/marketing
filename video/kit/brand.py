@@ -3,6 +3,7 @@
 The app comes from apps/<app>.yml (the one whose `clips:` lists the clip): `repo: org/Name` and `icon:`, a path inside
 that repo. The icon is the real app icon, read from the app repo and only resized and corner-rounded, never redrawn or
 stylised. The repo is APP_REPO_DIR (WILDFOCUS_REPO is an alias), else ../<Name> beside this repo.
+`assets:` (backdrop, cast glob, hero) are paths inside the same repo, for styles that use the app's own art.
 The font is Nunito (OFL, video/fonts/); BRAND_FONT overrides it.
 """
 import glob, os
@@ -26,6 +27,20 @@ def app_config(app):
     with open(os.path.join(APPS, f"{app}.yml")) as f:
         for ln in f:
             if ln[:1].isalpha() and ":" in ln:
+                k, v = ln.split(":", 1)
+                if _scalar(v):
+                    out[k.strip()] = _scalar(v)
+    return out
+
+
+def app_section(app, key):
+    """The indented `k: v` scalars under the top-level `key:` of apps/<app>.yml, as a dict ({} if absent)."""
+    out, inside = {}, False
+    with open(os.path.join(APPS, f"{app}.yml")) as f:
+        for ln in f:
+            if ln[:1].isalpha():
+                inside = ln.split(":", 1)[0] == key
+            elif inside and ln[:1] in " \t" and ":" in ln and ln.strip()[:1] != "#":
                 k, v = ln.split(":", 1)
                 if _scalar(v):
                     out[k.strip()] = _scalar(v)
@@ -58,6 +73,27 @@ def repo_dir(app):
 
 def icon_path(app):
     return os.path.join(repo_dir(app), app_config(app)["icon"])
+
+
+def asset_path(kind, app=None):
+    """A single `assets:` file (backdrop, hero) of the app, inside its repo."""
+    app = app or current()
+    rel = app_section(app, "assets").get(kind)
+    if not rel:
+        raise SystemExit(f"apps/{app}.yml has no assets.{kind}")
+    p = os.path.join(repo_dir(app), rel)
+    if not os.path.exists(p):
+        raise SystemExit(f"assets.{kind} of {app} not found at {p} (set APP_REPO_DIR)")
+    return p
+
+
+def cast_paths(app=None):
+    """{name: path} for every PNG matched by `assets.cast`, named by file stem."""
+    app = app or current()
+    pat = app_section(app, "assets").get("cast")
+    if not pat:
+        raise SystemExit(f"apps/{app}.yml has no assets.cast")
+    return {os.path.splitext(os.path.basename(p))[0]: p for p in sorted(glob.glob(os.path.join(repo_dir(app), pat)))}
 
 
 def use(app):
