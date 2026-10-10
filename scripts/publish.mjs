@@ -205,6 +205,7 @@ const DIRECT_EARLY = 15 * 60e3; // direct posts may go out this far before their
 const STALE = 48 * HOUR; // unposted for this long after its time: report it, don't post it
 export const MAX_MEDIA = 50 * 1024 * 1024;
 const BUFFER_SERVICE = { x: "twitter" }; // platforms.yml id -> Buffer service, where they differ
+const YOUTUBE_CATEGORY = "22"; // People & Blogs; Buffer requires a YouTube category
 const FIELDS = new Set(["stream", "platforms", "at", "media", "thumb", "title", "ai", "article", "tags", "draft"]);
 
 // ---------- YAML subset ----------
@@ -704,12 +705,13 @@ export function bufferInput({ cfg, post }, channelId, now) {
   const assets = [];
   if (meta.media) {
     const url = mediaUrl(meta.media);
-    if (isVideo(meta.media)) assets.push({ video: meta.thumb ? { url, thumbnailUrl: mediaUrl(meta.thumb) } : { url } });
+    // Buffer rejects video thumbnailUrl: no network takes a custom video thumbnail through it.
+    if (isVideo(meta.media)) assets.push({ video: { url } });
     else assets.push({ image: { url } });
   }
   const metadata = {
     x: { twitter: { isAiGenerated: ai } },
-    youtube: { youtube: { title: meta.title, privacy: "public", madeForKids: false, isAiGenerated: ai } },
+    youtube: { youtube: { title: meta.title, categoryId: YOUTUBE_CATEGORY, privacy: "public", madeForKids: false, isAiGenerated: ai } },
     tiktok: { tiktok: { ...(meta.title && { title: meta.title }), isAiGenerated: ai } },
   }[cfg.id];
   return {

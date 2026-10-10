@@ -101,9 +101,9 @@ test("due logic: Buffer 7-day window, direct up to 15 min early, stale after 48 
   assert.equal(dueState("direct", now - 49 * h, now), "stale");
 });
 
-test("Buffer input: customScheduled, AI flag, video asset, past times pushed forward", () => {
+test("Buffer input: customScheduled, AI flag, video asset without thumbnail, YouTube category, past times pushed forward", () => {
   const now = Date.parse("2026-10-09T12:00:00Z");
-  const { p } = post("stream: app\nplatforms: [youtube]\nat: 2026-10-09T11:00:00Z\nmedia: wf/a.mp4\ntitle: T\nai: true", "Hi");
+  const { p } = post("stream: app\nplatforms: [youtube]\nat: 2026-10-09T11:00:00Z\nmedia: wf/a.mp4\nthumb: wf/a.png\ntitle: T\nai: true", "Hi");
   p.atMs = Date.parse(p.meta.at);
   const input = bufferInput({ cfg: byId.youtube, post: p }, "ch1", now);
   assert.equal(input.mode, "customScheduled");
@@ -111,5 +111,5 @@ test("Buffer input: customScheduled, AI flag, video asset, past times pushed for
   assert.equal(input.needsApproval, false);
   assert.equal(input.dueAt, "2026-10-09T12:10:00.000Z");
   assert.deepEqual(input.assets, [{ video: { url: "https://raw.githubusercontent.com/focalstudio/media/main/wf/a.mp4" } }]);
-  assert.deepEqual(input.metadata, { youtube: { title: "T", privacy: "public", madeForKids: false, isAiGenerated: true } });
+  assert.deepEqual(input.metadata, { youtube: { title: "T", categoryId: "22", privacy: "public", madeForKids: false, isAiGenerated: true } });
 });
