@@ -66,7 +66,7 @@ Promo clips are drawn entirely in code: Python 3, Pillow and ffmpeg, with no oth
 ```
 python3 -m video.render meditate --style toon OUT.mp4
 python3 -m video.render meditate --style pixel --preview /tmp/stills 1,6,12.5   # PNG stills at those seconds
-python3 -m video.render --list                                                  # clips and styles
+python3 -m video.render --list                                                  # clips (with variants) and styles
 python3 -m unittest discover -s video/tests -t .                                # goldens, audio, pose API, timeline
 ```
 
@@ -83,8 +83,9 @@ The app icon is read from `../WildFocus/ios/App/App/Assets.xcassets/AppIcon.appi
 
 **Add a clip.** Write `video/clips/<name>.py` with `BOARD = dict(dur=..., audio=None or dict(gust, chimes), scenes=[...])`
 and `OVERRIDES = {}`. Each scene has a `name`, a `start` and a `kind`. Text times are scene-local. Copy the shape
-of `meditate.py` or `stop_scrolling.py`, and add `<name>.md` with the prompt. If a style can't draw a feature the clip
-uses, it raises `Unsupported`, and that's where the style needs work.
+of `meditate.py`, and add `<name>.md` with the prompt. If a style can't draw a feature the clip
+uses, it raises `Unsupported`, and that's where the style needs work. Optional `VARIANTS = {name: {scene: patch}}`
+gives the same story with another cast or copy (`--variant name`); each variant counts as its own post for the drafter.
 
 **Add a style.** Write `video/styles/<name>.py` with a `Style(base.Style)` that implements the scene kinds it supports, plus
 `text_line` and the pose API with the base signatures (`test_pose_api` checks them). Set `stateful = True` if frames
@@ -93,6 +94,19 @@ depend on earlier frames: they're then rendered in order, with `reset` and `adva
 **Finals** go to `~/Desktop/FOCAL STUDIO/Focal_studio/media/final_videos/` and are published with
 `node scripts/push-media.mjs`. Never commit an MP4 here. If you change a drawing on purpose, re-render that pair's goldens in
 `video/tests/goldens/<clip>-<style>/` as lossless WebP and say so in the PR.
+
+## Weekly drafting
+
+```
+node scripts/draft-week.mjs --dry-run   # what next week would get, and how many unused units are left
+node scripts/draft-week.mjs             # render, push to focalstudio/media, write queue/<next week>/
+```
+
+A post's video is a **unit**: clip × style × variant (a clip's optional `VARIANTS`). The drafter never repeats a
+unit until the pool is empty. It then reuses the oldest unit posted 8+ weeks ago, keeping its media and giving it
+the clip's next hook. If even that falls short it drafts what it can and exits 3. Per-app cadence, posting days,
+copy and styles live in `apps/<app>.yml`, and `paused: true` skips an app. For now it runs on the Mac (SF Rounded
+and the WildFocus checkout); moving it to Actions is the next step.
 
 ## Status
 

@@ -22,12 +22,23 @@ def merge(base, patch):
     return out
 
 
-def load(clip, style):
-    """-> (board with the style's overrides applied, style instance)"""
+def variants(clip):
+    """A clip's VARIANTS names: alternative casts or copy of the same storyboard. [] if it has none."""
+    return sorted(getattr(importlib.import_module(f"video.clips.{clip}"), "VARIANTS", {}))
+
+
+def load(clip, style, variant=None):
+    """-> (board with the style's overrides, then the variant's patch, applied; style instance)
+
+    VARIANTS = {name: {scene_name: patch}} is keyed like one style's OVERRIDES and applied after them."""
     c = importlib.import_module(f"video.clips.{clip}")
     sty = importlib.import_module(f"video.styles.{style}").Style()
     ov = c.OVERRIDES.get(style, {})
-    board = dict(c.BOARD, scenes=[merge(sc, ov.get(sc["name"], {})) for sc in c.BOARD["scenes"]])
+    vs = getattr(c, "VARIANTS", {})
+    if variant is not None and variant not in vs:
+        raise SystemExit(f"{clip} has no variant {variant!r} (has: {', '.join(sorted(vs)) or 'none'})")
+    va = vs.get(variant, {})
+    board = dict(c.BOARD, scenes=[merge(merge(sc, ov.get(sc["name"], {})), va.get(sc["name"], {})) for sc in c.BOARD["scenes"]])
     return board, sty
 
 
@@ -60,8 +71,8 @@ def frame(sty, A, board, t):
     return cv
 
 
-def preview(clip, style, outdir, times):
-    board, sty = load(clip, style)
+def preview(clip, style, outdir, times, variant=None):
+    board, sty = load(clip, style, variant)
     A = sty.assets()
     os.makedirs(outdir, exist_ok=True)
     for t in times:
@@ -73,9 +84,9 @@ def preview(clip, style, outdir, times):
 _W = None  # per-worker (style, assets, board)
 
 
-def _init(clip, style):
+def _init(clip, style, variant):
     global _W
-    board, sty = load(clip, style)
+    board, sty = load(clip, style, variant)
     _W = sty, sty.assets(), board
 
 
@@ -84,9 +95,9 @@ def _frame_bytes(i):
     return sty.to_rgb(frame(sty, A, board, i / FPS)).tobytes()
 
 
-def frames(clip, style):
+def frames(clip, style, variant=None):
     """Yield every frame as RGB bytes, in order. Stateless styles render in parallel; stateful ones step sequentially."""
-    board, sty = load(clip, style)
+    board, sty = load(clip, style, variant)
     n = int(board["dur"] * FPS)
     if sty.stateful:
         A = sty.assets()
@@ -95,12 +106,12 @@ def frames(clip, style):
             sty.advance(A, i)
             yield sty.to_rgb(frame(sty, A, board, i / FPS)).tobytes()
         return
-    with Pool(max(1, min(8, (os.cpu_count() or 2) - 1)), _init, (clip, style)) as pool:
+    with Pool(max(1, min(8, (os.cpu_count() or 2) - 1)), _init, (clip, style, variant)) as pool:
         yield from pool.imap(_frame_bytes, range(n), chunksize=4)
 
 
-def render(clip, style, out):
-    board, _ = load(clip, style)
+def render(clip, style, out, variant=None):
+    board, _ = load(clip, style, variant)
     dur, audio = board["dur"], board.get("audio")
     os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
     t0 = time.time()
@@ -115,7 +126,7 @@ def render(clip, style, out):
         else:
             cmd += vf + ["-movflags", "+faststart", "-an", out]
         ff = subprocess.Popen(cmd, stdin=subprocess.PIPE)
-        for buf in frames(clip, style):
+        for buf in frames(clip, style, variant):
             ff.stdin.write(buf)
         ff.stdin.close()
         if ff.wait():

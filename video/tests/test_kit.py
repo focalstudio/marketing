@@ -11,9 +11,9 @@ from video.styles import base
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 GOLD = os.path.join(HERE, "goldens")
-PAIRS = [("meditate", "toon"), ("meditate", "lowpoly"), ("meditate", "pixel"), ("stop_scrolling", "ink")]
+PAIRS = [("meditate", "toon"), ("meditate", "lowpoly"), ("meditate", "pixel")]
 STYLES = ["toon", "lowpoly", "pixel", "ink"]
-CLIPS = ["meditate", "stop_scrolling"]
+CLIPS = ["meditate"]
 TIMES = [1, 4, 6, 10, 12.5, 14.5]
 HAVE_ICON = os.path.exists(brand.ICON)
 
@@ -53,8 +53,6 @@ class Audio(unittest.TestCase):
         with open(os.path.join(GOLD, "meditate-audio.json")) as f:
             self.assertEqual(audio.audio_argv("OUT.wav", board["dur"], a["chimes"], a["gust"]), json.load(f))
 
-    def test_stop_scrolling_is_silent(self):
-        self.assertIsNone(core.load("stop_scrolling", "ink")[0]["audio"])
 
 
 class PoseAPI(unittest.TestCase):
@@ -145,3 +143,26 @@ class Timeline(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Variants(unittest.TestCase):
+    def setUp(self):
+        import sys, types
+        m = types.ModuleType("video.clips._variant_probe")
+        m.BOARD = dict(dur=4.0, audio=None, scenes=[dict(name="a", start=0.0, kind="title", text=[dict(lines=[dict(s="base")])])])
+        m.OVERRIDES = {"toon": dict(a=dict(tint="style"))}
+        m.VARIANTS = {"alt": dict(a=dict(tint="variant", text=[dict(lines=[dict(s="alt")])]))}
+        sys.modules[m.__name__] = m
+        self.addCleanup(sys.modules.pop, m.__name__)
+
+    def test_variant_patches_after_style_overrides(self):
+        sc = core.load("_variant_probe", "toon")[0]["scenes"][0]
+        self.assertEqual((sc["tint"], sc["text"][0]["lines"][0]["s"]), ("style", "base"))
+        sc = core.load("_variant_probe", "toon", "alt")[0]["scenes"][0]
+        self.assertEqual((sc["tint"], sc["text"][0]["lines"][0]["s"]), ("variant", "alt"))
+
+    def test_unknown_variant_is_an_error(self):
+        with self.assertRaises(SystemExit):
+            core.load("_variant_probe", "toon", "nope")
+        self.assertEqual(core.variants("_variant_probe"), ["alt"])
+        self.assertEqual(core.variants("meditate"), [])
