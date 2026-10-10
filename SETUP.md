@@ -76,9 +76,19 @@ Step 3 fetches the channel IDs through the API, so you don't need to copy them.
    `access_token?grant_type=th_exchange_token` / `ig_exchange_token` endpoints.
 6. Secrets: `THREADS_USER_ID`, `THREADS_TOKEN`, `IG_USER_ID`, `IG_TOKEN`.
 
-The tokens expire after 60 days. Step 3 adds a weekly refresh job. That job writes the
-new token back with the bot App token, so the **focalstudio bot** App will need
-**Secrets: read & write** on this repo (see step 6).
+The tokens expire after 60 days, so `.github/workflows/refresh-tokens.yml` renews both every
+Monday at 06:17 UTC. To run it by hand: `gh workflow run refresh-tokens.yml --repo focalstudio/marketing`.
+- It runs `node scripts/publish.mjs refresh`, which gets a new 60-day token for each platform
+  and masks it before anything can print it. The log shows only the platform and how many
+  days the new token lasts.
+- It then saves each new token with `gh secret set` as the **focal-studio-cross-repo-bot**
+  App, so that App needs **Secrets: read & write** on this repo (see step 6). Without it,
+  the save step fails with 403.
+- Meta only refreshes a token that is at least 24 h old and not yet expired. A token that
+  fails to refresh keeps its current secret, and the run goes red so GitHub emails you. The
+  other token is still saved. If a token has already expired, generate a new one as in step 5.
+- `check` with `refresh` runs `refresh --dry-run`, which reports whether a refresh would work
+  and saves nothing.
 
 ## 4. dev.to (3 min)
 1. Create the account.

@@ -4,7 +4,8 @@
 //   node scripts/publish.mjs plan                 lists what is due, in platforms.yml order; posts nothing
 //   node scripts/publish.mjs publish [--dry-run]  posts everything due; --dry-run prints the requests instead
 //   node scripts/publish.mjs publish --dry-run --drafts   also previews drafts, as if they were due now
-//   node scripts/publish.mjs refresh              reports how long the Threads and Instagram tokens last
+//   node scripts/publish.mjs refresh [--dry-run]  renews the Threads and Instagram tokens into $RUNNER_TEMP
+//                                                 for refresh-tokens.yml to save; --dry-run only reports
 //
 // The queue format is in README.md. Nothing here ever prints a secret.
 
@@ -924,15 +925,24 @@ async function publish(dryRun, withDrafts) {
   return failed ? 1 : 0;
 }
 
-async function refreshToken(base, grant, k) {
+// Meta returns a new 60-day token when the current one is long-lived, at least 24 h old and unexpired.
+// The new token is masked before anything else could print it, then handed to the workflow in a
+// file under $RUNNER_TEMP (0600). A failed refresh writes no file, so the secret stays as it is.
+async function refreshToken(base, grant, k, file, dryRun) {
   need(k);
+  if (!dryRun && !env("RUNNER_TEMP")) throw new Error("RUNNER_TEMP is not set: run this in Actions, or add --dry-run");
   const res = await fetch(getUrl(base, { grant_type: grant, access_token: env(k) }));
   const b = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(`NOT long-lived yet, or under 24 h old: refresh refused (HTTP ${res.status} ${b.error?.message ?? ""})`);
+    throw new Error(`refresh refused: not long-lived, under 24 h old, or expired (HTTP ${res.status} ${b.error?.message ?? ""})`);
   }
-  // The new token in b.access_token is deliberately dropped: this command only reports.
-  return `long-lived; a refresh would last ${Math.round(b.expires_in / 86400)} days. Not saved: ${k} is unchanged`;
+  const days = Math.round(b.expires_in / 86400);
+  // A dry run drops the new token: it only reports.
+  if (dryRun) return `long-lived; a refresh would last ${days} days. Not saved: ${k} is unchanged`;
+  if (typeof b.access_token !== "string" || !b.access_token) throw new Error("refresh returned no access_token");
+  console.log(`::add-mask::${b.access_token}`);
+  writeFileSync(join(env("RUNNER_TEMP"), file), b.access_token, { mode: 0o600 });
+  return `refreshed; expires in ${days} days`;
 }
 
 // ---------- CLI ----------
@@ -956,16 +966,19 @@ async function main([cmd, ...args]) {
   if (cmd === "publish" && args.every((a) => a === "--dry-run" || a === "--drafts") && (dry || !drafts)) {
     return publish(dry, drafts);
   }
-  if (cmd === "refresh" && !args.length) {
-    await step("Threads: token lifetime", () =>
-      refreshToken("https://graph.threads.net/refresh_access_token", "th_refresh_token", "THREADS_TOKEN"),
+  if (cmd === "refresh" && args.every((a) => a === "--dry-run")) {
+    // Both run even if the first fails, so one bad token never blocks the other's refresh.
+    await step("Threads: token", () =>
+      refreshToken("https://graph.threads.net/refresh_access_token", "th_refresh_token", "THREADS_TOKEN", "threads_token", dry),
     );
-    await step("Instagram: token lifetime", () =>
-      refreshToken("https://graph.instagram.com/refresh_access_token", "ig_refresh_token", "IG_TOKEN"),
+    await step("Instagram: token", () =>
+      refreshToken("https://graph.instagram.com/refresh_access_token", "ig_refresh_token", "IG_TOKEN", "ig_token", dry),
     );
-    return results.some((r) => !r.ok) ? 1 : 0;
+    const failed = results.filter((r) => !r.ok);
+    say(`\n${results.length - failed.length}/${results.length} tokens ${dry ? "refreshable" : "refreshed"}`);
+    return failed.length ? 1 : 0;
   }
-  console.error("usage: node scripts/publish.mjs check | plan | publish [--dry-run [--drafts]] | refresh");
+  console.error("usage: node scripts/publish.mjs check | plan | publish [--dry-run [--drafts]] | refresh [--dry-run]");
   return 2;
 }
 
