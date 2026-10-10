@@ -4,3 +4,4 @@ out/
 *.mp4
 !inbox/**/*.mp4
 .env
+__pycache__/
