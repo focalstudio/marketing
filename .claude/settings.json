@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(gh pr:*)",
+      "Bash(node --test:*)",
+      "Bash(node scripts/publish.mjs plan)",
+      "Bash(node scripts/publish.mjs publish --dry-run:*)",
+      "Bash(python3 -m unittest:*)",
+      "Bash(ls:*)"
+    ]
+  }
+}
