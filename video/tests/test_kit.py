@@ -2,7 +2,7 @@
 
 Goldens were rendered by the original scripts/render-*.py before the kit existed; the kit must reproduce them.
 """
-import inspect, json, os, unittest
+import inspect, json, os, re, unittest
 
 from PIL import Image, ImageChops, ImageStat
 
@@ -11,10 +11,19 @@ from video.styles import base
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 GOLD = os.path.join(HERE, "goldens")
-PAIRS = [("meditate", "toon"), ("meditate", "lowpoly"), ("meditate", "pixel"), ("meditate", "appart")]
-STYLES = ["toon", "lowpoly", "pixel", "ink", "appart"]
-CLIPS = ["meditate"]
 STORIES = ["collect", "phone_down", "night_owls", "rare_find"]  # appart-only (apps/wildfocus.yml: styles: [appart])
+PAIRS = [("meditate", "toon"), ("meditate", "lowpoly"), ("meditate", "pixel"), ("meditate", "appart")] + [(c, "appart") for c in STORIES]
+STYLES = ["toon", "lowpoly", "pixel", "ink", "appart"]
+CLIPS = ["meditate"] + STORIES
+
+
+def clip_styles(clip):  # the clip's `styles: [..]` in apps/wildfocus.yml, else the app's (as units() in scripts/draft-week.mjs)
+    with open(os.path.join(brand.APPS, "wildfocus.yml")) as f:
+        yml = f.read()
+    m = re.search(rf"^  {clip}:\n(?:    .*\n|\n)*?    styles: \[(.*?)\]", yml, re.M)
+    return [x.strip() for x in (m.group(1) if m else re.search(r"^styles: \[(.*?)\]", yml, re.M).group(1)).split(",")]
+
+
 TIMES = [1, 4, 6, 10, 12.5, 14.5]
 HAVE_ICON = os.path.exists(brand.icon_path("wildfocus"))
 
@@ -165,37 +174,36 @@ class PixelPalette(unittest.TestCase):
 
 class Timeline(unittest.TestCase):
     def test_boards(self):
-        for clip in CLIPS:
-            for style in STYLES:
-                board, _ = core.load(clip, style)
-                dur, scenes = board["dur"], board["scenes"]
-                with self.subTest(clip=clip, style=style):
-                    starts = [s["start"] for s in scenes]
-                    self.assertEqual(starts[0], 0.0)
-                    self.assertEqual(starts, sorted(starts))
-                    self.assertTrue(all(0 <= s < dur for s in starts))
-                    self.assertEqual(len({s["name"] for s in scenes}), len(scenes))
-                    for i, sc in enumerate(scenes):
-                        end = scenes[i + 1]["start"] if i + 1 < len(scenes) else dur
-                        if sc.get("enter"):
-                            self.assertGreater(i, 0)
-                            self.assertLessEqual(sc["enter"]["until"], end)
-                        for g in sc.get("text", ()):
-                            for k in ("show", "fade_in", "fade_out"):
-                                if g.get(k):
-                                    self.assertLessEqual(g[k][0], g[k][1])
-                                    self.assertLessEqual(sc["start"] + g[k][1], dur + 1e-9)
-                            for ln in g["lines"]:
-                                for k in ("pop", "rise", "fade"):
-                                    if k in ln:
-                                        self.assertLess(ln[k][0], ln[k][1])
-                                        self.assertLessEqual(sc["start"] + ln[k][1], dur)
-                        for a in sc.get("cast", {}).values():
-                            self.assertLessEqual(sc["start"] + a["enter"] + a.get("dur", 0), end)
-                    for at, hz in (board["audio"] or {}).get("chimes", ()):
-                        self.assertTrue(0 < at < dur)
+        for clip, style, variant in [(c, s, v) for c in CLIPS for s in clip_styles(c) for v in core.variants(c) or [None]]:
+            board, _ = core.load(clip, style, variant)
+            dur, scenes = board["dur"], board["scenes"]
+            with self.subTest(clip=clip, style=style, variant=variant):
+                starts = [s["start"] for s in scenes]
+                self.assertEqual(starts[0], 0.0)
+                self.assertEqual(starts, sorted(starts))
+                self.assertTrue(all(0 <= s < dur for s in starts))
+                self.assertEqual(len({s["name"] for s in scenes}), len(scenes))
+                for i, sc in enumerate(scenes):
+                    end = scenes[i + 1]["start"] if i + 1 < len(scenes) else dur
+                    if sc.get("enter"):
+                        self.assertGreater(i, 0)
+                        self.assertLessEqual(sc["enter"]["until"], end)
+                    for g in sc.get("text", ()):
+                        for k in ("show", "fade_in", "fade_out"):
+                            if g.get(k):
+                                self.assertLessEqual(g[k][0], g[k][1])
+                                self.assertLessEqual(sc["start"] + g[k][1], dur + 1e-9)
+                        for ln in g["lines"]:
+                            for k in ("pop", "rise", "fade"):
+                                if k in ln:
+                                    self.assertLess(ln[k][0], ln[k][1])
+                                    self.assertLessEqual(sc["start"] + ln[k][1], dur)
+                    for a in sc.get("cast", {}).values():
+                        self.assertLessEqual(sc["start"] + a["enter"] + a.get("dur", 0), end)
+                for at, hz in (board["audio"] or {}).get("chimes", ()):
+                    self.assertTrue(0 < at < dur)
 
-    def test_stories(self):  # the appart-only clips: board sane, every variant renders at the start, the middle and the end card
+    def test_stories(self):  # the appart-only clips: every variant renders at the start, the middle and the end card
         for clip in STORIES:
             for variant in core.variants(clip) or [None]:
                 board, sty = core.load(clip, "appart", variant)
@@ -204,8 +212,6 @@ class Timeline(unittest.TestCase):
                     self.assertEqual([s["start"] for s in scenes][0], 0.0)
                     self.assertEqual(scenes[-1]["kind"], "end")
                     self.assertTrue(0 < scenes[-1]["start"] < dur)
-                    for at, hz in board["audio"]["chimes"]:
-                        self.assertTrue(0 < at < dur)
                     if HAVE_ICON:
                         A = sty.assets()
                         for t in (1.0, dur / 2, dur - 0.5):
@@ -222,13 +228,13 @@ class Timeline(unittest.TestCase):
             self.assertIn(meditate.SETTLE[name], chimes)
 
     def test_clips_import_no_style(self):
-        for clip in CLIPS + STORIES:
+        for clip in CLIPS:
             with open(os.path.join(HERE, "..", "clips", clip + ".py")) as f:
                 self.assertNotIn("styles", f.read())
 
     def test_clips_name_no_app(self):  # the app comes from apps/<app>.yml; a clip writes "{app}"
         names = {brand.app_config(a)["name"].lower() for a in brand.apps()}
-        for clip in CLIPS + STORIES:
+        for clip in CLIPS:
             with open(os.path.join(HERE, "..", "clips", clip + ".py")) as f:
                 src = f.read().lower()
             for n in names:
