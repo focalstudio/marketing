@@ -16,7 +16,20 @@ music: ambient, soft piano or lo-fi, no vocals, 60–80 bpm
 video:
   aspect: "9:16"
   seconds: [15, 30]
-cadence: 2 per week
+cadence: 3 per week
+days: [mon, wed, fri]    # posting days, UTC
+time: "20:00"
+styles: [toon, lowpoly, pixel, ink]
+# Copy per storyboard in video/clips/. hooks[i] pairs with titles[i]; a clip's hook rotates as it is reused.
+# `styles` limits a clip to the styles it renders in (default: the app's styles above).
+clips:
+  meditate:
+    hooks:
+      - Stop scrolling. Breathe. Sit still long enough and someone joins you.
+      - A rabbit, a breeze, nowhere to be. Then a fox, a deer and a hedgehog sit down too.
+    titles:
+      - "Stop scrolling. Breathe. | WildFocus"
+      - "A rabbit, a breeze, nowhere to be | WildFocus"
 caption_cta: Free on iOS and Android.
 links:
   app_store: https://apps.apple.com/us/app/pomodoro-timer-wild-focus/id6768295599
