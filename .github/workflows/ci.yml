@@ -1,0 +1,29 @@
+name: ci
+
+# Runs on every PR, including the weekly queue PR that video-tests.yml (path-filtered) skips.
+# Offline only: no secrets, nothing is posted.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scripts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test scripts/*.test.mjs
+      - name: Validate the queue
+        run: node scripts/publish.mjs plan

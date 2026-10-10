@@ -1,0 +1,31 @@
+# AGENTS.md
+
+Guidance for agents and humans working in `focalstudio/marketing`. [README.md](README.md) explains the pipeline;
+this file is the short orientation. Deeper notes: [.claude/CLAUDE.md](.claude/CLAUDE.md).
+
+## Before working
+1. Run `git status -sb` and `git log --oneline -5`. Leave uncommitted work you didn't make alone.
+2. Branch off `main` (`feat/*`, `fix/*`, `docs/*`, `chore/*`). Never commit to `main`; open a focused PR.
+3. One issue per session. Anything else you find goes to [PARKING.md](PARKING.md), not into the diff.
+
+## Map
+- `queue/YYYY-Www/<slug>.md`: approved posts (frontmatter format in README). Merging to `main` is the approval.
+- `published.json`: written by the publisher. Never hand-edit.
+- `scripts/`: `publish.mjs` (check, plan, publish, refresh), `draft-week.mjs` (weekly drafter), `push-media.mjs`.
+- `video/`: Python renderer (`kit/`, `styles/`, `clips/`, `tests/`). Goldens live in `video/tests/goldens/`.
+- `apps/<app>.yml`: per-app config. `platforms.yml` + `PLATFORMS.md`: platform order. `voice.md`: tone.
+- `.github/workflows/`: `ci` and `video-tests` (PRs), `publish` (on queue push + twice daily), `refresh-tokens`, `check`.
+
+## Rules
+- Posts go out to real accounts. Don't run `publish` without `--dry-run` locally; CI publishes.
+- Secrets live in repo secrets only (see [SETUP.md](SETUP.md)). Never commit `.env`, tokens or API keys.
+- Media is public once pushed to `focalstudio/media`. Check it before `push-media.mjs`.
+- Pin Pillow as in `video-tests.yml`: goldens only match with that wheel. Re-bless goldens deliberately, never to silence a failure.
+
+## Validation
+- `node --test scripts/*.test.mjs`
+- `node scripts/publish.mjs plan`: validates every queued post offline (exits 1 on a bad one).
+- `python3 -m unittest discover -s video/tests -t . -v` (needs Pillow and ffmpeg).
+
+## CHANGELOG
+Add a line under `## Unreleased` in [CHANGELOG.md](CHANGELOG.md) for any user-visible change.
