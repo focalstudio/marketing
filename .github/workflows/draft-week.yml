@@ -1,0 +1,134 @@
+name: draft-week
+
+# Fridays 06:00 UTC: writes one new appart story, drafts next week's app posts (renders, pushes the finals
+# to focalstudio/media, writes queue/<week>/*.md) and opens the PR `chore: queue <week>`. The PR
+# auto-merges only from each app's `trust_from` date and never while its yml says `paused: true`.
+# Nothing posts unless the PR merged: publish.yml runs on the merge. Run it with dry_run to list the picks.
+# The app icon and art come from a sparse checkout of the private app repo (as video-tests.yml), read with the bot.
+on:
+  schedule:
+    - cron: "0 6 * * 5"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: List the picks and render nothing; no PR
+        type: boolean
+        default: true
+
+concurrency:
+  group: draft-week
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      APP_REPO_DIR: ${{ github.workspace }}/.apps/WildFocus
+      DRY: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+    steps:
+      - uses: actions/create-github-app-token@v1
+        id: bot
+        with:
+          app-id: ${{ secrets.FOCALSTUDIO_BOT_APP_ID }}
+          private-key: ${{ secrets.FOCALSTUDIO_BOT_PRIVATE_KEY }}
+          owner: focalstudio
+          repositories: marketing,media,WildFocus
+      # The bot's token (not GITHUB_TOKEN) so the PR it opens triggers ci and video-tests.
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ steps.bot.outputs.token }}
+      - uses: actions/checkout@v4  # repo, ref, icon and assets as in apps/wildfocus.yml; add one per new app
+        with:
+          repository: focalstudio/WildFocus
+          ref: dev
+          token: ${{ steps.bot.outputs.token }}
+          path: .apps/WildFocus
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png
+            public/landscape.png
+            src/assets/animals/
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install Pillow==12.2.0  # pinned: goldens only match this wheel
+      - run: sudo apt-get update -q && sudo apt-get install -yq ffmpeg
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Week
+        run: echo "WEEK=$(node -e 'import("./scripts/draft-week.mjs").then((m) => console.log(m.nextWeek()))')" >> "$GITHUB_ENV"
+
+      - name: Write this week's new story
+        continue-on-error: true  # a failed or skipped story never blocks the week; the existing pool carries on
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ steps.bot.outputs.token }}
+          prompt: Follow .github/prompts/new-clip.md exactly.
+          claude_args: --max-turns 40 --allowedTools "Read,Write,Edit,Glob,Grep"
+
+      # Claude may only add video/clips/<name>.{py,md} and edit apps/*.yml. Anything else, or a clip that does not
+      # render, is dropped. The kit tests run either way: they cover everything already in the repo.
+      - name: Check the new story
+        env:
+          STORY: ${{ runner.temp }}/story
+        run: |
+          set -u
+          drop() { echo "::warning::dropping the new story: $1"; git checkout -- . ; git clean -fdq -- apps video; rm -f "$STORY"; }
+          bad=$(git status --porcelain | grep -Ev '^( M|\?\?) (video/clips/[a-z0-9_]+\.(py|md)|apps/[a-z0-9-]+\.yml)$' || true)
+          if [ -n "$bad" ]; then drop "unexpected changes: $bad"
+          else
+            for py in $(git ls-files --others --exclude-standard 'video/clips/*.py'); do
+              name=$(basename "$py" .py)
+              dur=$(python3 -c "import sys; from video.clips import $name as c; print(f'{c.BOARD[\"dur\"] - 0.6:.2f}')") || { drop "$name does not import"; break; }
+              grep -q "^  $name:" apps/*.yml || { drop "$name has no clips: entry"; break; }
+              python3 -m video.render "$name" --style appart --preview out/story-check "1,6,12,$dur" || { drop "$name does not render"; break; }
+              echo "video/clips/$name.md" > "$STORY"
+            done
+          fi
+          tests() { python3 -m unittest discover -s video/tests -t . && node --test scripts/*.test.mjs; }
+          if ! tests; then
+            [ -f "$STORY" ] || exit 1
+            drop "the tests fail with it"
+            tests
+          fi
+
+      - name: Draft next week
+        env:
+          GH_TOKEN: ${{ steps.bot.outputs.token }}  # push-media.mjs writes to focalstudio/media
+        run: node scripts/draft-week.mjs --week "$WEEK" ${{ env.DRY == 'true' && '--dry-run' || '' }}
+
+      - name: Validate the queue
+        if: env.DRY != 'true'
+        run: node scripts/publish.mjs plan
+
+      - name: Open the PR
+        if: env.DRY != 'true'
+        env:
+          GH_TOKEN: ${{ steps.bot.outputs.token }}
+          STORY: ${{ runner.temp }}/story
+        run: |
+          set -eu
+          branch="chore/queue-$WEEK"
+          git add queue apps video/clips
+          if git diff --cached --quiet; then echo "nothing new for $WEEK"; exit 0; fi
+          git config user.name "focalstudio-bot[bot]"
+          git config user.email "focalstudio-bot[bot]@users.noreply.github.com"
+          git checkout -q -b "$branch"
+          git commit -q -m "chore: queue $WEEK"
+          git push -q --force origin "$branch"
+          story=""; [ -f "$STORY" ] && story=$(cat "$STORY")
+          node scripts/queue-pr.mjs body --week "$WEEK" ${story:+--story "$story"} > "$RUNNER_TEMP/body.md"
+          if gh pr view "$branch" --json number >/dev/null 2>&1; then
+            gh pr edit "$branch" --title "chore: queue $WEEK" --body-file "$RUNNER_TEMP/body.md"
+          else
+            gh pr create --base main --head "$branch" --title "chore: queue $WEEK" --body-file "$RUNNER_TEMP/body.md"
+          fi
+          # Tests and `plan` passed above or this step would not run. The date and the kill switch decide the rest.
+          if node scripts/queue-pr.mjs gate; then gh pr merge "$branch" --squash --auto; fi
