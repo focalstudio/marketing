@@ -91,6 +91,12 @@ Videos are committed to the public `focalstudio/media` repo and served from
 public, non-redirecting HTTPS URL, and GitHub release downloads redirect, so raw URLs are
 used instead. No Cloudflare account and no extra secrets. Keep each file under 50 MB.
 
+Workflow: render and iterate in `~/Desktop/FOCAL STUDIO/Focal_studio/media/`, move the chosen cut into
+`media/final_videos/`, then run `node scripts/push-media.mjs <file> [app]`. It uploads that one file with
+your `gh` login (no clone needed) and prints the `media:` line for the queue post. Only finals go to the
+repo, and they are never deleted: git history keeps the bytes anyway, and IG and Threads fetch the URL
+after the post is created. At about 3 MB a clip, the repo holds a few hundred before it nears 1 GB.
+
 ## 6. GitHub plumbing (10 min)
 - **Bot App**: `FOCALSTUDIO_BOT_APP_ID` and `FOCALSTUDIO_BOT_PRIVATE_KEY` are already org
   secrets visible to all repos, so the marketing repo inherits them. Still to do: org
