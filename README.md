@@ -24,7 +24,7 @@ stream: kit                    # kit (developers) or app (consumers)
 platforms: [x, bluesky, threads]
 at: 2026-10-12T09:00:00Z       # ISO 8601, UTC
 media: wildfocus/rabbit.mp4    # optional: a path in focalstudio/media, or an https URL (push with scripts/push-media.mjs)
-thumb: wildfocus/rabbit.png    # optional: video thumbnail, Reels cover, Bluesky link-card image
+thumb: wildfocus/rabbit.png    # optional: Reels cover, Bluesky link-card image (Buffer ignores it)
 title: Rabbit focus            # YouTube, TikTok and dev.to; Bluesky card title
 ai: true                       # sets the platform's "AI-generated" flag (X, YouTube, TikTok)
 article: false                 # true for a dev.to article; the body is then the article
