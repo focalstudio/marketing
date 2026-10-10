@@ -6,6 +6,4 @@
 
 ## Parked
 
-- [ ] 2026-10-10 · found while on PR 4 · video/clips/night_owls.py · the plan closed on the app's `rabbit_at_night` photo, but the end scene can only draw a cast PNG, so the owl closes instead; needs a still-image end scene in appart · low
-
 ## Triaged

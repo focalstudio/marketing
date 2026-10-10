@@ -15,7 +15,7 @@ BOARD = dict(
         dict(
             name="meadow", start=0.0, kind="world",
             sky=dict(dusk=(0.5, 4.0), night=(4.0, 8.0), horizon=1000, stars=dict(n=44, fade=(4.5, 8.0), y=(60, 900))),
-            camera=dict(zoom=0.1, push=(3.0, 9.0), pull=(11.5, 13.5), focus=(540, 1350)),
+            camera=dict(zoom=0.1, push=(3.0, 13.5), pull=(END, END + 0.01), focus=(540, 1400)),
             hero=dict(kind="rabbit", x=540, y=1440, scale=1.25, shadow=(380, 60, 70)),
             cast=dict(
                 owl=dict(kind="owl", motion="slide", enter=8.5, dur=1.4, x0=1250, x1=850, y0=650, y1=1380, y=1380, scale=0.95,
@@ -36,7 +36,7 @@ BOARD = dict(
         ),
         dict(
             name="end", start=END, kind="end", enter=dict(until=END + 0.4, hold=END - 0.01),
-            mascot=dict(kind="owl", x=540, y=1800, scale=1.0),
+            mascot=dict(kind="rabbit", x=540, y=1800, scale=1.0),
             icon=dict(size=320, y=760, pop=(0.25, 0.95), bob=8),
             text=[dict(lines=[
                 dict(s="{app}", y=1040, size=124, fill="ink", plain=True, fade=(0.9, 1.5)),
