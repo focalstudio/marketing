@@ -15,7 +15,7 @@ PAIRS = [("meditate", "toon"), ("meditate", "lowpoly"), ("meditate", "pixel")]
 STYLES = ["toon", "lowpoly", "pixel", "ink"]
 CLIPS = ["meditate"]
 TIMES = [1, 4, 6, 10, 12.5, 14.5]
-HAVE_ICON = os.path.exists(brand.ICON)
+HAVE_ICON = os.path.exists(brand.icon_path("wildfocus"))
 
 
 def render(clip, style, t):
@@ -26,7 +26,7 @@ def render(clip, style, t):
     return sty, sty.to_rgb(core.frame(sty, A, board, t), check=True)
 
 
-@unittest.skipUnless(HAVE_ICON, f"app icon missing at {brand.ICON} (set WILDFOCUS_REPO)")
+@unittest.skipUnless(HAVE_ICON, f"app icon missing at {brand.icon_path('wildfocus')} (set APP_REPO_DIR)")
 class Goldens(unittest.TestCase):
     def test_frames_match_goldens(self):
         for clip, style in PAIRS:
@@ -139,6 +139,58 @@ class Timeline(unittest.TestCase):
         for clip in CLIPS:
             with open(os.path.join(HERE, "..", "clips", clip + ".py")) as f:
                 self.assertNotIn("styles", f.read())
+
+    def test_clips_name_no_app(self):  # the app comes from apps/<app>.yml; a clip writes "{app}"
+        names = {brand.app_config(a)["name"].lower() for a in brand.apps()}
+        for clip in CLIPS:
+            with open(os.path.join(HERE, "..", "clips", clip + ".py")) as f:
+                src = f.read().lower()
+            for n in names:
+                self.assertNotIn(n, src, clip)
+
+    def test_app_name_fills_text(self):
+        board, _ = core.load("meditate", "pixel")
+        lines = [ln["s"] for sc in board["scenes"] for tx in sc.get("text", ()) for ln in tx["lines"]]
+        self.assertIn("WILDFOCUS", lines)
+        self.assertFalse([s for s in lines if "{" in s])
+
+
+class Brand(unittest.TestCase):
+    def env(self, **kw):
+        from unittest import mock
+        p = mock.patch.dict(os.environ, kw)
+        p.start()
+        self.addCleanup(p.stop)
+        for k in ("APP_REPO_DIR", "WILDFOCUS_REPO"):
+            if k not in kw:
+                os.environ.pop(k, None)
+
+    def test_app_config(self):
+        cfg = brand.app_config("wildfocus")
+        self.assertEqual((cfg["name"], cfg["repo"]), ("WildFocus", "focalstudio/WildFocus"))
+        self.assertTrue(cfg["icon"].endswith(".png"))
+        self.assertEqual(brand.app_for("meditate"), "wildfocus")
+
+    def test_repo_dir_precedence(self):
+        self.env()
+        self.assertEqual(brand.repo_dir("wildfocus"), os.path.normpath(os.path.join(brand.ROOT, "..", "WildFocus")))
+        self.env(WILDFOCUS_REPO="/alias")
+        self.assertEqual(brand.repo_dir("wildfocus"), "/alias")
+        self.env(APP_REPO_DIR="/app", WILDFOCUS_REPO="/alias")
+        self.assertEqual(brand.repo_dir("wildfocus"), "/app")
+        self.assertEqual(brand.icon_path("wildfocus"), os.path.join("/app", brand.app_config("wildfocus")["icon"]))
+
+    def test_font_is_committed_and_bold(self):
+        self.assertTrue(os.path.exists(brand.FONT), brand.FONT)
+        self.assertTrue(os.path.exists(os.path.join(brand.ROOT, "video", "fonts", "OFL.txt")))
+        bold, light = brand.font(100).getbbox("WildFocus"), brand.font(100, "Light").getbbox("WildFocus")
+        self.assertGreater(bold[2], light[2])  # the variation applies: Bold sets wider than Light
+
+    def test_brand_font_override(self):
+        import importlib, subprocess, sys
+        out = subprocess.run([sys.executable, "-c", "from video.kit import brand; print(brand.FONT)"], cwd=brand.ROOT,
+                             env=dict(os.environ, BRAND_FONT="/x.ttf"), capture_output=True, text=True, check=True)
+        self.assertEqual(out.stdout.strip(), "/x.ttf")
 
 
 if __name__ == "__main__":

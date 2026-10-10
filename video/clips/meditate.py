@@ -2,7 +2,7 @@
 
 Beats: 0-3 hook text, 3-9 rabbit meditates (wind gust at ~6 s), 9-13 fox, deer and hedgehog walk in and sit,
 13-16 end card. Positions are in 1080x1920 output pixels unless a style override says otherwise.
-Style-agnostic: no style is imported here. OVERRIDES holds per-style tuning (data only) keyed by style name.
+Style- and app-agnostic: no style is imported and "{app}" stands for the app's name (core.load fills it in). OVERRIDES holds per-style tuning (data only) keyed by style name.
 """
 
 DUR = 16.0
@@ -44,7 +44,7 @@ BOARD = dict(
             mascot=dict(kind="rabbit", x=540, y=1800, scale=0.62, clock=20, wind=0.1, shadow=(340, 70, 25)),
             icon=dict(size=320, y=760, pop=(0.25, 0.95), bob=8),
             text=[dict(lines=[
-                dict(s="WildFocus", y=1040, size=124, fill="ink", plain=True, fade=(0.9, 1.5)),
+                dict(s="{app}", y=1040, size=124, fill="ink", plain=True, fade=(0.9, 1.5)),
                 dict(s="Free on iOS.", y=1190, size=80, fill="sage", plain=True, fade=(1.3, 1.9)),
             ])],
         ),
@@ -87,7 +87,7 @@ OVERRIDES = {
             icon=dict(size=56, y=84, bob=1.2),
             sparks=[(ICON_LANDS[0], 68, 82, 14)],  # spark times are clip time
             text=[dict(lines=[
-                dict(s="WILDFOCUS", y=134, scale=(2, 3), fill="white", type=(0.9, 0.025)),
+                dict(s="{APP}", y=134, scale=(2, 3), fill="white", type=(0.9, 0.025)),
                 dict(s="FREE ON iOS.", y=158, scale=2, fill="sage", type=(1.3, 0.02)),
             ])],
         ),
