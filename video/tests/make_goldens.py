@@ -9,7 +9,7 @@ import io, os, subprocess, sys
 from PIL import Image, ImageChops, ImageDraw
 
 from video.kit import brand
-from video.tests.test_kit import GOLD, PAIRS, TIMES, render
+from video.tests.test_kit import GOLD, PAIRS, TIMES, at, render
 
 TW, TH, GAP, LABEL, HEAD = 162, 288, 12, 200, 40
 BG, FG, DIM = (250, 248, 243), brand.INK, (150, 140, 130)
@@ -35,6 +35,7 @@ def main(argv):
         y = HEAD + i * (TH + GAP)
         d.text((8, y + TH // 2 - 12), f"{clip} × {style}", font=brand.font(20, "SemiBold"), fill=FG)
         for j, t in enumerate(TIMES):
+            t = at(clip, t)
             x = LABEL + j * (2 * TW + GAP)
             path = os.path.join(GOLD, f"{clip}-{style}", f"{t:05.2f}.webp")
             old = head(path)
