@@ -14,6 +14,7 @@ GOLD = os.path.join(HERE, "goldens")
 PAIRS = [("meditate", "toon"), ("meditate", "lowpoly"), ("meditate", "pixel"), ("meditate", "appart")]
 STYLES = ["toon", "lowpoly", "pixel", "ink", "appart"]
 CLIPS = ["meditate"]
+STORIES = ["collect", "phone_down", "night_owls", "rare_find"]  # appart-only (apps/wildfocus.yml: styles: [appart])
 TIMES = [1, 4, 6, 10, 12.5, 14.5]
 HAVE_ICON = os.path.exists(brand.icon_path("wildfocus"))
 
@@ -81,7 +82,7 @@ class PoseAPI(unittest.TestCase):
 
 @unittest.skipUnless(HAVE_ICON, "app icon missing")
 class Appart(unittest.TestCase):
-    """The storyboard motions and props, through a synthetic board (a clip for PR 4 will use the same keys)."""
+    """The storyboard motions and props, through a synthetic board (the story clips use the same keys)."""
 
     def board(self, **sc):
         return dict(dur=20.0, audio=None, scenes=[dict(name="w", start=0.0, kind="world", **sc)])
@@ -194,6 +195,23 @@ class Timeline(unittest.TestCase):
                     for at, hz in (board["audio"] or {}).get("chimes", ()):
                         self.assertTrue(0 < at < dur)
 
+    def test_stories(self):  # the appart-only clips: board sane, every variant renders at the start, the middle and the end card
+        for clip in STORIES:
+            for variant in core.variants(clip) or [None]:
+                board, sty = core.load(clip, "appart", variant)
+                dur, scenes = board["dur"], board["scenes"]
+                with self.subTest(clip=clip, variant=variant):
+                    self.assertEqual([s["start"] for s in scenes][0], 0.0)
+                    self.assertEqual(scenes[-1]["kind"], "end")
+                    self.assertTrue(0 < scenes[-1]["start"] < dur)
+                    for at, hz in board["audio"]["chimes"]:
+                        self.assertTrue(0 < at < dur)
+                    if HAVE_ICON:
+                        A = sty.assets()
+                        for t in (1.0, dur / 2, dur - 0.5):
+                            im = core.frame(sty, A, board, t)
+                            self.assertEqual(im.size, (core.W, core.H))
+
     def test_chimes_land_on_settles(self):
         from video.clips import meditate
         board, _ = core.load("meditate", "toon")
@@ -204,13 +222,13 @@ class Timeline(unittest.TestCase):
             self.assertIn(meditate.SETTLE[name], chimes)
 
     def test_clips_import_no_style(self):
-        for clip in CLIPS:
+        for clip in CLIPS + STORIES:
             with open(os.path.join(HERE, "..", "clips", clip + ".py")) as f:
                 self.assertNotIn("styles", f.read())
 
     def test_clips_name_no_app(self):  # the app comes from apps/<app>.yml; a clip writes "{app}"
         names = {brand.app_config(a)["name"].lower() for a in brand.apps()}
-        for clip in CLIPS:
+        for clip in CLIPS + STORIES:
             with open(os.path.join(HERE, "..", "clips", clip + ".py")) as f:
                 src = f.read().lower()
             for n in names:

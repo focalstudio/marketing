@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added four appart-only story clips, `collect`, `phone_down`, `night_owls` and `rare_find` (10 units with their variants), with hooks and titles in `apps/wildfocus.yml`.
 - Added the `appart` video style: the app's own backdrop and animal PNGs (from `assets:` in `apps/<app>.yml`) instead of
   redrawn art. Storyboard motions: pop, hop, slide, bob, peek, freeze, shadows. Props: timer, phone (buzz), sky tint with
   stars, counter. `meditate` renders in it, with a golden.
