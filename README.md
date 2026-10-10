@@ -59,6 +59,41 @@ node --test scripts/*.test.mjs
 In Actions, `publish` runs on every push to `queue/`, twice a day as a fallback (08:07 and
 20:07 UTC), and on demand (dry run by default). `check` proves the keys work. `check` with `refresh` reports token lifetimes.
 
+## Video kit
+
+Promo clips are drawn entirely in code: Python 3, Pillow and ffmpeg, with no other dependencies. Any clip can be rendered in any style.
+
+```
+python3 -m video.render meditate --style toon OUT.mp4
+python3 -m video.render meditate --style pixel --preview /tmp/stills 1,6,12.5   # PNG stills at those seconds
+python3 -m video.render --list                                                  # clips and styles
+python3 -m unittest discover -s video/tests -t .                                # goldens, audio, pose API, timeline
+```
+
+- [video/clips/](video/clips/) holds the storyboards: beats, timings, copy, chimes and positions, as plain data. Each one
+  has a `.md` with the prompt behind it. A clip never imports a style. Small per-style tuning goes in its `OVERRIDES`.
+- [video/styles/](video/styles/) holds one drawing kit per style (`toon`, `lowpoly`, `pixel`, `ink`). Each one implements
+  the contract in [base.py](video/styles/base.py): the scene kinds `title`, `world` and `end`, `text_line`, and the
+  shared pose API `rabbit / fox / deer / hedgehog`.
+- [video/kit/](video/kit/) holds what everything shares: easing, the exact app icon and font (`brand`), the ffmpeg
+  soundtrack (`audio`), and the timeline, camera, parallel render loop and ffmpeg pipe (`core`).
+
+The app icon is read from `../WildFocus/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png`. Set
+`WILDFOCUS_REPO` to use a different checkout. Every style shows the icon exactly as it is, never redrawn.
+
+**Add a clip.** Write `video/clips/<name>.py` with `BOARD = dict(dur=..., audio=None or dict(gust, chimes), scenes=[...])`
+and `OVERRIDES = {}`. Each scene has a `name`, a `start` and a `kind`. Text times are scene-local. Copy the shape
+of `meditate.py` or `stop_scrolling.py`, and add `<name>.md` with the prompt. If a style can't draw a feature the clip
+uses, it raises `Unsupported`, and that's where the style needs work.
+
+**Add a style.** Write `video/styles/<name>.py` with a `Style(base.Style)` that implements the scene kinds it supports, plus
+`text_line` and the pose API with the base signatures (`test_pose_api` checks them). Set `stateful = True` if frames
+depend on earlier frames: they're then rendered in order, with `reset` and `advance`. Otherwise they render in parallel.
+
+**Finals** go to `~/Desktop/FOCAL STUDIO/Focal_studio/media/final_videos/` and are published with
+`node scripts/push-media.mjs`. Never commit an MP4 here. If you change a drawing on purpose, re-render that pair's goldens in
+`video/tests/goldens/<clip>-<style>/` as lossless WebP and say so in the PR.
+
 ## Status
 
 Step 3 (publisher) built. Next: the first real test posts, one platform at a time.
