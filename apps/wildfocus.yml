@@ -2,6 +2,7 @@
 name: WildFocus
 repo: focalstudio/WildFocus
 ref: dev
+icon: ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png   # in `repo`; the end card's icon
 concept: Disconnect. Chill, cozy, slow — the opposite of a feed.
 mood: [calm, cozy, unhurried, warm]
 style: low-poly 3D, soft paper lighting, pastel greens and sky blue

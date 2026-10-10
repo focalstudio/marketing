@@ -6,6 +6,7 @@ A style (video/styles/<name>.py) exposes Style, a subclass of video.styles.base.
 import copy, importlib, os, subprocess, tempfile, time
 from multiprocessing import Pool
 
+from . import brand
 from .audio import make_audio
 from PIL import Image
 
@@ -27,6 +28,17 @@ def variants(clip):
     return sorted(getattr(importlib.import_module(f"video.clips.{clip}"), "VARIANTS", {}))
 
 
+def name_app(x, name):
+    """Fill the app's name into every text line: "{app}" as written in apps/<app>.yml, "{APP}" upper-cased."""
+    if isinstance(x, dict):
+        return {k: name_app(v, name) for k, v in x.items()}
+    if isinstance(x, list):
+        return [name_app(v, name) for v in x]
+    if isinstance(x, str):
+        return x.replace("{app}", name).replace("{APP}", name.upper())
+    return x
+
+
 def load(clip, style, variant=None):
     """-> (board with the style's overrides, then the variant's patch, applied; style instance)
 
@@ -38,7 +50,8 @@ def load(clip, style, variant=None):
     if variant is not None and variant not in vs:
         raise SystemExit(f"{clip} has no variant {variant!r} (has: {', '.join(sorted(vs)) or 'none'})")
     va = vs.get(variant, {})
-    board = dict(c.BOARD, scenes=[merge(merge(sc, ov.get(sc["name"], {})), va.get(sc["name"], {})) for sc in c.BOARD["scenes"]])
+    brand.use(brand.app_for(clip))
+    board = dict(c.BOARD, scenes=name_app([merge(merge(sc, ov.get(sc["name"], {})), va.get(sc["name"], {})) for sc in c.BOARD["scenes"]], brand.app_name()))
     return board, sty
 
 

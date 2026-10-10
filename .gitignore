@@ -5,3 +5,4 @@ out/
 !inbox/**/*.mp4
 .env
 __pycache__/
+.apps/

@@ -1,0 +1,56 @@
+name: video-tests
+
+# The renderer on Linux: kit tests and goldens, the node script tests, and one real render (meditate in ink), uploaded
+# as an artifact. The app icon comes from a sparse checkout of the private app repo, read with the Focal Studio bot.
+on:
+  pull_request:
+    paths: [video/**, apps/**, scripts/**, .github/workflows/video-tests.yml]
+  push:
+    branches: [main]
+    paths: [video/**, apps/**, scripts/**, .github/workflows/video-tests.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      APP_REPO_DIR: ${{ github.workspace }}/.apps/WildFocus
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/create-github-app-token@v1
+        id: bot
+        with:
+          app-id: ${{ secrets.FOCALSTUDIO_BOT_APP_ID }}
+          private-key: ${{ secrets.FOCALSTUDIO_BOT_PRIVATE_KEY }}
+          owner: focalstudio
+          repositories: WildFocus
+      - uses: actions/checkout@v4  # repo, ref, icon and assets as in apps/wildfocus.yml
+        with:
+          repository: focalstudio/WildFocus
+          ref: dev
+          token: ${{ steps.bot.outputs.token }}
+          path: .apps/WildFocus
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png
+            public/landscape.png
+            src/assets/animals/
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install Pillow==12.2.0  # pinned: the wheel bundles FreeType, so text rasterises as on the Mac
+      - run: sudo apt-get update -q && sudo apt-get install -yq ffmpeg
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: python3 -m unittest discover -s video/tests -t . -v
+      - run: node --test scripts/*.test.mjs
+      - run: python3 -m video.render meditate --style ink out/meditate-ink.mp4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: meditate-ink
+          path: out/meditate-ink.mp4
