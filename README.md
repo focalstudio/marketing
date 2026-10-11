@@ -78,8 +78,9 @@ python3 -m unittest discover -s video/tests -t .                                
 - [video/kit/](video/kit/) holds what everything shares: easing, the exact app icon and font (`brand`), the ffmpeg
   soundtrack (`audio`), and the timeline, camera, parallel render loop and ffmpeg pipe (`core`).
 
-The app icon is read from `../WildFocus/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png`. Set
-`WILDFOCUS_REPO` to use a different checkout. Every style shows the icon exactly as it is, never redrawn.
+The app icon and art are read from the app's repo checkout, by default `../<repo name>` beside this one (`../WildFocus`),
+at the `icon:` and `assets:` paths in `apps/<app>.yml`. Set `APP_REPO_DIR` (`WILDFOCUS_REPO` also works) to use a different
+checkout. Every style shows the icon exactly as it is, never redrawn.
 
 **Add a clip.** Write `video/clips/<name>.py` with `BOARD = dict(dur=..., audio=None or dict(gust, chimes), scenes=[...])`
 and `OVERRIDES = {}`. Each scene has a `name`, a `start` and a `kind`. Text times are scene-local. Copy the shape
@@ -105,9 +106,64 @@ node scripts/draft-week.mjs             # render, push to focalstudio/media, wri
 A post's video is a **unit**: clip × style × variant (a clip's optional `VARIANTS`). The drafter never repeats a
 unit until the pool is empty. It then reuses the oldest unit posted 8+ weeks ago, keeping its media and giving it
 the clip's next hook. If even that falls short it drafts what it can and exits 3. Per-app cadence, posting days,
-copy and styles live in `apps/<app>.yml`, and `paused: true` skips an app. For now it runs on the Mac (SF Rounded
-and the WildFocus checkout); moving it to Actions is the next step.
+copy and styles live in `apps/<app>.yml`.
+
+**The autopilot** is [`.github/workflows/draft-week.yml`](.github/workflows/draft-week.yml): Fridays 06:00 UTC, or on
+demand with `gh workflow run draft-week.yml` (a manual run is a dry run unless you set `dry_run` to false: it lists the
+picks, renders nothing and opens no PR).
+
+1. **New story.** Claude follows [`.github/prompts/new-clip.md`](.github/prompts/new-clip.md) and writes one new appart
+   clip per active app. It may only add `video/clips/<name>.py` and `.md` and the `clips:` entry in `apps/<app>.yml`.
+   If it touches anything else, the clip doesn't render, or the tests fail with it, the story is dropped. A failed
+   story never blocks the week; the existing pool carries on.
+2. **Draft.** `draft-week.mjs` renders next week's posts, pushes the finals to `focalstudio/media` and writes
+   `queue/<week>/`. `publish.mjs plan` validates the queue.
+3. **PR.** The bot opens (or updates) `chore: queue <week>` from `chore/queue-<week>`. The body has each post's cover
+   still, title and slot, plus the new story's prompt ([scripts/queue-pr.mjs](scripts/queue-pr.mjs) `body`).
+4. **Merge.** `queue-pr.mjs gate` allows an auto-merge only when every app that isn't `paused: true` has a
+   `trust_from` date on or before today (UTC); a missing or malformed date counts as not trusted. If it passes, the job
+   waits for the PR's own checks (`ci`, `video-tests`) and squash-merges. The merge triggers `publish.yml`. Before
+   `trust_from` the PR stays open and **merging it by hand is the approval**.
+
+`paused: true` in an app's yml is the kill switch: nothing is drafted for that app and nothing auto-merges. To stop a
+week already queued, close the PR or set `draft: true` in the posts.
+
+## Add an app
+
+About 30 minutes, most of it the app's own art. Copy [apps/wildfocus.yml](apps/wildfocus.yml) to `apps/<app>.yml`
+and set:
+
+| Key | Meaning |
+|---|---|
+| `repo`, `ref` | the app's GitHub repo and the branch to read art from |
+| `icon` | path of the app icon inside `repo`; the end card shows it unchanged |
+| `assets` | `backdrop` (portrait PNG), `cast` (glob of transparent animal PNGs), `hero` |
+| `concept`, `mood` | what the new-story prompt writes from |
+| `cadence` | `N per week` |
+| `days`, `time` | posting days and time, UTC |
+| `styles` | styles the app's clips render in |
+| `clips` | per clip, `hooks[i]` paired with `titles[i]`; optional `styles` limits a clip |
+| `trust_from` | `YYYY-MM-DD`: first run + 14 days; the PR auto-merges from here |
+| `paused` | `true` is the kill switch |
+
+`caption_cta`, `links` and `ai_label` fill the post text, store links and the AI-generated flag.
+
+Then give CI the app's art: add a sparse-checkout block (its `repo`, `ref`, `icon` and asset paths) to **both**
+[draft-week.yml](.github/workflows/draft-week.yml) and [video-tests.yml](.github/workflows/video-tests.yml), add the
+repo to the bot token's `repositories:` in `draft-week.yml`, and give the bot App read access to it
+([SETUP.md](SETUP.md) step 6). Limit today: CI sets one `APP_REPO_DIR` for the job, so a second app's assets need
+per-app directories first (parked in [PARKING.md](PARKING.md)).
+
+## What stays manual
+
+- **Weekly:** review the `chore: queue <week>` PR until `trust_from` (the first 2 weeks). After that nothing, unless
+  the run goes red or exits 3.
+- **Every 60 days:** the Threads and Instagram tokens, which `refresh-tokens.yml` renews; act only if it goes red.
+- **Per new app:** about 30 minutes for the yml and workflow blocks above.
+
+Later, not built: a views feedback loop, where weekly views per post steer the drafter toward what did well.
 
 ## Status
 
-Step 3 (publisher) built. Next: the first real test posts, one platform at a time.
+Publisher and weekly autopilot are built. WildFocus auto-merges from its `trust_from` (2026-10-30); until then each
+weekly PR is merged by hand.
