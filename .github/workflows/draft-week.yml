@@ -2,7 +2,7 @@ name: draft-week
 
 # Fridays 06:00 UTC: writes one new appart story, drafts next week's app posts (renders, pushes the finals
 # to focalstudio/media, writes queue/<week>/*.md) and opens the PR `chore: queue <week>`. The PR
-# auto-merges only from each app's `trust_from` date and never while its yml says `paused: true`.
+# merges itself (after its checks pass) only from each app's `trust_from` date and never while its yml says `paused: true`.
 # Nothing posts unless the PR merged: publish.yml runs on the merge. Run it with dry_run to list the picks.
 # The app icon and art come from a sparse checkout of the private app repo (as video-tests.yml), read with the bot.
 on:
@@ -131,4 +131,10 @@ jobs:
             gh pr create --base main --head "$branch" --title "chore: queue $WEEK" --body-file "$RUNNER_TEMP/body.md"
           fi
           # Tests and `plan` passed above or this step would not run. The date and the kill switch decide the rest.
-          if node scripts/queue-pr.mjs gate; then gh pr merge "$branch" --squash --auto; fi
+          # No branch protection on a private free-plan repo, so `--auto` has nothing to wait for. Wait for the PR's own
+          # checks (ci, video-tests) here, then merge; merging as the bot also triggers publish.yml.
+          if node scripts/queue-pr.mjs gate; then
+            sleep 30  # let the PR's checks register
+            gh pr checks "$branch" --watch --fail-fast --interval 20
+            gh pr merge "$branch" --squash
+          fi
