@@ -18,6 +18,10 @@ video:
   aspect: "9:16"
   seconds: [15, 30]
 cadence: 3 per week
+# The weekly PR auto-merges from `trust_from` (first run + 14 days) when tests and `publish.mjs plan` pass.
+# `paused: true` is the kill switch: nothing is drafted and nothing auto-merges.
+trust_from: 2026-10-30
+paused: false
 days: [mon, wed, fri]    # posting days, UTC
 time: "20:00"
 styles: [toon, lowpoly, pixel, ink, appart]
