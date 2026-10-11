@@ -259,7 +259,7 @@ class Brand(unittest.TestCase):
         p = mock.patch.dict(os.environ, kw)
         p.start()
         self.addCleanup(p.stop)
-        for k in ("APP_REPO_DIR", "WILDFOCUS_REPO"):
+        for k in ("APP_REPO_DIR", "WILDFOCUS_REPO", "APPS_DIR"):
             if k not in kw:
                 os.environ.pop(k, None)
 
@@ -277,6 +277,10 @@ class Brand(unittest.TestCase):
         self.env(APP_REPO_DIR="/app", WILDFOCUS_REPO="/alias")
         self.assertEqual(brand.repo_dir("wildfocus"), "/app")
         self.assertEqual(brand.icon_path("wildfocus"), os.path.join("/app", brand.app_config("wildfocus")["icon"]))
+        self.env(APPS_DIR="/apps")
+        self.assertEqual(brand.repo_dir("wildfocus"), "/apps/WildFocus")
+        self.env(APPS_DIR="/apps", APP_REPO_DIR="/app")
+        self.assertEqual(brand.repo_dir("wildfocus"), "/app")
 
     def test_assets(self):
         a = brand.app_section("wildfocus", "assets")

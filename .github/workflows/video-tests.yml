@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      APP_REPO_DIR: ${{ github.workspace }}/.apps/WildFocus
+      APPS_DIR: ${{ github.workspace }}/.apps  # one checkout per app: .apps/<repo name>
     steps:
       - uses: actions/checkout@v4
       - uses: actions/create-github-app-token@v1
