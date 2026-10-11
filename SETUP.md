@@ -1,10 +1,9 @@
 # Setup: accounts and secrets
 
 ## Context
-Build step 1 is done: `focalstudio/marketing` exists (private), seeded from
-`~/Desktop/focal-kit-business/`. Step 2 can only be done by you, because it needs your
-logins. This guide covers everything that has to exist before `publish.mjs` (step 3) can
-post. 
+`focalstudio/marketing` exists (private), and the publisher and the weekly autopilot are built.
+What is left can only be done by you, because it needs your logins. This guide covers
+everything that has to exist before `publish.mjs` can post and `draft-week.yml` can run.
 Budget about 2 h in total. Meta is the slow part.
 
 ## How secrets get in (applies to every step)
@@ -108,16 +107,22 @@ repo, and they are never deleted: git history keeps the bytes anyway, and IG and
 after the post is created. At about 3 MB a clip, the repo holds a few hundred before it nears 1 GB.
 
 ## 6. GitHub plumbing (10 min)
-- **Bot App**: `FOCALSTUDIO_BOT_APP_ID` and `FOCALSTUDIO_BOT_PRIVATE_KEY` are already org
-  secrets visible to all repos, so the marketing repo inherits them. Still to do: org
-  settings → GitHub Apps → focalstudio bot → Configure:
-  - add `marketing` to its repositories (and `media` if you chose that option)
-  - grant **Contents**, **Pull requests** and **Secrets** read & write
-  - make sure it can read the app repos (WildFocus, tick, vestia) and the template's
-    `fleet` branch
-- **Claude**: `CLAUDE_CODE_OAUTH_TOKEN` is a *repo* secret on the template, and GitHub
-  never reveals a secret's value. Run `claude setup-token`, then set the result on
-  `focalstudio/marketing`. Alternatively, move it to an org secret so both repos share it.
+- **Bot App** (`focal-studio-cross-repo-bot`): `FOCALSTUDIO_BOT_APP_ID` and
+  `FOCALSTUDIO_BOT_PRIVATE_KEY` are already org secrets visible to all repos, so the marketing
+  repo inherits them. Still to do: org settings → GitHub Apps → focal-studio-cross-repo-bot →
+  Configure, and give it these repositories and permissions:
+  - `marketing`: **Contents** and **Pull requests** read & write (`draft-week.yml` pushes the
+    branch, opens and merges the PR), plus **Secrets** read & write (`refresh-tokens.yml`)
+  - `media`: **Contents** read & write (the drafter pushes the finals)
+  - the app repos (WildFocus, and any app you add): **Contents** read (sparse checkout of the
+    icon and art)
+- **No branch protection.** The repo is private on the free plan, so there is no branch
+  protection and `gh pr merge --auto` would have nothing to wait for. `draft-week.yml` waits for
+  the PR's checks itself (`gh pr checks --watch`) and then merges. It uses the bot's token, not
+  `GITHUB_TOKEN`, so the PR triggers `ci` and `video-tests`, and the merge triggers `publish`.
+- **Claude**: `CLAUDE_CODE_OAUTH_TOKEN` writes the weekly new story. GitHub never reveals a
+  secret's value, so run `claude setup-token` and set the result on `focalstudio/marketing`
+  (or as an org secret).
 - Actions minutes: private repos get 2,000 free minutes a month. The pipeline should use
   well under 300.
 
@@ -133,9 +138,10 @@ after the post is created. At about 3 MB a clip, the repo holds a few hundred be
 - `THREADS_USER_ID`, `THREADS_TOKEN`
 - `IG_USER_ID`, `IG_TOKEN`
 - `DEVTO_API_KEY`
-- either the five `R2_*` secrets or the media repo
+- `FOCALSTUDIO_BOT_APP_ID`, `FOCALSTUDIO_BOT_PRIVATE_KEY` (org secrets, so they may only show
+  with `--org focalstudio`)
 - `CLAUDE_CODE_OAUTH_TOKEN`
 
-Then tell me, and I'll build step 3. Its first run is a dry-run that only *reads*: it
-lists the Buffer channels, checks the Bluesky login, and gets the Threads/IG user and
-dev.to user. That proves every key works before anything is posted.
+Then run the `check` workflow. It only *reads*: it lists the Buffer channels, checks the
+Bluesky login, and gets the Threads/IG user and dev.to user. That proves every key works
+before anything is posted.
