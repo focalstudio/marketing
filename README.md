@@ -79,8 +79,8 @@ python3 -m unittest discover -s video/tests -t .                                
   soundtrack (`audio`), and the timeline, camera, parallel render loop and ffmpeg pipe (`core`).
 
 The app icon and art are read from the app's repo checkout, by default `../<repo name>` beside this one (`../WildFocus`),
-at the `icon:` and `assets:` paths in `apps/<app>.yml`. Set `APP_REPO_DIR` (`WILDFOCUS_REPO` also works) to use a different
-checkout. Every style shows the icon exactly as it is, never redrawn.
+at the `icon:` and `assets:` paths in `apps/<app>.yml`. Set `APPS_DIR` to a folder holding one checkout per app (`<APPS_DIR>/<repo name>`, as CI does), or `APP_REPO_DIR`
+(`WILDFOCUS_REPO` also works) to point every app at one checkout. Every style shows the icon exactly as it is, never redrawn.
 
 **Add a clip.** Write `video/clips/<name>.py` with `BOARD = dict(dur=..., audio=None or dict(gust, chimes), scenes=[...])`
 and `OVERRIDES = {}`. Each scene has a `name`, a `start` and a `kind`. Text times are scene-local. Copy the shape
@@ -151,8 +151,7 @@ and set:
 Then give CI the app's art: add a sparse-checkout block (its `repo`, `ref`, `icon` and asset paths) to **both**
 [draft-week.yml](.github/workflows/draft-week.yml) and [video-tests.yml](.github/workflows/video-tests.yml), add the
 repo to the bot token's `repositories:` in `draft-week.yml`, and give the bot App read access to it
-([SETUP.md](SETUP.md) step 6). Limit today: CI sets one `APP_REPO_DIR` for the job, so a second app's assets need
-per-app directories first (parked in [PARKING.md](PARKING.md)).
+([SETUP.md](SETUP.md) step 6). CI sets `APPS_DIR` to `.apps`, so check each app out at `.apps/<repo name>`.
 
 ## What stays manual
 

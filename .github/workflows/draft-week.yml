@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
-      APP_REPO_DIR: ${{ github.workspace }}/.apps/WildFocus
+      APPS_DIR: ${{ github.workspace }}/.apps  # one checkout per app: .apps/<repo name>
       DRY: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
     steps:
       - uses: actions/create-github-app-token@v1

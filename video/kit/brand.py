@@ -2,7 +2,8 @@
 
 The app comes from apps/<app>.yml (the one whose `clips:` lists the clip): `repo: org/Name` and `icon:`, a path inside
 that repo. The icon is the real app icon, read from the app repo and only resized and corner-rounded, never redrawn or
-stylised. The repo is APP_REPO_DIR (WILDFOCUS_REPO is an alias), else ../<Name> beside this repo.
+stylised. The repo is APP_REPO_DIR (WILDFOCUS_REPO is an alias; one checkout for every app), else
+APPS_DIR/<Name> (one folder holding a checkout per app, as CI does), else ../<Name> beside this repo.
 `assets:` (backdrop, cast glob, hero) are paths inside the same repo, for styles that use the app's own art.
 The font is Nunito (OFL, video/fonts/); BRAND_FONT overrides it.
 """
@@ -68,7 +69,8 @@ def app_for(clip):
 
 def repo_dir(app):
     env = os.environ.get("APP_REPO_DIR") or os.environ.get("WILDFOCUS_REPO")
-    return env or os.path.normpath(os.path.join(ROOT, "..", app_config(app)["repo"].split("/")[-1]))
+    name = app_config(app)["repo"].split("/")[-1]
+    return env or os.path.normpath(os.path.join(os.environ.get("APPS_DIR") or os.path.join(ROOT, ".."), name))
 
 
 def icon_path(app):
@@ -83,7 +85,7 @@ def asset_path(kind, app=None):
         raise SystemExit(f"apps/{app}.yml has no assets.{kind}")
     p = os.path.join(repo_dir(app), rel)
     if not os.path.exists(p):
-        raise SystemExit(f"assets.{kind} of {app} not found at {p} (set APP_REPO_DIR)")
+        raise SystemExit(f"assets.{kind} of {app} not found at {p} (set APPS_DIR or APP_REPO_DIR)")
     return p
 
 
