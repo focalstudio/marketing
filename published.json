@@ -74,5 +74,59 @@
     "dueAt": "2026-10-16T20:00:00.000Z",
     "at": "2026-10-16T20:00:00Z",
     "postedAt": "2026-10-10T12:31:14.217Z"
+  },
+  {
+    "file": "queue/2026-W43/wildfocus-meditate.md",
+    "platform": "x",
+    "id": "6acf690f0708b0daf40d39c3",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-10-19T20:00:00.000Z",
+    "at": "2026-10-19T20:00:00Z",
+    "postedAt": "2026-10-14T11:35:44.061Z"
+  },
+  {
+    "file": "queue/2026-W43/wildfocus-meditate.md",
+    "platform": "youtube",
+    "id": "6acf691067dda1d44c1984a6",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-10-19T20:00:00.000Z",
+    "at": "2026-10-19T20:00:00Z",
+    "postedAt": "2026-10-14T11:35:44.487Z"
+  },
+  {
+    "file": "queue/2026-W42/wildfocus-meditate-lowpoly.md",
+    "platform": "bluesky",
+    "id": "at://did:plc:ailhup22grj7er6ulopnhszj/app.bsky.feed.post/3mxthejntpu25",
+    "url": "https://bsky.app/profile/focalstudiohq.bsky.social/post/3mxthejntpu25",
+    "at": "2026-10-13T20:00:00Z",
+    "postedAt": "2026-10-14T11:35:46.183Z"
+  },
+  {
+    "file": "queue/2026-W43/wildfocus-meditate.md",
+    "platform": "tiktok",
+    "id": "6acf691267dda1d44c1984f7",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-10-19T20:00:00.000Z",
+    "at": "2026-10-19T20:00:00Z",
+    "postedAt": "2026-10-14T11:35:46.549Z"
+  },
+  {
+    "file": "queue/2026-W42/wildfocus-meditate-lowpoly.md",
+    "platform": "threads",
+    "id": "18179713891442793",
+    "url": "https://www.threads.com/@focalstudiohq/post/DeeSjZdApaX",
+    "at": "2026-10-13T20:00:00Z",
+    "postedAt": "2026-10-14T11:36:24.871Z"
+  },
+  {
+    "file": "queue/2026-W42/wildfocus-meditate-lowpoly.md",
+    "platform": "instagram",
+    "id": "18332276239302558",
+    "url": "https://www.instagram.com/reel/DeeSuN2lR-4/",
+    "at": "2026-10-13T20:00:00Z",
+    "postedAt": "2026-10-14T11:37:51.558Z"
   }
 ]
