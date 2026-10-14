@@ -10,7 +10,7 @@ on:
       command:
         description: What to run
         type: choice
-        options: [check, refresh]
+        options: [check, refresh, buffer-posts]
         default: check
 
 permissions:
@@ -25,7 +25,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node scripts/publish.mjs ${{ inputs.command == 'refresh' && 'refresh --dry-run' || 'check' }}
+      - run: node scripts/publish.mjs ${{ inputs.command == 'refresh' && 'refresh --dry-run' || inputs.command }}
         env:
           BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
           BLUESKY_HANDLE: ${{ secrets.BLUESKY_HANDLE }}

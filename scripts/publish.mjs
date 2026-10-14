@@ -108,6 +108,33 @@ async function dumpField(typeName, fieldName) {
   for (const a of f.args) await dumpType(baseName(a.type), new Set(), 1);
 }
 
+// Read-only: every post Buffer holds per channel, with its status, error and metrics.
+async function bufferPosts() {
+  need("BUFFER_API_KEY");
+  const sub = async (name) => {
+    const d = await buffer(`{ __type(name: "${name}") { fields { name type { ${TYPE_REF} } } } }`);
+    const scalars = (d.__type?.fields ?? []).filter((f) => !/OBJECT|LIST|INTERFACE|UNION/.test(JSON.stringify(f.type)));
+    return scalars.map((f) => f.name).join(" ") || "__typename";
+  };
+  const errFields = await sub("PostPublishingError");
+  const metricFields = await sub("PostMetric");
+  const orgs = (await buffer("{ account { organizations { id } } }")).account.organizations;
+  for (const o of orgs) {
+    const chs = (await buffer(`{ channels(input: { organizationId: "${o.id}" }) { id service } }`)).channels;
+    for (const ch of chs) {
+      const q = `{ posts(first: 100, input: { organizationId: "${o.id}", filter: { channelIds: ["${ch.id}"] } }) { edges { node { id status dueAt sentAt externalLink text error { ${errFields} } metrics { ${metricFields} } } } } }`;
+      const edges = (await buffer(q)).posts.edges ?? [];
+      say(`\n${ch.service} (${edges.length} posts)`);
+      for (const { node: n } of edges) {
+        say(`  ${n.id} ${n.status} due=${n.dueAt} sent=${n.sentAt} link=${n.externalLink ?? "-"}`);
+        say(`    "${n.text.slice(0, 50).replace(/\n/g, " ")}"`);
+        if (n.error) say(`    error: ${JSON.stringify(n.error)}`);
+        if (n.metrics?.length) say(`    metrics: ${JSON.stringify(n.metrics)}`);
+      }
+    }
+  }
+}
+
 async function checkBufferSchema() {
   need("BUFFER_API_KEY");
   for (const n of ["Service", "CreatePostInput", "PostInputMetaData", "AssetInput", "VideoAssetInput"]) {
@@ -959,6 +986,10 @@ async function main([cmd, ...args]) {
     const failed = results.filter((r) => !r.ok);
     say(`\n${results.length - failed.length}/${results.length} checks passed`);
     return failed.length ? 1 : 0;
+  }
+  if (cmd === "buffer-posts" && !args.length) {
+    await bufferPosts();
+    return 0;
   }
   if (cmd === "plan" && !args.length) return plan();
   const dry = args.includes("--dry-run");
