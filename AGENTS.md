@@ -27,5 +27,7 @@ this file is the short orientation. Deeper notes: [.claude/CLAUDE.md](.claude/CL
 - `node scripts/publish.mjs plan`: validates every queued post offline (exits 1 on a bad one).
 - `python3 -m unittest discover -s video/tests -t . -v` (needs Pillow and ffmpeg).
 
+- `sh .claude/verify.sh` runs all of the above for the diff; focal-maintainer runs it before a PR or push. Per-area notes are in `.claude/verify/`.
+
 ## CHANGELOG
 Add a line under `## Unreleased` in [CHANGELOG.md](CHANGELOG.md) for any user-visible change.

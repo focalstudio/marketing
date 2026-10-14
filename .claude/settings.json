@@ -9,6 +9,7 @@
       "Bash(git commit:*)",
       "Bash(gh pr:*)",
       "Bash(node --test:*)",
+      "Bash(sh .claude/verify.sh)",
       "Bash(node scripts/publish.mjs plan)",
       "Bash(node scripts/publish.mjs publish --dry-run:*)",
       "Bash(python3 -m unittest:*)",

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added `.claude/verify.sh` and `.claude/verify/*.md`: the repo's offline proof (script tests, queue plan, and the video tests when `video/` or `apps/` changed), run by focal-maintainer before `gh pr create` and `git push`. `ci.yml` prints test coverage.
 - Fixed: CI no longer pins every app to one checkout. `video.kit.brand` resolves an app's repo at `APPS_DIR/<repo name>` (CI sets `APPS_DIR=.apps`), so a second app only needs its own checkout step. `APP_REPO_DIR` still overrides for a single local checkout.
 - Docs: README describes the weekly autopilot as built, plus "Add an app" (the `apps/<app>.yml` keys and the workflow blocks a new app needs) and "What stays manual". SETUP step 6 lists the bot App's permissions and secrets, and why the workflow waits for checks and merges instead of `--auto`.
 - Added `draft-week.yml`: Fridays 06:00 UTC (or `workflow_dispatch` with `dry_run`) Claude writes one new appart story from `.github/prompts/new-clip.md` (dropped if it fails to render or the tests fail), `draft-week.mjs` drafts next week, and the bot opens `chore: queue <week>` with each cover still. The PR merges itself once its checks pass, only from `trust_from` in `apps/<app>.yml`; `paused: true` is the kill switch (`scripts/queue-pr.mjs`).
