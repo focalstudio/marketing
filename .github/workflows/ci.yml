@@ -24,6 +24,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node --test scripts/*.test.mjs
+      - run: node --test --experimental-test-coverage scripts/*.test.mjs
       - name: Validate the queue
         run: node scripts/publish.mjs plan
