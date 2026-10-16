@@ -67,6 +67,14 @@ clips:
     titles:
       - "Seven days of focus. Then this showed up | WildFocus"
       - "A week of focus, then something rare | WildFocus"
+  slow_lane:
+    styles: [appart]
+    hooks:
+      - Nothing in this meadow is in a hurry. You don't have to be either.
+      - Even the rabbit slows down here.
+    titles:
+      - "Nothing here is in a hurry | WildFocus"
+      - "Even the rabbit slows down | WildFocus"
 caption_cta: Free on iOS and Android.
 links:
   app_store: https://apps.apple.com/us/app/pomodoro-timer-wild-focus/id6768295599
