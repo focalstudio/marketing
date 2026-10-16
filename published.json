@@ -128,5 +128,29 @@
     "url": "https://www.instagram.com/reel/DeeSuN2lR-4/",
     "at": "2026-10-13T20:00:00Z",
     "postedAt": "2026-10-14T11:37:51.558Z"
+  },
+  {
+    "file": "queue/2026-W42/wildfocus-meditate-pixel.md",
+    "platform": "bluesky",
+    "id": "at://did:plc:ailhup22grj7er6ulopnhszj/app.bsky.feed.post/3mxznsz3zi324",
+    "url": "https://bsky.app/profile/focalstudiohq.bsky.social/post/3mxznsz3zi324",
+    "at": "2026-10-16T20:00:00Z",
+    "postedAt": "2026-10-16T22:47:13.095Z"
+  },
+  {
+    "file": "queue/2026-W42/wildfocus-meditate-pixel.md",
+    "platform": "threads",
+    "id": "18115847882041963",
+    "url": "https://www.threads.com/@focalstudiohq/post/Deko-3cDo83",
+    "at": "2026-10-16T20:00:00Z",
+    "postedAt": "2026-10-16T22:47:45.584Z"
+  },
+  {
+    "file": "queue/2026-W42/wildfocus-meditate-pixel.md",
+    "platform": "instagram",
+    "id": "18096378809549542",
+    "url": "https://www.instagram.com/reel/DekpCjUDlMN/",
+    "at": "2026-10-16T20:00:00Z",
+    "postedAt": "2026-10-16T22:48:18.566Z"
   }
 ]
