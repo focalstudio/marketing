@@ -14,7 +14,7 @@ either test stays on this list so the decision is visible, but the pipeline neve
 | A | Bluesky | Dense React / RN dev community | ✅ | direct API |
 | A | Blog + dev.to | Compounding SEO from issues already solved | ✅ | dev.to API |
 | A | Show HN / Product Hunt | One big launch day each | ❌ | not posted |
-| B | TikTok | Huge reach; strongest fit for the app stream | ✅ | Buffer |
+| B | TikTok | Huge reach; strongest fit for the app stream | ✅ | Buffer (notify: you finish each post in the app) |
 | B | Threads | Weak dev audience, decent consumer one, free | ✅ | direct API |
 | B | Indie Hackers / Expo Discord | Conversations, not broadcasting | ❌ | not posted |
 | C | Instagram Reels | Reuses the app shorts at zero extra cost | ✅ | direct Graph API |

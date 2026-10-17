@@ -744,7 +744,7 @@ export function bufferInput({ cfg, post }, channelId, now) {
   return {
     channelId,
     text: outText(post, cfg.id),
-    schedulingType: "automatic",
+    schedulingType: cfg.notify === true ? "notification" : "automatic",
     mode: "customScheduled",
     dueAt: new Date(Math.max(post.atMs, now + BUFFER_LEAD)).toISOString(),
     needsApproval: false,

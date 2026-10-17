@@ -24,6 +24,7 @@ order:
     route: buffer
     streams: [app]
     media: video
+    notify: true   # Buffer "Notify me": a phone alert at post time; finish in TikTok (add a trending sound) or skip
   - id: threads
     tier: B
     route: direct
