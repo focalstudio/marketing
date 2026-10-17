@@ -113,4 +113,14 @@ test("Buffer input: customScheduled, AI flag always false, video asset without t
   assert.equal(input.dueAt, "2026-10-09T12:10:00.000Z");
   assert.deepEqual(input.assets, [{ video: { url: "https://raw.githubusercontent.com/focalstudio/media/main/wf/a.mp4" } }]);
   assert.deepEqual(input.metadata, { youtube: { title: "T", categoryId: "22", privacy: "public", madeForKids: false, isAiGenerated: false } });
+  assert.equal(input.schedulingType, "automatic");
+});
+
+test("Buffer input: TikTok is scheduled as a notification, YouTube stays automatic", () => {
+  const now = Date.parse("2026-10-09T12:00:00Z");
+  const { p } = post("stream: app\nplatforms: [tiktok, youtube]\nat: 2026-10-09T13:00:00Z\nmedia: wf/a.mp4\ntitle: T", "Hi");
+  p.atMs = Date.parse(p.meta.at);
+  assert.equal(byId.tiktok.notify, true);
+  assert.equal(bufferInput({ cfg: byId.tiktok, post: p }, "ch1", now).schedulingType, "notification");
+  assert.equal(bufferInput({ cfg: byId.youtube, post: p }, "ch1", now).schedulingType, "automatic");
 });

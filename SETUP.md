@@ -47,8 +47,9 @@ not a personal one. Display name everywhere: **Focal Studio**.
 ## 1. Buffer: X, YouTube, TikTok (20 min)
 1. Sign up at buffer.com on the **Free** plan.
 2. Connect three channels: **X**, **YouTube** (choose the channel, not the Google account),
-   and **TikTok**. If Buffer offers TikTok only in "notification" (manual-finish) mode,
-   switch the TikTok account to a Business account so posts publish directly.
+   and **TikTok**. TikTok posts use Buffer's "Notify me" mode (`notify: true` in
+   `platforms.yml`): install the Buffer mobile app, log in and allow notifications. At post
+   time your phone gets an alert; open it, add a trending sound in TikTok and post, or skip.
 3. Settings → API → generate a **personal API key**.
 4. Secret: `BUFFER_API_KEY`.
 
