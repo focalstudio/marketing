@@ -5,7 +5,6 @@ at: 2026-10-16T20:00:00Z
 media: wildfocus/wildfocus-meditate-pixel.mp4
 thumb: wildfocus/wildfocus-meditate-pixel.png
 title: "Phone down. Make a new friend. | WildFocus"
-ai: false            # code-rendered animation, not generative AI video
 ---
 Phone down. The rabbit's already breathing. Stay a while and make a new friend.
 
