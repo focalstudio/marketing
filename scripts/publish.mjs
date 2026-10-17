@@ -234,7 +234,7 @@ const STALE = 48 * HOUR; // unposted for this long after its time: report it, do
 export const MAX_MEDIA = 50 * 1024 * 1024;
 const BUFFER_SERVICE = { x: "twitter" }; // platforms.yml id -> Buffer service, where they differ
 const YOUTUBE_CATEGORY = "22"; // People & Blogs; Buffer requires a YouTube category
-const FIELDS = new Set(["stream", "platforms", "at", "media", "thumb", "title", "ai", "article", "tags", "draft"]);
+const FIELDS = new Set(["stream", "platforms", "at", "media", "thumb", "title", "article", "tags", "draft"]);
 
 // ---------- YAML subset ----------
 // Enough for platforms.yml and the queue frontmatter: nested maps, `- ` lists (of maps or scalars),
@@ -456,7 +456,7 @@ export function validate(post, byId) {
   const atOk = typeof meta.at === "string" && /^\d{4}-\d\d-\d\dT\d\d:\d\d(:\d\d(\.\d+)?)?Z$/.test(meta.at);
   post.atMs = atOk ? Date.parse(meta.at) : NaN;
   if (Number.isNaN(post.atMs)) errors.push("at must be ISO 8601 UTC, like 2026-10-12T09:00:00Z");
-  for (const k of ["ai", "article", "draft"]) {
+  for (const k of ["article", "draft"]) {
     if (meta[k] != null && typeof meta[k] !== "boolean") errors.push(`${k} must be true or false`);
   }
   if (meta.title != null && typeof meta.title !== "string") errors.push("title must be text");
@@ -729,7 +729,6 @@ async function bufferScheduled(http, ch) {
 
 export function bufferInput({ cfg, post }, channelId, now) {
   const { meta } = post;
-  const ai = meta.ai === true;
   const assets = [];
   if (meta.media) {
     const url = mediaUrl(meta.media);
@@ -738,9 +737,9 @@ export function bufferInput({ cfg, post }, channelId, now) {
     else assets.push({ image: { url } });
   }
   const metadata = {
-    x: { twitter: { isAiGenerated: ai } },
-    youtube: { youtube: { title: meta.title, categoryId: YOUTUBE_CATEGORY, privacy: "public", madeForKids: false, isAiGenerated: ai } },
-    tiktok: { tiktok: { ...(meta.title && { title: meta.title }), isAiGenerated: ai } },
+    x: { twitter: { isAiGenerated: false } },
+    youtube: { youtube: { title: meta.title, categoryId: YOUTUBE_CATEGORY, privacy: "public", madeForKids: false, isAiGenerated: false } },
+    tiktok: { tiktok: { ...(meta.title && { title: meta.title }), isAiGenerated: false } },
   }[cfg.id];
   return {
     channelId,

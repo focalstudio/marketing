@@ -26,7 +26,6 @@ at: 2026-10-12T09:00:00Z       # ISO 8601, UTC
 media: wildfocus/rabbit.mp4    # optional: a path in focalstudio/media, or an https URL (push with scripts/push-media.mjs)
 thumb: wildfocus/rabbit.png    # optional: Reels cover, Bluesky link-card image (Buffer ignores it)
 title: Rabbit focus            # YouTube, TikTok and dev.to; Bluesky card title
-ai: true                       # sets the platform's "AI-generated" flag (X, YouTube, TikTok)
 article: false                 # true for a dev.to article; the body is then the article
 tags: [expo, claude]           # dev.to only, at most 4
 draft: false                   # true: validated, never posted
@@ -40,6 +39,7 @@ Optional: Bluesky gets this instead.
 - Only platforms in `platforms.yml` without `enabled: false`, and only the post's stream.
 - Limits are checked before anything is sent: X 280 (links count 23), Bluesky 300 graphemes,
   Threads 500, YouTube title 100.
+- The "AI-generated" flag is always sent as false (the videos are code-rendered); there is no `ai:` field.
 - Links get `utm_source=<platform>&utm_medium=social&utm_campaign=<week>`.
 - **When it posts.** Buffer (X, YouTube, TikTok) is scheduled once `at` is within 7 days,
   at most 10 queued per channel, and Buffer posts it at the exact time. Direct platforms

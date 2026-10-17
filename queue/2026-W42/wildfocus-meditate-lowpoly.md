@@ -5,7 +5,6 @@ at: 2026-10-13T20:00:00Z
 media: wildfocus/wildfocus-meditate-lowpoly.mp4
 thumb: wildfocus/wildfocus-meditate-lowpoly.png
 title: "Stop scrolling. Breathe. | WildFocus"
-ai: false            # code-rendered animation, not generative AI video
 ---
 Stop scrolling. Breathe. Sit still long enough and someone joins you.
 

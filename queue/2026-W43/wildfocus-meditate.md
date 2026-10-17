@@ -5,7 +5,6 @@ at: 2026-10-19T20:00:00Z
 media: wildfocus/wildfocus-meditate.mp4
 thumb: wildfocus/wildfocus-meditate.png
 title: "A rabbit, a breeze, nowhere to be | WildFocus"
-ai: false            # code-rendered animation, not generative AI video
 ---
 A rabbit, a breeze, nowhere to be. Then a fox, a deer and a hedgehog sit down too.
 

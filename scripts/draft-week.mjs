@@ -131,7 +131,6 @@ export function postFile({ at, mediaPath, thumbPath, title, text, dev }) {
     `media: ${mediaPath}`,
     `thumb: ${thumbPath}`,
     `title: ${JSON.stringify(title)}`,
-    "ai: false            # code-rendered animation, not generative AI video",
   ].join("\n");
   const links = (id) => `<!-- ${id} -->\n${dev}\n`;
   return `---\n${front}\n---\n${text}\n\n${links("x")}\n${links("bluesky")}\n<!-- threads -->\n${text}\n${dev.split("\n").at(-1)}\n`;
