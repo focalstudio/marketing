@@ -2,7 +2,8 @@ name: draft-week
 
 # Fridays 06:00 UTC: writes one new appart story, drafts next week's app posts (renders, pushes the finals
 # to focalstudio/media, writes queue/<week>/*.md) and opens the PR `chore: queue <week>`. The PR
-# merges itself (after its checks pass) only from each app's `trust_from` date and never while its yml says `paused: true`.
+# merges itself (after its checks pass) only when every app has a `trust_from` date that has passed, never while its yml says `paused: true`.
+# Without `trust_from` the PR waits for a manual merge, which is the approval.
 # Nothing posts unless the PR merged: publish.yml runs on the merge. Run it with dry_run to list the picks.
 # The app icon and art come from a sparse checkout of the private app repo (as video-tests.yml), read with the bot.
 on:

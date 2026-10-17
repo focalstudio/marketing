@@ -123,7 +123,7 @@ picks, renders nothing and opens no PR).
 4. **Merge.** `queue-pr.mjs gate` allows an auto-merge only when every app that isn't `paused: true` has a
    `trust_from` date on or before today (UTC); a missing or malformed date counts as not trusted. If it passes, the job
    waits for the PR's own checks (`ci`, `video-tests`) and squash-merges. The merge triggers `publish.yml`. Before
-   `trust_from` the PR stays open and **merging it by hand is the approval**.
+   `trust_from` (or when an app has none) the PR stays open and **merging it by hand is the approval**.
 
 `paused: true` in an app's yml is the kill switch: nothing is drafted for that app and nothing auto-merges. To stop a
 week already queued, close the PR or set `draft: true` in the posts.
@@ -143,7 +143,7 @@ and set:
 | `days`, `time` | posting days and time, UTC |
 | `styles` | styles the app's clips render in |
 | `clips` | per clip, `hooks[i]` paired with `titles[i]`; optional `styles` limits a clip |
-| `trust_from` | `YYYY-MM-DD`: first run + 14 days; the PR auto-merges from here |
+| `trust_from` | optional, `YYYY-MM-DD`: the PR auto-merges from here; without it the PR waits for a manual merge |
 | `paused` | `true` is the kill switch |
 
 `caption_cta`, `links` and `ai_label` fill the post text, store links and the AI-generated flag.
@@ -155,8 +155,8 @@ repo to the bot token's `repositories:` in `draft-week.yml`, and give the bot Ap
 
 ## What stays manual
 
-- **Weekly:** review the `chore: queue <week>` PR until `trust_from` (the first 2 weeks). After that nothing, unless
-  the run goes red or exits 3.
+- **Weekly:** review the `chore: queue <week>` PR (delete the files of posts you don't want, then merge). With a
+  `trust_from` date this stops after that date, unless the run goes red or exits 3.
 - **Every 60 days:** the Threads and Instagram tokens, which `refresh-tokens.yml` renews; act only if it goes red.
 - **Per new app:** about 30 minutes for the yml and workflow blocks above.
 
@@ -164,5 +164,4 @@ Later, not built: a views feedback loop, where weekly views per post steer the d
 
 ## Status
 
-Publisher and weekly autopilot are built. WildFocus auto-merges from its `trust_from` (2026-10-30); until then each
-weekly PR is merged by hand.
+Publisher and weekly autopilot are built. WildFocus has no `trust_from`, so each weekly PR is merged by hand.
