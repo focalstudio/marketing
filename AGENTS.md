@@ -13,7 +13,7 @@ this file is the short orientation. Deeper notes: [.claude/CLAUDE.md](.claude/CL
 - `published.json`: written by the publisher. Never hand-edit.
 - `scripts/`: `publish.mjs` (check, plan, publish, refresh), `draft-week.mjs` (weekly drafter), `push-media.mjs`.
 - `video/`: Python renderer (`kit/`, `styles/`, `clips/`, `tests/`). Goldens live in `video/tests/goldens/`.
-- `apps/<app>.yml`: per-app config. `platforms.yml` + `PLATFORMS.md`: platform order. `voice.md`: tone.
+- `apps/<app>.yml`: per-app config. `platforms.yml` + `PLATFORMS.md`: platform order. `voice.md`: tone. `GROWTH.md`: how the accounts grow and the human's routine.
 - `.github/workflows/`: `ci` and `video-tests` (PRs), `publish` (on queue push + twice daily), `refresh-tokens`, `check`.
 
 ## Rules

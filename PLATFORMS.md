@@ -59,4 +59,6 @@ One set of Focal Studio accounts carries both streams.
 - **LinkedIn**: free to auto-post (self-serve `w_member_social`), dropped by choice.
   Revisit if buyers turn out to be agencies or freelancers.
 
+Growth tactics per platform are in [GROWTH.md](GROWTH.md).
+
 Re-check these facts every quarter. API pricing in this space moves fast.
