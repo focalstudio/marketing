@@ -5,7 +5,6 @@ at: 2026-10-23T20:00:00Z
 media: wildfocus/wildfocus-phone-down-appart-meadow.mp4
 thumb: wildfocus/wildfocus-phone-down-appart-meadow.png
 title: "They only come out when you put the phone down | WildFocus"
-ai: false            # code-rendered animation, not generative AI video
 ---
 They only come out when you put the phone down.
 
