@@ -212,5 +212,29 @@
     "dueAt": "2026-10-23T20:00:00.000Z",
     "at": "2026-10-23T20:00:00Z",
     "postedAt": "2026-10-17T19:34:16.940Z"
+  },
+  {
+    "file": "queue/2026-W43/wildfocus-meditate.md",
+    "platform": "bluesky",
+    "id": "at://did:plc:ailhup22grj7er6ulopnhszj/app.bsky.feed.post/3mybbtuknzw25",
+    "url": "https://bsky.app/profile/focalstudiohq.bsky.social/post/3mybbtuknzw25",
+    "at": "2026-10-19T20:00:00Z",
+    "postedAt": "2026-10-19T23:34:14.919Z"
+  },
+  {
+    "file": "queue/2026-W43/wildfocus-meditate.md",
+    "platform": "threads",
+    "id": "18122834683728507",
+    "url": "https://www.threads.com/@focalstudiohq/post/Descv-IgSUw",
+    "at": "2026-10-19T20:00:00Z",
+    "postedAt": "2026-10-19T23:34:47.157Z"
+  },
+  {
+    "file": "queue/2026-W43/wildfocus-meditate.md",
+    "platform": "instagram",
+    "id": "18145632247605782",
+    "url": "https://www.instagram.com/reel/DesczyIkcw3/",
+    "at": "2026-10-19T20:00:00Z",
+    "postedAt": "2026-10-19T23:35:23.404Z"
   }
 ]
