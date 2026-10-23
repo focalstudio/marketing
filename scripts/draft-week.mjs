@@ -94,26 +94,37 @@ export const addWeeks = (label, n) => isoWeek(new Date(+weekStart(label) + n * 7
 
 const weeksBetween = (a, b) => Math.round((weekStart(b) - weekStart(a)) / (7 * 864e5));
 
-// Pick up to n units for `week`. Unused ones first: the least-used clip goes first, so a week
-// mixes storyboards. If that runs short, reuse the oldest unit last posted at least `rest`
-// weeks earlier (it keeps its media and gets its next hook), so the app never goes quiet.
-// Deterministic for a given history, so a re-run drafts the same week.
-export function pick(all, used, n, week, rest = 8) {
+// Pick up to n units for `week`. `mix` ({style: n}) is a minimum of posts per style: those are filled first, then the
+// rest by the rule below. Unused ones first: the least-used clip goes first, so a week mixes storyboards. If that runs
+// short, reuse the oldest unit last posted at least `rest` weeks earlier (it keeps its media and gets its next hook),
+// so the app never goes quiet. A style the pool can't fill to its minimum is reported through `warn`, and the week still
+// fills from the rest. Deterministic for a given history, so a re-run drafts the same week.
+export function pick(all, used, n, week, rest = 8, mix = {}, warn = () => {}) {
   const taken = new Set(used.map(key));
   const count = {};
   for (const u of used) count[u.clip] = (count[u.clip] ?? 0) + 1;
   const out = [];
   const fresh = all.filter((u) => !taken.has(key(u)));
-  while (out.length < n && fresh.length) {
-    fresh.sort((a, b) => (count[a.clip] ?? 0) - (count[b.clip] ?? 0) || all.indexOf(a) - all.indexOf(b));
-    const u = fresh.shift();
-    out.push(u);
-    count[u.clip] = (count[u.clip] ?? 0) + 1;
-  }
   const last = new Map();
   for (const u of used) if (!last.has(key(u)) || last.get(key(u)).week < u.week) last.set(key(u), u);
   const stale = [...last.values()].filter((u) => weeksBetween(u.week, week) >= rest).sort((a, b) => (a.week < b.week ? -1 : a.week > b.week ? 1 : 0));
-  while (out.length < n && stale.length) out.push({ ...stale.shift(), reuse: true });
+  const next = (ok) => {
+    fresh.sort((a, b) => (count[a.clip] ?? 0) - (count[b.clip] ?? 0) || all.indexOf(a) - all.indexOf(b));
+    let i = fresh.findIndex(ok);
+    const u = i >= 0 ? fresh.splice(i, 1)[0] : (i = stale.findIndex(ok)) >= 0 ? { ...stale.splice(i, 1)[0], reuse: true } : null;
+    if (u) {
+      out.push(u);
+      count[u.clip] = (count[u.clip] ?? 0) + 1;
+    }
+    return u;
+  };
+  for (const [style, min] of Object.entries(mix)) {
+    const want = Math.min(min, n - out.length);
+    let got = 0;
+    while (got < want && next((u) => u.style === style)) got++;
+    if (got < min) warn(`mix wants ${min} ${style}, the pool gave ${got}`);
+  }
+  while (out.length < n && next(() => true));
   return out;
 }
 
@@ -219,7 +230,9 @@ export function main(argv) {
       const wk = addWeeks(week, k);
       const already = k ? 0 : files.filter((x) => x.startsWith(`${wk}/${id}-`)).length;
       const want = Math.max(0, n - already);
-      const todo = pick(all, used, want, wk, rest);
+      // A style's minimum counts the posts this week already has queued.
+      const left = Object.fromEntries(Object.entries(app.mix ?? {}).map(([st, m]) => [st, Math.max(0, m - used.filter((u) => u.week === wk && u.style === st).length)]));
+      const todo = pick(all, used, want, wk, rest, left, (m) => console.warn(`${id}: ${wk}: ${m}`));
       const times = slots(wk, app.days, app.time, n).slice(already);
       const unused = all.length - new Set(used.map(key)).size;
       console.log(`${id}: ${wk} has ${already}/${n}; ${unused} unused units in the pool`);
