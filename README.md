@@ -72,7 +72,7 @@ python3 -m unittest discover -s video/tests -t .                                
 
 - [video/clips/](video/clips/) holds the storyboards: beats, timings, copy, chimes and positions, as plain data. Each one
   has a `.md` with the prompt behind it. A clip never imports a style. Small per-style tuning goes in its `OVERRIDES`.
-- [video/styles/](video/styles/) holds one drawing kit per style (`toon`, `lowpoly`, `pixel`, `ink`, `appart`). Each one implements
+- [video/styles/](video/styles/) holds one drawing kit per style (`toon`, `lowpoly`, `pixel`, `ink`, the drawn `paper` and `storybook`, and the retired `appart`; see [video/STYLES.md](video/STYLES.md)). Each one implements
   the contract in [base.py](video/styles/base.py): the scene kinds `title`, `world` and `end`, `text_line`, and the
   shared pose API `rabbit / fox / deer / hedgehog`.
 - [video/kit/](video/kit/) holds what everything shares: easing, the exact app icon and font (`brand`), the ffmpeg
@@ -112,8 +112,8 @@ copy and styles live in `apps/<app>.yml`.
 demand with `gh workflow run draft-week.yml` (a manual run is a dry run unless you set `dry_run` to false: it lists the
 picks, renders nothing and opens no PR).
 
-1. **New story.** Claude follows [`.github/prompts/new-clip.md`](.github/prompts/new-clip.md) and writes one new appart
-   clip per active app. It may only add `video/clips/<name>.py` and `.md` and the `clips:` entry in `apps/<app>.yml`.
+1. **New story.** Claude follows [`.github/prompts/new-clip.md`](.github/prompts/new-clip.md) and writes one new
+   story clip per active app, in the paper and storybook styles. It may only add `video/clips/<name>.py` and `.md` and the `clips:` entry in `apps/<app>.yml`.
    If it touches anything else, the clip doesn't render, or the tests fail with it, the story is dropped. A failed
    story never blocks the week; the existing pool carries on.
 2. **Draft.** `draft-week.mjs` renders next week's posts, pushes the finals to `focalstudio/media` and writes

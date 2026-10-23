@@ -9,4 +9,4 @@ An 18-second vertical (1080×1920, 30 fps) promo for WildFocus, with sound. The 
 - **9–13 s, payoff.** "They only come out when you put it down."
 - **14–18 s, end card.** Dissolve, the real app icon drops in with two chimes, "WildFocus" and "Free on iOS."
 - **Variants.** `meadow` (deer, hedgehog, fox, rabbit) and `pond` (otter, mouse, duck, frog).
-- **Rules.** Appart style only. The icon is always the real one.
+- **Rules.** Drawn styles only (`paper`, `storybook`; the retired `appart` pasted the app's static PNGs). The icon is always the real one.
