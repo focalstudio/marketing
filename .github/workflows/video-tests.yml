@@ -48,6 +48,12 @@ jobs:
         with:
           node-version: 22
       - run: python3 -m unittest discover -s video/tests -t . -v
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: golden-fail  # the frames that missed their golden, to compare or re-bless from
+          path: out/golden-fail
+          if-no-files-found: ignore
       - run: node --test scripts/*.test.mjs
       - run: python3 -m video.render meditate --style ink out/meditate-ink.mp4
       - run: python3 -m video.render meditate --style appart out/meditate-appart.mp4

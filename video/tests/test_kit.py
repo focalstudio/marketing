@@ -11,6 +11,7 @@ from video.styles import base
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 GOLD = os.path.join(HERE, "goldens")
+FAILED = os.path.join(brand.ROOT, "out", "golden-fail")
 STORIES = ["collect", "phone_down", "night_owls", "rare_find", "slow_lane", "stay_awhile", "short_break"]  # the appart stories
 DRAWN = ["paper", "storybook"]  # drawn from the species table: they play every story
 PAIRS = ([("meditate", s) for s in ("toon", "lowpoly", "pixel", "appart", *DRAWN)] + [(c, "appart") for c in STORIES[:4]]
@@ -54,6 +55,9 @@ class Goldens(unittest.TestCase):
                     gold = Image.open(os.path.join(GOLD, f"{clip}-{style}", f"{t:05.2f}.webp")).convert("RGB")
                     self.assertEqual(im.size, (core.W, core.H))
                     mean = sum(ImageStat.Stat(ImageChops.difference(im, gold)).mean) / 3
+                    if mean >= 1.0:  # keep the frame that failed, for the video-tests artifact
+                        os.makedirs(FAILED, exist_ok=True)
+                        im.save(os.path.join(FAILED, f"{clip}-{style}-{t:05.2f}.png"))
                     self.assertLess(mean, 1.0, f"mean abs diff {mean:.3f}")
 
     def test_new_pair_renders(self):  # meditate in ink exists only through the kit: no golden, just a sane frame
