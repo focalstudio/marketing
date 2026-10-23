@@ -13,6 +13,7 @@
 - [ ] 2026-10-23 · found while on feat/style-experiment · video/styles/paper.py, storybook.py · the sun stays up as a dark disc once `night_owls` tints the sky to night; hide it behind the sky tint · low
 - [ ] 2026-10-23 · found while on feat/style-experiment · video/kit/species.py · tiger, lynx, wolf and snow leopard share one quadruped plan and read as cats at a glance only; give them their own head and tail shapes if the stories do well · low
 - [ ] 2026-10-23 · found while on feat/style-experiment · video/tests/goldens/ · paper and storybook goldens were rendered on macOS; a moving pose's antialiasing could drift on the Linux CI wheel (as `MOVED` already handles for the bat): re-bless from the Linux artifact if `video-tests` fails on them · medium
+- [ ] 2026-10-23 · found while on feat/style-experiment · video/styles/appart.py `text_line` (and `_drawn.py`) · slow_lane's payoff text ("Take your time. / They'll wait.") rasterises about 1 px apart on Linux vs macOS with the same pinned Pillow, so its golden still moved to 10.3 s; find whether it is kerning or the fractional x of centred text · low
 
 ## Triaged
 

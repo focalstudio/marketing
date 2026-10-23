@@ -28,7 +28,8 @@ def clip_styles(clip):  # the clip's `styles: [..]` in apps/wildfocus.yml, else 
 
 
 TIMES = [1, 4, 6, 10, 12.5, 14.5]
-MOVED = {("night_owls", 12.5): 13.8}  # the bat is mid-flight at 12.5 and its antialiasing drifts on Linux; a still after it left
+MOVED = {("night_owls", 12.5): 13.8,  # the bat is mid-flight at 12.5 and its antialiasing drifts on Linux; a still after it left
+         ("slow_lane", 12.5): 10.3}  # the payoff text there rasterises 1 px apart on Linux; a still before it appears
 
 
 def at(clip, t):
