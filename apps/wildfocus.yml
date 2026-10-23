@@ -83,6 +83,14 @@ clips:
     titles:
       - "Sit still and the meadow comes to you | WildFocus"
       - "Stay awhile | WildFocus"
+  short_break:
+    styles: [appart]
+    hooks:
+      - Five minutes off, and the meadow keeps you company.
+      - Take your break. The otter is already here.
+    titles:
+      - "Five minutes off, with company | WildFocus"
+      - "Take your break. The otter is already here | WildFocus"
 caption_cta: Free on iOS and Android.
 links:
   app_store: https://apps.apple.com/us/app/pomodoro-timer-wild-focus/id6768295599
