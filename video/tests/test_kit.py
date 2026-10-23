@@ -6,14 +6,17 @@ import inspect, json, os, re, unittest
 
 from PIL import Image, ImageChops, ImageStat
 
-from video.kit import audio, brand, core
+from video.kit import audio, brand, core, species
 from video.styles import base
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 GOLD = os.path.join(HERE, "goldens")
-STORIES = ["collect", "phone_down", "night_owls", "rare_find"]  # appart-only (apps/wildfocus.yml: styles: [appart])
-PAIRS = [("meditate", "toon"), ("meditate", "lowpoly"), ("meditate", "pixel"), ("meditate", "appart")] + [(c, "appart") for c in STORIES]
-STYLES = ["toon", "lowpoly", "pixel", "ink", "appart"]
+FAILED = os.path.join(brand.ROOT, "out", "golden-fail")
+STORIES = ["collect", "phone_down", "night_owls", "rare_find", "slow_lane", "stay_awhile", "short_break"]  # the appart stories
+DRAWN = ["paper", "storybook"]  # drawn from the species table: they play every story
+PAIRS = ([("meditate", s) for s in ("toon", "lowpoly", "pixel", "appart", *DRAWN)] + [(c, "appart") for c in STORIES[:4]]
+         + [(c, s) for c in STORIES for s in DRAWN])  # appart goldens stay at the four stories they were made for
+STYLES = ["toon", "lowpoly", "pixel", "ink", "appart", *DRAWN]
 CLIPS = ["meditate"] + STORIES
 
 
@@ -25,7 +28,8 @@ def clip_styles(clip):  # the clip's `styles: [..]` in apps/wildfocus.yml, else 
 
 
 TIMES = [1, 4, 6, 10, 12.5, 14.5]
-MOVED = {("night_owls", 12.5): 13.8}  # the bat is mid-flight at 12.5 and its antialiasing drifts on Linux; a still after it left
+MOVED = {("night_owls", 12.5): 13.8,  # the bat is mid-flight at 12.5 and its antialiasing drifts on Linux; a still after it left
+         ("slow_lane", 12.5): 10.3}  # the payoff text there rasterises 1 px apart on Linux; a still before it appears
 
 
 def at(clip, t):
@@ -52,6 +56,9 @@ class Goldens(unittest.TestCase):
                     gold = Image.open(os.path.join(GOLD, f"{clip}-{style}", f"{t:05.2f}.webp")).convert("RGB")
                     self.assertEqual(im.size, (core.W, core.H))
                     mean = sum(ImageStat.Stat(ImageChops.difference(im, gold)).mean) / 3
+                    if mean >= 1.0:  # keep the frame that failed, for the video-tests artifact
+                        os.makedirs(FAILED, exist_ok=True)
+                        im.save(os.path.join(FAILED, f"{clip}-{style}-{t:05.2f}.png"))
                     self.assertLess(mean, 1.0, f"mean abs diff {mean:.3f}")
 
     def test_new_pair_renders(self):  # meditate in ink exists only through the kit: no golden, just a sane frame
@@ -105,11 +112,16 @@ class PoseAPI(unittest.TestCase):
 class Appart(unittest.TestCase):
     """The storyboard motions and props, through a synthetic board (the story clips use the same keys)."""
 
+    STYLE = "appart"
+
     def board(self, **sc):
         return dict(dur=20.0, audio=None, scenes=[dict(name="w", start=0.0, kind="world", **sc)])
 
     def draw(self, t, **sc):
-        sty = core.load("meditate", "appart")[1]
+        sty = core.load("meditate", self.STYLE)[1]
+        if self.STYLE in DRAWN:  # the backdrop sways and drifts: hold it still so frames differ only by what the test adds
+            compose = sty.compose
+            sty.compose = lambda layers, clock: compose(layers, 0.0)
         A = sty.assets()
         return sty.scene(A, self.board(**sc)["scenes"][0], t, t)
 
@@ -163,10 +175,55 @@ class Appart(unittest.TestCase):
             self.draw(1.0, cast=dict(a=dict(kind="dragon", x=500, y=1400)))
 
     def test_style_names_no_app(self):
-        with open(os.path.join(HERE, "..", "styles", "appart.py")) as f:
+        with open(os.path.join(HERE, "..", "styles", self.STYLE + ".py")) as f:
             src = f.read().lower()
         for n in {brand.app_config(a)["name"].lower() for a in brand.apps()} | {"landscape", "animals"}:
             self.assertNotIn(n, src)
+
+
+class Paper(Appart):
+    STYLE = "paper"
+
+
+class Storybook(Appart):
+    STYLE = "storybook"
+
+
+@unittest.skipUnless(HAVE_ICON, "app icon missing")
+class Species(unittest.TestCase):
+    def kinds(self):
+        out = set()
+        for clip in CLIPS:
+            for variant in core.variants(clip) or [None]:
+                for sc in core.load(clip, "appart", variant)[0]["scenes"]:
+                    out |= {a["kind"] for a in [*sc.get("cast", {}).values(), *([sc["hero"]] if "hero" in sc else [])]}
+                    out |= {sc["mascot"].get("kind", "rabbit")} if "mascot" in sc else set()
+        return out
+
+    def test_every_cast_animal_is_drawn(self):
+        from video.kit import species
+        self.assertFalse(self.kinds() - set(species.SPECIES))
+
+    def test_animals_move(self):  # a walking animal is a different picture a moment later; nobody is a stamp
+        sty = core.load("meditate", "storybook")[1]
+        A = sty.assets()
+        for name in species.SPECIES:
+            with self.subTest(animal=name):
+                A.moving = True
+                A.clock = 0.0
+                a = A.sprite(name).tobytes()
+                A.clock = 0.11
+                self.assertNotEqual(a, A.sprite(name).tobytes())
+
+    def test_paper_steps_and_storybook_glides(self):  # a clock 40 ms later: the same 12 fps step in paper, the next of 24 in storybook
+        for style, moves in (("paper", False), ("storybook", True)):
+            A = core.load("meditate", style)[1].assets()
+            A.moving = True
+            A.clock = 0.09
+            a = A.sprite("fox").tobytes()
+            A.clock = 0.13
+            with self.subTest(style=style):
+                self.assertEqual(a != A.sprite("fox").tobytes(), moves)
 
 
 @unittest.skipUnless(HAVE_ICON, "app icon missing")

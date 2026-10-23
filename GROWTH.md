@@ -64,6 +64,22 @@ treat the numbers as rough). Re-check every quarter, like [PLATFORMS.md](PLATFOR
 - **All three.** A different hook and title per platform, no watermarks (our renders are clean), and nothing posted
   that isn't original.
 
+## Shorts: what we optimise for
+
+YouTube Studio shows most Shorts viewers arrive through the feed, a smaller share through search. Two things follow.
+
+- **The first 1-3 seconds decide it.** Motion and the hook text are on screen from frame 0, the line is readable within a
+  second and the premise is clear by 3 s. No empty opening shot, no fade from black. Check the cover and the 0.3, 1 and
+  3 s stills (`python3 -m video.render <clip> --style <style> --preview DIR 0.3,1,3`) before approving a story. Today's
+  average watch time on TikTok is 1.6-2.5 s of an 18 s clip, so that is the number to beat.
+- **Titles are search results.** A title starts with the phrase people type (pomodoro timer, study with me, focus timer,
+  cozy, slow living), then the hook, then `| WildFocus`, at most 100 characters. They live in `apps/wildfocus.yml`.
+- **Animated originals only.** New videos are drawn and animated in code, never the app's static art. That matches the
+  originality rule above.
+- **Test styles, keep winners.** `mix:` guarantees each style a few posts a week. After about four weeks run
+  `gh workflow run check.yml -f command=styles` (read-only), look at views and watch time per style, and keep the top
+  two or three ([video/STYLES.md](video/STYLES.md)).
+
 ## Questions we get asked
 
 **Should we post a batch of warm-up videos to build a history? No.** Filler teaches TikTok the wrong audience and drags

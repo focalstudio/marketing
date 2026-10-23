@@ -5,11 +5,14 @@ import {
   blueskyFacets,
   bufferInput,
   dueState,
+  formatReport,
   graphemes,
   loadPlatforms,
   parsePost,
   parseYaml,
+  styleReport,
   tagLinks,
+  unitOf,
   utm,
   validate,
   xLength,
@@ -123,4 +126,33 @@ test("Buffer input: TikTok is scheduled as a notification, YouTube stays automat
   assert.equal(byId.tiktok.notify, true);
   assert.equal(bufferInput({ cfg: byId.tiktok, post: p }, "ch1", now).schedulingType, "notification");
   assert.equal(bufferInput({ cfg: byId.youtube, post: p }, "ch1", now).schedulingType, "automatic");
+});
+
+const STYLES = ["toon", "lowpoly", "pixel", "ink", "appart", "paper"];
+
+test("unitOf reads clip, style and variant from a queue file name; a bare clip is the toon original", () => {
+  assert.deepEqual(unitOf("queue/2026-W42/wildfocus-meditate-pixel.md", STYLES), { clip: "meditate", style: "pixel", variant: null });
+  assert.deepEqual(unitOf("queue/2026-W44/wildfocus-rare-find-appart-polar-bear.md", STYLES), { clip: "rare-find", style: "appart", variant: "polar-bear" });
+  assert.deepEqual(unitOf("queue/2026-W45/wildfocus-phone-down-paper-pond.md", STYLES), { clip: "phone-down", style: "paper", variant: "pond" });
+  assert.deepEqual(unitOf("queue/2026-W43/wildfocus-meditate.md", STYLES), { clip: "meditate", style: "toon", variant: null });
+});
+
+test("styleReport: sent posts grouped by style and clip, means over the posts that have the metric", () => {
+  const m = (type, value) => ({ type, value });
+  const rows = [
+    { file: "queue/2026-W42/wildfocus-meditate-pixel.md", service: "youtube", status: "sent", metrics: [m("views", 1000), m("reactions", 12)] },
+    { file: "queue/2026-W42/wildfocus-meditate-pixel.md", service: "tiktok", status: "sent", metrics: [m("views", 200), m("averageTimeWatched", 1.6)] },
+    { file: "queue/2026-W43/wildfocus-meditate.md", service: "youtube", status: "sent", metrics: [m("views", 400)] },
+    { file: "queue/2026-W43/wildfocus-meditate.md", service: "x", status: "sent", metrics: [m("impressions", 1)] },
+    { file: "queue/2026-W44/wildfocus-collect-appart-pond.md", service: "youtube", status: "scheduled", metrics: [] },
+    { file: "queue/2026-W43/wildfocus-night-owls-appart.md", service: "tiktok", status: "sent", metrics: [] },
+  ];
+  const rep = styleReport(rows, STYLES);
+  assert.deepEqual(rep.style.map((r) => [r.name, r.posts, r.ytViews, r.ttViews, r.ttWatch]), [
+    ["pixel", 1, 1000, 200, 1.6],
+    ["toon", 1, 400, null, null],
+    ["appart", 1, null, null, null],
+  ]);
+  assert.deepEqual(rep.clip.find((r) => r.name === "meditate"), { name: "meditate", posts: 2, ytViews: 700, ttViews: 200, ttWatch: 1.6, reactions: 12 });
+  assert.match(formatReport(rep), /pixel\s+1\s+1000\s+200\s+1\.6\s+12\.0/);
 });

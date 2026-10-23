@@ -8,4 +8,4 @@ A 19-second vertical (1080×1920, 30 fps) promo for WildFocus, with sound. It se
 - **10.4–13.2 s, the reveal.** A rare animal slowly rises from the grass in the middle of the meadow. A two-note chime. "Then this showed up."
 - **15.6–19 s, end card.** Dissolve, the real app icon drops in with two chimes, "WildFocus" and "Free on iOS." with the rare animal below.
 - **Variants.** `snow_leopard`, `polar_bear`, `red_panda`, `tiger`.
-- **Rules.** Appart style only. The icon is always the real one.
+- **Rules.** Drawn styles only (`paper`, `storybook`; the retired `appart` pasted the app's static PNGs). The icon is always the real one.

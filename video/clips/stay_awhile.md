@@ -6,4 +6,4 @@ An 18-second vertical (1080×1920, 30 fps) promo for WildFocus, with sound. It s
 - **1–10 s, the session.** One 25:00 timer runs down. A deer, a fox and a duck wander in from the edges one after another and settle nearby, each with a soft chime.
 - **10.4–13.6 s, the payoff.** The timer ends on a two-note chime. "They'll come to you."
 - **14.5–18 s, end card.** Dissolve, the real app icon drops in with two chimes, "WildFocus" and "Free on iOS." with the deer below.
-- **Rules.** Appart style only. The icon is always the real one.
+- **Rules.** Drawn styles only (`paper`, `storybook`; the retired `appart` pasted the app's static PNGs). The icon is always the real one.

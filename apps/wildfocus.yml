@@ -25,8 +25,18 @@ rest_weeks: 4   # a unit may be reused this many weeks after it last posted (def
 paused: false
 days: [mon, tue, wed, thu, fri, sat, sun]    # posting days, UTC
 time: "20:00"
-styles: [toon, lowpoly, pixel, ink, appart]
-# Copy per storyboard in video/clips/. hooks[i] pairs with titles[i]; a clip's hook rotates as it is reused.
+# Video styles (video/STYLES.md). `appart`, which pastes the app's static animal PNGs, is retired since 2026-10-23: the
+# renderer keeps it for posts already queued, and the clips below that need a timer, phone, sky or extra animals play in
+# the drawn styles instead.
+styles: [pixel, toon, lowpoly, ink, paper, storybook]
+# Minimum posts per style each week, filled first by draft-week; what's left follows the usual rule. A style whose pool
+# can't meet its minimum is reported by the drafter and the week still fills. Review with `publish.mjs styles`.
+mix:
+  pixel: 2
+  paper: 2
+  storybook: 2
+# Copy per storyboard in video/clips/. hooks[i] pairs with titles[i]; a clip's hook rotates as it is reused. Hooks are the
+# first line on screen (readable within a second); titles lead with what people search for and stay under 100 characters.
 # `styles` limits a clip to the styles it renders in (default: the app's styles above).
 clips:
   meditate:
@@ -35,79 +45,79 @@ clips:
       - A rabbit, a breeze, nowhere to be. Then a fox, a deer and a hedgehog sit down too.
       - Sit still for a minute. Watch who turns up.
     titles:
-      - "Stop scrolling. Breathe. | WildFocus"
-      - "A rabbit, a breeze, nowhere to be | WildFocus"
-      - "Sit still, and someone turns up | WildFocus"
+      - "Calm focus timer: stop scrolling and breathe | WildFocus"
+      - "Relaxing cozy animation: a rabbit, a breeze, nowhere to be | WildFocus"
+      - "Cozy meditation: sit still and someone turns up | WildFocus"
   collect:
-    styles: [appart]
+    styles: [paper, storybook]
     hooks:
       - Every 25 minutes of focus, someone new moves in.
       - Focus for 25 minutes. Watch the meadow fill up.
       - Three timers, three new neighbours.
     titles:
-      - "Every 25 minutes, someone new moves in | WildFocus"
-      - "Focus, and the meadow fills up | WildFocus"
-      - "Three timers, three new neighbours | WildFocus"
+      - "Pomodoro timer: every 25 minutes someone new moves in | WildFocus"
+      - "25 minute focus timer that fills a meadow | WildFocus"
+      - "Pomodoro timer, three focus sessions, three new neighbours | WildFocus"
   phone_down:
-    styles: [appart]
+    styles: [paper, storybook]
     hooks:
       - They only come out when you put the phone down.
       - Phone down. Wait. Watch who shows up.
       - Pick the phone up and they all freeze.
     titles:
-      - "They only come out when you put the phone down | WildFocus"
-      - "Phone down. Wait. | WildFocus"
-      - "Pick the phone up and they all freeze | WildFocus"
+      - "Put your phone down: a focus timer for screen-free time | WildFocus"
+      - "Phone down focus timer: wait and watch who shows up | WildFocus"
+      - "Phone-free focus: pick it up and they all freeze | WildFocus"
   night_owls:
-    styles: [appart]
+    styles: [paper, storybook]
     hooks:
       - Late night study session? You've got company.
       - Dusk, stars, an owl and a bat. Study with the night shift.
       - The sky goes dark, the stars come out, and you're not studying alone.
     titles:
-      - "Late night study session? You've got company | WildFocus"
-      - "Study with the night shift | WildFocus"
-      - "You're not studying alone | WildFocus"
+      - "Study with me at night: a cozy late night study session | WildFocus"
+      - "Study with me at night: dusk, stars, an owl and a bat | WildFocus"
+      - "Late night study timer: you're not studying alone | WildFocus"
   rare_find:
-    styles: [appart]
+    styles: [paper, storybook]
     hooks:
       - Seven days of focus. Then this showed up.
       - A week of focus and something rare shows up in the meadow.
       - Seven days in a row earns you something rare.
     titles:
-      - "Seven days of focus. Then this showed up | WildFocus"
-      - "A week of focus, then something rare | WildFocus"
-      - "Seven days in a row | WildFocus"
+      - "Focus streak reward: seven days of focus, then this showed up | WildFocus"
+      - "7 day focus streak: something rare shows up in the meadow | WildFocus"
+      - "Daily focus habit: seven days in a row | WildFocus"
   slow_lane:
-    styles: [appart]
+    styles: [paper, storybook]
     hooks:
       - Nothing in this meadow is in a hurry. You don't have to be either.
       - Even the quick ones slow down here.
       - Slow is the point.
     titles:
-      - "Nothing here is in a hurry | WildFocus"
-      - "Even the quick ones slow down | WildFocus"
-      - "Slow is the point | WildFocus"
+      - "Slow living: nothing in this cozy meadow is in a hurry | WildFocus"
+      - "Slow focus, cozy meadow: even the quick ones slow down | WildFocus"
+      - "Slow is the point: a cozy focus timer | WildFocus"
   stay_awhile:
-    styles: [appart]
+    styles: [paper, storybook]
     hooks:
       - Sit still for one session and the meadow comes to you.
       - You don't have to chase anything here. Stay awhile.
       - One 25-minute session. Three visitors. No rush.
     titles:
-      - "Sit still and the meadow comes to you | WildFocus"
-      - "Stay awhile | WildFocus"
-      - "One session, three visitors | WildFocus"
+      - "Focus timer for calm: sit still and the meadow comes to you | WildFocus"
+      - "Cozy focus app: nothing to chase, stay awhile | WildFocus"
+      - "25 minute focus session: three visitors, no rush | WildFocus"
   short_break:
-    styles: [appart]
+    styles: [paper, storybook]
     hooks:
       - Five minutes off, and the meadow keeps you company.
       - Take your break. Someone is already here.
       - Five minutes is enough for a proper break.
     titles:
-      - "Five minutes off, with company | WildFocus"
-      - "Take your break. Someone is already here | WildFocus"
-      - "Five minutes is enough | WildFocus"
+      - "Pomodoro break timer: five minutes off, with company | WildFocus"
+      - "Take a 5 minute break: someone is already here | WildFocus"
+      - "5 minute break: five minutes is enough | WildFocus"
 caption_cta: Free on iOS and Android.
 links:
   app_store: https://apps.apple.com/us/app/pomodoro-timer-wild-focus/id6768295599

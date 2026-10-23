@@ -114,5 +114,36 @@ test("every WildFocus clip has 3+ hooks, one title each, so a reused clip rotate
   for (const [clip, c] of Object.entries(app.clips)) {
     assert.ok(c.hooks.length >= 3, `${clip} has ${c.hooks.length} hooks`);
     assert.equal(c.titles.length, c.hooks.length, `${clip}: hooks and titles pair up`);
+    for (const t of c.titles) assert.ok(t.length <= 100, `${clip}: "${t}" is over YouTube's 100 characters`);
   }
+});
+
+const mixPool = units({ meditate: { styles: ["toon", "pixel"] }, rare_find: { styles: ["appart"] } }, cat, []);
+
+test("pick: mix fills each style's minimum first, then the usual rule", () => {
+  const pool = mixPool;
+  assert.deepEqual(keys(pick(pool, [], 3, "2026-W45", 8, { appart: 2 })), ["rare-find-appart-snow-leopard", "rare-find-appart-tiger", "meditate-toon"]);
+  assert.deepEqual(keys(pick(pool, [], 3, "2026-W45", 8, { pixel: 1, appart: 1 })), ["meditate-pixel", "rare-find-appart-snow-leopard", "meditate-toon"]);
+});
+
+test("pick: a mix minimum the pool can't meet warns and the week still fills", () => {
+  const warned = [];
+  const p = pick(all, [], 3, "2026-W45", 8, { lowpoly: 2, nope: 1 }, (m) => warned.push(m));
+  assert.equal(p.length, 3);
+  assert.deepEqual(keys(p).slice(0, 1), ["meditate-lowpoly"]);
+  assert.deepEqual(warned, ["mix wants 2 lowpoly, the pool gave 1", "mix wants 1 nope, the pool gave 0"]);
+});
+
+test("pick: mix minimums are capped at the week's size, and a rested unit counts for its style", () => {
+  const p = pick(mixPool, [], 2, "2026-W45", 8, { appart: 5 });
+  assert.deepEqual(keys(p), ["rare-find-appart-snow-leopard", "rare-find-appart-tiger"]);
+  const used = mixPool.map((u) => ({ ...u, week: "2026-W40", file: "x.md" }));
+  const r = pick(mixPool, used, 1, "2026-W50", 8, { pixel: 1 });
+  assert.deepEqual(keys(r), ["meditate-pixel"]);
+  assert.ok(r[0].reuse);
+});
+
+test("pick: no mix is the same pick as before", () => {
+  const used = [{ clip: "meditate", style: "toon", variant: null, week: "2026-W43" }];
+  assert.deepEqual(keys(pick(all, used, 3, "2026-W45", 8, {})), keys(pick(all, used, 3, "2026-W45")));
 });

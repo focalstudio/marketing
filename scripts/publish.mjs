@@ -1,6 +1,8 @@
 // Focal Studio publisher. Plain Node 22, no dependencies.
 //
 //   node scripts/publish.mjs check                read-only: proves each key works, dumps Buffer's schema
+//   node scripts/publish.mjs buffer-posts         read-only: every Buffer post with its metrics
+//   node scripts/publish.mjs styles               read-only: those metrics grouped by video style and clip
 //   node scripts/publish.mjs plan                 lists what is due, in platforms.yml order; posts nothing
 //   node scripts/publish.mjs publish [--dry-run]  posts everything due; --dry-run prints the requests instead
 //   node scripts/publish.mjs publish --dry-run --drafts   also previews drafts, as if they were due now
@@ -109,7 +111,8 @@ async function dumpField(typeName, fieldName) {
 }
 
 // Read-only: every post Buffer holds per channel, with its status, error and metrics.
-async function bufferPosts() {
+// Every channel's posts (id, status, dates, text, metrics) as [{ service, posts }], read-only.
+async function bufferPostList() {
   need("BUFFER_API_KEY");
   const sub = async (name) => {
     const d = await buffer(`{ __type(name: "${name}") { fields { name type { ${TYPE_REF} } } } }`);
@@ -119,20 +122,81 @@ async function bufferPosts() {
   const errFields = await sub("PostPublishingError");
   const metricFields = await sub("PostMetric");
   const orgs = (await buffer("{ account { organizations { id } } }")).account.organizations;
+  const out = [];
   for (const o of orgs) {
     const chs = (await buffer(`{ channels(input: { organizationId: "${o.id}" }) { id service } }`)).channels;
     for (const ch of chs) {
       const q = `{ posts(first: 100, input: { organizationId: "${o.id}", filter: { channelIds: ["${ch.id}"] } }) { edges { node { id status dueAt sentAt externalLink text error { ${errFields} } metrics { ${metricFields} } } } } }`;
-      const edges = (await buffer(q)).posts.edges ?? [];
-      say(`\n${ch.service} (${edges.length} posts)`);
-      for (const { node: n } of edges) {
-        say(`  ${n.id} ${n.status} due=${n.dueAt} sent=${n.sentAt} link=${n.externalLink ?? "-"}`);
-        say(`    "${n.text.slice(0, 50).replace(/\n/g, " ")}"`);
-        if (n.error) say(`    error: ${JSON.stringify(n.error)}`);
-        if (n.metrics?.length) say(`    metrics: ${JSON.stringify(n.metrics)}`);
-      }
+      out.push({ service: ch.service, posts: ((await buffer(q)).posts.edges ?? []).map((e) => e.node) });
     }
   }
+  return out;
+}
+
+async function bufferPosts() {
+  for (const { service, posts } of await bufferPostList()) {
+    say(`\n${service} (${posts.length} posts)`);
+    for (const n of posts) {
+      say(`  ${n.id} ${n.status} due=${n.dueAt} sent=${n.sentAt} link=${n.externalLink ?? "-"}`);
+      say(`    "${n.text.slice(0, 50).replace(/\n/g, " ")}"`);
+      if (n.error) say(`    error: ${JSON.stringify(n.error)}`);
+      if (n.metrics?.length) say(`    metrics: ${JSON.stringify(n.metrics)}`);
+    }
+  }
+}
+
+// ---------- Styles report ----------
+// Which video style earns what. A queue file is <app>-<clip>[-<style>[-<variant>]].md; a bare clip is the toon original.
+export function unitOf(file, styles) {
+  const base = file.split("/").pop().replace(/\.md$/, "");
+  const m = base.match(new RegExp(`^[a-z0-9]+-(.+?)-(${styles.join("|")})(?:-(.+))?$`));
+  return m ? { clip: m[1], style: m[2], variant: m[3] ?? null } : { clip: base.replace(/^[a-z0-9]+-/, ""), style: "toon", variant: null };
+}
+
+const mean = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
+
+// rows: [{ file, service, status, metrics: [{ type, value }] }] -> per group: posts (units sent) and per-post means.
+// Posts without metrics yet (just sent, or the platform reports none) count as posts but stay out of the means.
+export function styleReport(rows, styles) {
+  const groups = { style: new Map(), clip: new Map() };
+  for (const r of rows) {
+    if (r.status !== "sent") continue;
+    const u = unitOf(r.file, styles);
+    for (const [by, k] of [["style", u.style], ["clip", u.clip]]) {
+      const g = groups[by].get(k) ?? { files: new Set(), yt: [], tt: [], watch: [], react: [] };
+      groups[by].set(k, g);
+      g.files.add(r.file);
+      const m = Object.fromEntries((r.metrics ?? []).map((x) => [x.type, x.value]));
+      if (r.service === "youtube" && m.views != null) g.yt.push(m.views);
+      if (r.service === "tiktok" && m.views != null) g.tt.push(m.views);
+      if (r.service === "tiktok" && m.averageTimeWatched) g.watch.push(m.averageTimeWatched);
+      if (m.reactions != null) g.react.push(m.reactions);
+    }
+  }
+  const table = (map) =>
+    [...map].map(([name, g]) => ({ name, posts: g.files.size, ytViews: mean(g.yt), ttViews: mean(g.tt), ttWatch: mean(g.watch), reactions: mean(g.react) }))
+      .sort((a, b) => (b.ytViews ?? -1) - (a.ytViews ?? -1) || a.name.localeCompare(b.name));
+  return { style: table(groups.style), clip: table(groups.clip) };
+}
+
+export function formatReport(rep) {
+  const f = (v, d = 0) => (v == null ? "-" : v.toFixed(d));
+  const head = (label) => `${label.padEnd(18)}${"posts".padStart(6)}${"YT views".padStart(10)}${"TT views".padStart(10)}${"TT watch s".padStart(12)}${"reactions".padStart(11)}`;
+  const line = (r) => `${r.name.padEnd(18)}${String(r.posts).padStart(6)}${f(r.ytViews).padStart(10)}${f(r.ttViews).padStart(10)}${f(r.ttWatch, 1).padStart(12)}${f(r.reactions, 1).padStart(11)}`;
+  return ["Per post, by style (views and reactions are means over the posts that have them)", head("style"), ...rep.style.map(line), "", "By clip", head("clip"), ...rep.clip.map(line)].join("\n");
+}
+
+async function styleMetrics() {
+  const pub = existsSync(PUBLISHED) ? JSON.parse(readFileSync(PUBLISHED, "utf8")) : [];
+  const fileOf = new Map(pub.filter((p) => p.file).map((p) => [p.id, p.file]));
+  const styles = new Set(["appart"]);
+  for (const f of readdirSync(join(ROOT, "apps")).filter((f) => f.endsWith(".yml"))) {
+    for (const st of parseYaml(readFileSync(join(ROOT, "apps", f), "utf8")).styles ?? []) styles.add(st);
+  }
+  const rows = (await bufferPostList()).flatMap(({ service, posts }) =>
+    posts.filter((n) => fileOf.has(n.id)).map((n) => ({ file: fileOf.get(n.id), service, status: n.status, metrics: n.metrics })),
+  );
+  say(formatReport(styleReport(rows, [...styles])));
 }
 
 async function checkBufferSchema() {
@@ -988,6 +1052,10 @@ async function main([cmd, ...args]) {
   }
   if (cmd === "buffer-posts" && !args.length) {
     await bufferPosts();
+    return 0;
+  }
+  if (cmd === "styles" && !args.length) {
+    await styleMetrics();
     return 0;
   }
   if (cmd === "plan" && !args.length) return plan();
