@@ -75,6 +75,14 @@ clips:
     titles:
       - "Nothing here is in a hurry | WildFocus"
       - "Even the rabbit slows down | WildFocus"
+  stay_awhile:
+    styles: [appart]
+    hooks:
+      - Sit still for one session and the meadow comes to you.
+      - You don't have to chase anything here. Stay awhile.
+    titles:
+      - "Sit still and the meadow comes to you | WildFocus"
+      - "Stay awhile | WildFocus"
 caption_cta: Free on iOS and Android.
 links:
   app_store: https://apps.apple.com/us/app/pomodoro-timer-wild-focus/id6768295599
