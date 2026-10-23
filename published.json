@@ -260,5 +260,149 @@
     "url": "https://www.instagram.com/reel/DexkF66kolp/",
     "at": "2026-10-21T20:00:00Z",
     "postedAt": "2026-10-21T23:15:04.065Z"
+  },
+  {
+    "file": "queue/2026-W43/wildfocus-night-owls-appart.md",
+    "platform": "x",
+    "id": "6adbad383d5b27036b49980c",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-10-23T19:03:43.025Z",
+    "at": "2026-10-22T20:00:00Z",
+    "postedAt": "2026-10-23T18:53:44.612Z"
+  },
+  {
+    "file": "queue/2026-W43/wildfocus-rare-find-appart-polar-bear.md",
+    "platform": "x",
+    "id": "6adbad3abd33ce99c3e6fe46",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-10-23T20:00:00.000Z",
+    "at": "2026-10-23T20:00:00Z",
+    "postedAt": "2026-10-23T18:53:46.225Z"
+  },
+  {
+    "file": "queue/2026-W43/wildfocus-slow-lane-appart.md",
+    "platform": "x",
+    "id": "6adbad3b8b3d437ddc801180",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-10-24T20:00:00.000Z",
+    "at": "2026-10-24T20:00:00Z",
+    "postedAt": "2026-10-23T18:53:47.455Z"
+  },
+  {
+    "file": "queue/2026-W43/wildfocus-stay-awhile-appart.md",
+    "platform": "x",
+    "id": "6adbad3ce4be8a4d861f7bc6",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-10-25T20:00:00.000Z",
+    "at": "2026-10-25T20:00:00Z",
+    "postedAt": "2026-10-23T18:53:48.838Z"
+  },
+  {
+    "file": "queue/2026-W43/wildfocus-night-owls-appart.md",
+    "platform": "youtube",
+    "id": "6adbad3d9acae620d8132916",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-10-23T19:03:43.025Z",
+    "at": "2026-10-22T20:00:00Z",
+    "postedAt": "2026-10-23T18:53:49.356Z"
+  },
+  {
+    "file": "queue/2026-W43/wildfocus-rare-find-appart-polar-bear.md",
+    "platform": "youtube",
+    "id": "6adbad3d0b5343d07047039b",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-10-23T20:00:00.000Z",
+    "at": "2026-10-23T20:00:00Z",
+    "postedAt": "2026-10-23T18:53:49.741Z"
+  },
+  {
+    "file": "queue/2026-W43/wildfocus-slow-lane-appart.md",
+    "platform": "youtube",
+    "id": "6adbad3e0b5343d0704703c6",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-10-24T20:00:00.000Z",
+    "at": "2026-10-24T20:00:00Z",
+    "postedAt": "2026-10-23T18:53:50.106Z"
+  },
+  {
+    "file": "queue/2026-W43/wildfocus-stay-awhile-appart.md",
+    "platform": "youtube",
+    "id": "6adbad3ee4be8a4d861f7c28",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-10-25T20:00:00.000Z",
+    "at": "2026-10-25T20:00:00Z",
+    "postedAt": "2026-10-23T18:53:50.562Z"
+  },
+  {
+    "file": "queue/2026-W43/wildfocus-night-owls-appart.md",
+    "platform": "bluesky",
+    "id": "at://did:plc:ailhup22grj7er6ulopnhszj/app.bsky.feed.post/3myku27pcpu2h",
+    "url": "https://bsky.app/profile/focalstudiohq.bsky.social/post/3myku27pcpu2h",
+    "at": "2026-10-22T20:00:00Z",
+    "postedAt": "2026-10-23T18:53:52.869Z"
+  },
+  {
+    "file": "queue/2026-W43/wildfocus-night-owls-appart.md",
+    "platform": "tiktok",
+    "id": "6adbad41e4be8a4d861f7c64",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-10-23T19:03:43.025Z",
+    "at": "2026-10-22T20:00:00Z",
+    "postedAt": "2026-10-23T18:53:53.419Z"
+  },
+  {
+    "file": "queue/2026-W43/wildfocus-rare-find-appart-polar-bear.md",
+    "platform": "tiktok",
+    "id": "6adbad418b3d437ddc801266",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-10-23T20:00:00.000Z",
+    "at": "2026-10-23T20:00:00Z",
+    "postedAt": "2026-10-23T18:53:53.808Z"
+  },
+  {
+    "file": "queue/2026-W43/wildfocus-slow-lane-appart.md",
+    "platform": "tiktok",
+    "id": "6adbad42e4be8a4d861f7c99",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-10-24T20:00:00.000Z",
+    "at": "2026-10-24T20:00:00Z",
+    "postedAt": "2026-10-23T18:53:54.198Z"
+  },
+  {
+    "file": "queue/2026-W43/wildfocus-stay-awhile-appart.md",
+    "platform": "tiktok",
+    "id": "6adbad42bd33ce99c3e70095",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-10-25T20:00:00.000Z",
+    "at": "2026-10-25T20:00:00Z",
+    "postedAt": "2026-10-23T18:53:54.566Z"
+  },
+  {
+    "file": "queue/2026-W43/wildfocus-night-owls-appart.md",
+    "platform": "threads",
+    "id": "18106720826281098",
+    "url": "https://www.threads.com/@focalstudiohq/post/De2P2FPjRv7",
+    "at": "2026-10-22T20:00:00Z",
+    "postedAt": "2026-10-23T18:54:30.623Z"
+  },
+  {
+    "file": "queue/2026-W43/wildfocus-night-owls-appart.md",
+    "platform": "instagram",
+    "id": "18102244736559696",
+    "url": "https://www.instagram.com/reel/De2QBmhEhjI/",
+    "at": "2026-10-22T20:00:00Z",
+    "postedAt": "2026-10-23T18:56:04.744Z"
   }
 ]
