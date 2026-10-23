@@ -1,4 +1,4 @@
-"""Re-render the golden stills and rebuild goldens/sheet.png:  python3 -m video.tests.make_goldens [--sheet-only]
+"""Re-render the golden stills and rebuild goldens/sheet.png:  python3 -m video.tests.make_goldens [--sheet-only | --only STYLE,..]
 
 Run this only when a change is meant to alter the pixels (a font, an icon, a style), then look at sheet.png before you
 commit. Each cell is "before | after": the golden committed at HEAD, then the new render. Pairs without a golden (ink)
@@ -26,6 +26,7 @@ def head(path):
 
 
 def main(argv):
+    only = set(argv[argv.index("--only") + 1].split(",")) if "--only" in argv else None  # re-render just these styles' goldens
     rows = PAIRS + [("meditate", "ink")]
     sheet = Image.new("RGB", (LABEL + len(TIMES) * (2 * TW + GAP), HEAD + len(rows) * (TH + GAP)), BG)
     d = ImageDraw.Draw(sheet)
@@ -39,7 +40,7 @@ def main(argv):
             x = LABEL + j * (2 * TW + GAP)
             path = os.path.join(GOLD, f"{clip}-{style}", f"{t:05.2f}.webp")
             old = head(path)
-            if (clip, style) in PAIRS and "--sheet-only" not in argv:
+            if (clip, style) in PAIRS and "--sheet-only" not in argv and (only is None or style in only):
                 _, new = render(clip, style, t)
                 os.makedirs(os.path.dirname(path), exist_ok=True)
                 if old is None or ImageChops.difference(old, new).getbbox():  # identical pixels: keep the file, no churn

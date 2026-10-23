@@ -1,6 +1,6 @@
 """Storybook style: a flat vector picture book. Smooth rolling hills and round-crowned trees in a warm limited palette
-(cream, peach, ochre, terracotta, sage, WildFocus green), thin darker outlines on the animals, and a paper grain printed
-over every frame. The animals move smoothly (24 poses a second), unlike the stepped paper style.
+(cream, peach, ochre, terracotta, sage, deep green), thin darker outlines on the cast, and a paper grain printed
+over every frame. The cast moves smoothly (24 poses a second), unlike the stepped paper style.
 
 Plays the appart storyboards (see _drawn.py); the art is drawn from video.kit.species and nothing comes from the app.
 """
