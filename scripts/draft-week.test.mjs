@@ -1,7 +1,7 @@
 // node --test scripts/*.test.mjs
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { copy, history, isoWeek, key, nextWeek, perWeek, pick, postFile, slots, units, weekStart } from "./draft-week.mjs";
+import { addWeeks, copy, history, isoWeek, key, mediaFor, nextWeek, perWeek, pick, postFile, slots, units, weekStart } from "./draft-week.mjs";
 import { loadPlatforms, parsePost, validate } from "./publish.mjs";
 
 const cat = {
@@ -67,4 +67,37 @@ test("a drafted post passes the publisher's validation", () => {
   const src = postFile({ at: "2026-10-26T20:00:00Z", mediaPath: "wildfocus/a.mp4", thumbPath: "wildfocus/a.png", ...c });
   const { errors } = validate(parsePost(src, "queue/2026-W44/wildfocus-meditate-toon.md"), loadPlatforms().byId);
   assert.deepEqual(errors, []);
+});
+
+test("pick: rest_weeks shortens the wait before a unit is reused", () => {
+  const used = all.map((u, i) => ({ ...u, week: "2026-W50", file: `x/${i}.md` }));
+  assert.deepEqual(pick(all, used, 1, "2026-W53"), []);
+  assert.deepEqual(keys(pick(all, used, 1, "2026-W54", 4)), ["meditate-toon"]);
+});
+
+test("addWeeks steps ISO weeks across a year end", () => {
+  assert.equal(addWeeks("2026-W44", 1), "2026-W45");
+  assert.equal(addWeeks("2026-W52", 2), "2027-W01");
+});
+
+test("mediaFor adopts files already in the media repo and renders nothing", () => {
+  const seen = [];
+  const m = mediaFor("wildfocus", "wildfocus-night-owls-appart", {
+    has: (p) => (seen.push(p), true),
+    render: () => assert.fail("must not render"),
+    push: () => assert.fail("must not push"),
+  });
+  assert.deepEqual(m, { mediaPath: "wildfocus/wildfocus-night-owls-appart.mp4", thumbPath: "wildfocus/wildfocus-night-owls-appart.png", adopted: true });
+  assert.equal(seen[0], m.mediaPath);
+});
+
+test("mediaFor renders and pushes when either file is missing", () => {
+  const pushed = [];
+  const m = mediaFor("wildfocus", "wildfocus-x-appart", {
+    has: (p) => p.endsWith(".mp4"),
+    render: () => ({ mp4: "a.mp4", png: "a.png" }),
+    push: (f) => (pushed.push(f), `wildfocus/${f}`),
+  });
+  assert.deepEqual(pushed, ["a.mp4", "a.png"]);
+  assert.deepEqual(m, { mediaPath: "wildfocus/a.mp4", thumbPath: "wildfocus/a.png" });
 });

@@ -3,7 +3,7 @@
 A clip (video/clips/<name>.py) is data: BOARD = {dur, audio, scenes: [...]} plus OVERRIDES = {style: {scene: patch}}.
 A style (video/styles/<name>.py) exposes Style, a subclass of video.styles.base.Style.
 """
-import copy, importlib, os, subprocess, tempfile, time
+import copy, importlib, os, subprocess, tempfile, time, zlib
 from multiprocessing import Pool
 
 from . import brand
@@ -134,7 +134,7 @@ def render(clip, style, out, variant=None):
               "-pix_fmt", "yuv420p"]
         if audio:
             wav = os.path.join(tmp, "a.wav")
-            make_audio(wav, dur, audio["chimes"], audio["gust"])
+            make_audio(wav, dur, audio["chimes"], audio["gust"], zlib.crc32(f"{clip}/{style}/{variant}".encode()))
             cmd += ["-i", wav] + vf + ["-c:a", "aac", "-b:a", "160k", "-shortest", "-movflags", "+faststart", out]
         else:
             cmd += vf + ["-movflags", "+faststart", "-an", out]

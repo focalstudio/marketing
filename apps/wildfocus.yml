@@ -18,6 +18,7 @@ video:
   aspect: "9:16"
   seconds: [15, 30]
 cadence: 7 per week
+rest_weeks: 4   # a unit may be reused this many weeks after it last posted (default 8)
 # No `trust_from`: the weekly PR waits for a manual merge (delete a post's file to reject it).
 # Add `trust_from: YYYY-MM-DD` to let it auto-merge from that date once tests and `publish.mjs plan` pass.
 # `paused: true` is the kill switch: nothing is drafted and nothing auto-merges.

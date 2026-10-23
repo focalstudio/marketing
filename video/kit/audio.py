@@ -1,14 +1,16 @@
 """Soundtrack synthesised with ffmpeg: brown-noise wind, a pink-noise gust and sine chimes from the storyboard.
 
-ffmpeg's noise sources are randomly seeded, so the WAV differs run to run; the filter graph (audio_argv) is what is fixed.
+ffmpeg's noise sources are randomly seeded unless `seed` is given, so without it the WAV differs run to run; the filter
+graph (audio_argv) is what is fixed. render() seeds from the clip, style and variant, so a unit's audio repeats.
 """
 import subprocess
 
 
-def audio_argv(path, dur, chimes, gust):
+def audio_argv(path, dur, chimes, gust, seed=None):
     """chimes: [(seconds, Hz)]; gust: seconds where the wind swells. -> ffmpeg argv writing a stereo WAV to path."""
-    cmd = ["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", f"anoisesrc=d={dur}:c=brown:r=44100:a=0.7",
-           "-f", "lavfi", "-i", f"anoisesrc=d={dur}:c=pink:r=44100:a=0.4"]
+    sd = (lambda k: f":seed={(seed + k) % 2**31}") if seed is not None else (lambda k: "")
+    cmd = ["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", f"anoisesrc=d={dur}:c=brown:r=44100:a=0.7{sd(0)}",
+           "-f", "lavfi", "-i", f"anoisesrc=d={dur}:c=pink:r=44100:a=0.4{sd(1)}"]
     for _ in chimes:
         cmd += ["-f", "lavfi", "-i", "sine=f=440:d=1.6:r=44100"]
     fg = [f"[0]lowpass=f=450,volume='0.5+0.7*exp(-pow((t-{gust})/1.4,2))':eval=frame[w]",
@@ -24,5 +26,5 @@ def audio_argv(path, dur, chimes, gust):
     return cmd + ["-filter_complex", ";".join(fg), "-map", "[out]", "-ac", "2", path]
 
 
-def make_audio(path, dur, chimes, gust):
-    subprocess.run(audio_argv(path, dur, chimes, gust), check=True)
+def make_audio(path, dur, chimes, gust, seed=None):
+    subprocess.run(audio_argv(path, dur, chimes, gust, seed), check=True)
