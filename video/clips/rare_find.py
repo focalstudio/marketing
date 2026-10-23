@@ -63,4 +63,6 @@ VARIANTS = {  # the base board is the first; each is its own post
     "polar_bear": rare("polar_bear"),
     "red_panda": rare("red_panda"),
     "tiger": rare("tiger"),
+    "lynx": rare("lynx"),
+    "wolf": rare("wolf"),
 }

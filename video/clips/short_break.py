@@ -46,3 +46,12 @@ BOARD = dict(
 )
 
 OVERRIDES = {}
+
+
+VARIANTS = {  # "meadow" is the base cast, so the posted `short-break-appart` is the same unit
+    "meadow": {},
+    "woodland": dict(meadow=dict(cast=dict(otter=dict(kind="fox"), frog=dict(kind="squirrel"), hedgehog=dict(kind="mouse"))),
+                     end=dict(mascot=dict(kind="fox"))),
+    "farm": dict(meadow=dict(cast=dict(otter=dict(kind="goat"), frog=dict(kind="chicken"), hedgehog=dict(kind="sheep", scale=0.55))),
+                 end=dict(mascot=dict(kind="goat"))),
+}

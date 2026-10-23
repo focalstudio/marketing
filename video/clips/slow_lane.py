@@ -47,3 +47,10 @@ BOARD = dict(
 )
 
 OVERRIDES = {}
+
+
+VARIANTS = {  # "meadow" is the base cast, so the posted `slow-lane-appart` is the same unit
+    "meadow": {},
+    "pond": dict(meadow=dict(cast=dict(rabbit=dict(kind="duck"), squirrel=dict(kind="frog"), mouse=dict(kind="otter", scale=0.7)))),
+    "woodland": dict(meadow=dict(cast=dict(rabbit=dict(kind="fox"), squirrel=dict(kind="hedgehog"), mouse=dict(kind="chicken")))),
+}

@@ -74,10 +74,12 @@ export function units(clipCfg, cat, styles) {
 }
 
 // What each app has already queued or published, from queue file names (<app>-<key>.md).
-// The older bare <app>-<clip>.md files were the toon original.
+// The older bare <app>-<clip>.md files were the toon original, and a bare <app>-<clip>-<style>.md is the clip's
+// "meadow" variant (the base cast, from before the clip had variants).
 export function history(files, app, all) {
   const byName = new Map(all.map((u) => [key(u), u]));
   for (const u of all) if (u.style === "toon" && !u.variant) byName.set(slug(u.clip), u);
+  for (const u of all) if (u.variant === "meadow") byName.set(`${slug(u.clip)}-${u.style}`, u);
   const used = [];
   for (const f of files) {
     const [week, name] = f.split("/").slice(-2);

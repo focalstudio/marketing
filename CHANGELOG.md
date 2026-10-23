@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fixed: `draft-week` no longer dies when a unit's media is already in `focalstudio/media` (renders are never byte-identical, so `push-media` refused the re-render). It uses the existing mp4 and png and renders nothing; renders also seed their noise from the unit. New `rest_weeks` in `apps/<app>.yml` (default 8; WildFocus 4) sets how soon a unit may be reused, and `draft-week --dry-run --weeks N` plans N weeks to show where the pool runs dry.
+- WildFocus pool grown from 18 to 30 units (#26): 12 new appart variants on `night_owls`, `slow_lane`, `stay_awhile`, `short_break`, `rare_find`, `phone_down` and `collect`, and a third hook and title for every clip (hooks no longer name an animal a variant swaps out). A bare `<clip>-<style>` queue file counts as the clip's `meadow` variant.
 - Added `.claude/verify.sh` and `.claude/verify/*.md`: the repo's offline proof (script tests, queue plan, and the video tests when `video/` or `apps/` changed), run by focal-maintainer before `gh pr create` and `git push`. `ci.yml` prints test coverage.
 - Removed the `ai:` frontmatter field. Buffer always gets `isAiGenerated: false` for X, YouTube and TikTok (the videos are code-rendered, not generative AI); an `ai:` line in a post is now an unknown-field error.
 - TikTok posts go to Buffer in `notification` mode (`notify: true` on the platform in `platforms.yml`): a phone alert at post time, finished in the TikTok app so a trending sound can be added. X and YouTube stay automatic. `published.json` still records TikTok as `scheduled`; `buffer-posts` shows the real status.

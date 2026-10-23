@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { addWeeks, copy, history, isoWeek, key, mediaFor, nextWeek, perWeek, pick, postFile, slots, units, weekStart } from "./draft-week.mjs";
-import { loadPlatforms, parsePost, validate } from "./publish.mjs";
+import { loadPlatforms, parsePost, parseYaml, validate } from "./publish.mjs";
 
 const cat = {
   clips: { meditate: { dur: 16, variants: [] }, rare_find: { dur: 18, variants: ["snow_leopard", "tiger"] } },
@@ -45,6 +45,12 @@ test("history reads queue names; a bare clip name is the toon original", () => {
   );
   assert.deepEqual(keys(h).sort(), ["meditate-lowpoly", "meditate-toon", "rare-find-appart-tiger"]);
   assert.equal(h.find((u) => u.variant === "tiger").week, "2026-W44");
+});
+
+test("history: a bare <clip>-<style> file is the clip's meadow variant", () => {
+  const withMeadow = units({ night_owls: { styles: ["appart"] } }, { clips: { night_owls: { dur: 17, variants: ["deer", "fox", "meadow"] } }, styles: ["appart"] }, ["appart"]);
+  const h = history(["2026-W43/wildfocus-night-owls-appart.md"], "wildfocus", withMeadow);
+  assert.deepEqual(keys(h), ["night-owls-appart-meadow"]);
 });
 
 test("pick: unused first, least-used clip first, so a week mixes storyboards", () => {
@@ -100,4 +106,13 @@ test("mediaFor renders and pushes when either file is missing", () => {
   });
   assert.deepEqual(pushed, ["a.mp4", "a.png"]);
   assert.deepEqual(m, { mediaPath: "wildfocus/a.mp4", thumbPath: "wildfocus/a.png" });
+});
+
+test("every WildFocus clip has 3+ hooks, one title each, so a reused clip rotates its copy", async () => {
+  const { readFileSync } = await import("node:fs");
+  const app = parseYaml(readFileSync(new URL("../apps/wildfocus.yml", import.meta.url), "utf8"));
+  for (const [clip, c] of Object.entries(app.clips)) {
+    assert.ok(c.hooks.length >= 3, `${clip} has ${c.hooks.length} hooks`);
+    assert.equal(c.titles.length, c.hooks.length, `${clip}: hooks and titles pair up`);
+  }
 });

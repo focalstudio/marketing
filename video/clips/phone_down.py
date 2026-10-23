@@ -55,4 +55,5 @@ VARIANTS = {  # the first is the base cast; each is its own post
     "meadow": {},
     "pond": dict(meadow=dict(cast=dict(a=dict(kind="otter"), d=dict(kind="mouse"), b=dict(kind="duck"), c=dict(kind="frog"))),
                  end=dict(mascot=dict(kind="otter"))),
+    "woodland": dict(meadow=dict(cast=dict(d=dict(kind="mouse"), b=dict(kind="wolf"), c=dict(kind="squirrel")))),
 }

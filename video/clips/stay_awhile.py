@@ -45,3 +45,10 @@ BOARD = dict(
 )
 
 OVERRIDES = {}
+
+
+VARIANTS = {  # "meadow" is the base cast, so the posted `stay-awhile-appart` is the same unit
+    "meadow": {},
+    "pond": dict(meadow=dict(hero=dict(kind="otter"), cast=dict(deer=dict(kind="goose"), fox=dict(kind="frog")))),
+    "woodland": dict(meadow=dict(hero=dict(kind="hedgehog"), cast=dict(fox=dict(kind="lynx"), duck=dict(kind="mouse")))),
+}
