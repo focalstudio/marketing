@@ -18,6 +18,7 @@ video:
   aspect: "9:16"
   seconds: [15, 30]
 cadence: 7 per week
+rest_weeks: 4   # a unit may be reused this many weeks after it last posted (default 8)
 # No `trust_from`: the weekly PR waits for a manual merge (delete a post's file to reject it).
 # Add `trust_from: YYYY-MM-DD` to let it auto-merge from that date once tests and `publish.mjs plan` pass.
 # `paused: true` is the kill switch: nothing is drafted and nothing auto-merges.
@@ -32,65 +33,81 @@ clips:
     hooks:
       - Stop scrolling. Breathe. Sit still long enough and someone joins you.
       - A rabbit, a breeze, nowhere to be. Then a fox, a deer and a hedgehog sit down too.
+      - Sit still for a minute. Watch who turns up.
     titles:
       - "Stop scrolling. Breathe. | WildFocus"
       - "A rabbit, a breeze, nowhere to be | WildFocus"
+      - "Sit still, and someone turns up | WildFocus"
   collect:
     styles: [appart]
     hooks:
       - Every 25 minutes of focus, someone new moves in.
       - Focus for 25 minutes. Watch the meadow fill up.
+      - Three timers, three new neighbours.
     titles:
       - "Every 25 minutes, someone new moves in | WildFocus"
       - "Focus, and the meadow fills up | WildFocus"
+      - "Three timers, three new neighbours | WildFocus"
   phone_down:
     styles: [appart]
     hooks:
       - They only come out when you put the phone down.
       - Phone down. Wait. Watch who shows up.
+      - Pick the phone up and they all freeze.
     titles:
       - "They only come out when you put the phone down | WildFocus"
       - "Phone down. Wait. | WildFocus"
+      - "Pick the phone up and they all freeze | WildFocus"
   night_owls:
     styles: [appart]
     hooks:
       - Late night study session? You've got company.
       - Dusk, stars, an owl and a bat. Study with the night shift.
+      - The sky goes dark, the stars come out, and you're not studying alone.
     titles:
       - "Late night study session? You've got company | WildFocus"
       - "Study with the night shift | WildFocus"
+      - "You're not studying alone | WildFocus"
   rare_find:
     styles: [appart]
     hooks:
       - Seven days of focus. Then this showed up.
       - A week of focus and something rare shows up in the meadow.
+      - Seven days in a row earns you something rare.
     titles:
       - "Seven days of focus. Then this showed up | WildFocus"
       - "A week of focus, then something rare | WildFocus"
+      - "Seven days in a row | WildFocus"
   slow_lane:
     styles: [appart]
     hooks:
       - Nothing in this meadow is in a hurry. You don't have to be either.
-      - Even the rabbit slows down here.
+      - Even the quick ones slow down here.
+      - Slow is the point.
     titles:
       - "Nothing here is in a hurry | WildFocus"
-      - "Even the rabbit slows down | WildFocus"
+      - "Even the quick ones slow down | WildFocus"
+      - "Slow is the point | WildFocus"
   stay_awhile:
     styles: [appart]
     hooks:
       - Sit still for one session and the meadow comes to you.
       - You don't have to chase anything here. Stay awhile.
+      - One 25-minute session. Three visitors. No rush.
     titles:
       - "Sit still and the meadow comes to you | WildFocus"
       - "Stay awhile | WildFocus"
+      - "One session, three visitors | WildFocus"
   short_break:
     styles: [appart]
     hooks:
       - Five minutes off, and the meadow keeps you company.
-      - Take your break. The otter is already here.
+      - Take your break. Someone is already here.
+      - Five minutes is enough for a proper break.
     titles:
       - "Five minutes off, with company | WildFocus"
-      - "Take your break. The otter is already here | WildFocus"
+      - "Take your break. Someone is already here | WildFocus"
+      - "Five minutes is enough | WildFocus"
 caption_cta: Free on iOS and Android.
 links:
   app_store: https://apps.apple.com/us/app/pomodoro-timer-wild-focus/id6768295599

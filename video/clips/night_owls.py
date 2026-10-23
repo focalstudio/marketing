@@ -47,3 +47,10 @@ BOARD = dict(
 )
 
 OVERRIDES = {}
+
+
+VARIANTS = {  # "meadow" is the base cast, so the posted `night-owls-appart` is the same unit
+    "meadow": {},
+    "fox": dict(meadow=dict(hero=dict(kind="fox")), end=dict(mascot=dict(kind="fox"))),
+    "deer": dict(meadow=dict(hero=dict(kind="deer", scale=1.05)), end=dict(mascot=dict(kind="deer"))),
+}

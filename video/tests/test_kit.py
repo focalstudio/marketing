@@ -69,6 +69,12 @@ class Audio(unittest.TestCase):
         with open(os.path.join(GOLD, "meditate-audio.json")) as f:
             self.assertEqual(audio.audio_argv("OUT.wav", board["dur"], a["chimes"], a["gust"]), json.load(f))
 
+    def test_seed_pins_the_noise(self):
+        # A seed gives both noise sources a fixed seed and changes nothing else in the graph.
+        a = audio.audio_argv("OUT.wav", 18, [(1, 440)], 5, seed=7)
+        self.assertEqual([x for x in a if x.startswith("anoisesrc")], ["anoisesrc=d=18:c=brown:r=44100:a=0.7:seed=7", "anoisesrc=d=18:c=pink:r=44100:a=0.4:seed=8"])
+        self.assertEqual([x.replace(":seed=7", "").replace(":seed=8", "") for x in a], audio.audio_argv("OUT.wav", 18, [(1, 440)], 5))
+
 
 
 class PoseAPI(unittest.TestCase):

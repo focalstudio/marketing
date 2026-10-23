@@ -56,4 +56,5 @@ VARIANTS = {  # the first is the base cast; each is its own post
     "meadow": {},
     "woodland": cast("squirrel", "owl", "mouse"),
     "pond": cast("duck", "otter", "frog"),
+    "farm": cast("chicken", "goat", "mouse"),
 }

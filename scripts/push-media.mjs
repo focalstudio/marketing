@@ -50,6 +50,10 @@ function remoteSha(path) {
   }
 }
 
+// True when <path> is already in the media repo. draft-week adopts such files instead of re-pushing: renders of
+// one unit are never byte-identical, and the file is public and may already be referenced by a published post.
+export const hasRemote = (path) => remoteSha(path) !== "";
+
 export function main(argv) {
   const force = argv.includes("--force");
   const [arg, app] = argv.filter((a) => a !== "--force");

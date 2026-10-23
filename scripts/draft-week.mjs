@@ -1,8 +1,9 @@
 // Draft next week's app posts: pick clip x style x variant units that haven't been used, render
 // them, push the finals to focalstudio/media and write queue/<week>/*.md. Plain Node 22, no dependencies.
 //
-//   node scripts/draft-week.mjs [--week 2026-W44] [--app wildfocus] [--dry-run]
+//   node scripts/draft-week.mjs [--week 2026-W44] [--app wildfocus] [--dry-run [--weeks 4]]
 //
+// `--dry-run --weeks N` plans N consecutive weeks, feeding each week's picks into the next, to show where the pool runs dry.
 // Exit 3 when an app got fewer posts than its cadence (the pool ran dry), so a scheduled run flags it.
 // App stream only. Per-app settings and copy live in apps/<app>.yml; `paused: true` skips an app.
 
@@ -11,6 +12,7 @@ import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFi
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { parsePost, parseYaml } from "./publish.mjs";
+import { destPath, hasRemote } from "./push-media.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const DAYS = { mon: 0, tue: 1, wed: 2, thu: 3, fri: 4, sat: 5, sun: 6 };
@@ -72,10 +74,12 @@ export function units(clipCfg, cat, styles) {
 }
 
 // What each app has already queued or published, from queue file names (<app>-<key>.md).
-// The older bare <app>-<clip>.md files were the toon original.
+// The older bare <app>-<clip>.md files were the toon original, and a bare <app>-<clip>-<style>.md is the clip's
+// "meadow" variant (the base cast, from before the clip had variants).
 export function history(files, app, all) {
   const byName = new Map(all.map((u) => [key(u), u]));
   for (const u of all) if (u.style === "toon" && !u.variant) byName.set(slug(u.clip), u);
+  for (const u of all) if (u.variant === "meadow") byName.set(`${slug(u.clip)}-${u.style}`, u);
   const used = [];
   for (const f of files) {
     const [week, name] = f.split("/").slice(-2);
@@ -85,6 +89,8 @@ export function history(files, app, all) {
   }
   return used;
 }
+
+export const addWeeks = (label, n) => isoWeek(new Date(+weekStart(label) + n * 7 * 864e5));
 
 const weeksBetween = (a, b) => Math.round((weekStart(b) - weekStart(a)) / (7 * 864e5));
 
@@ -156,7 +162,19 @@ function renderOne(app, u, dur, outDir) {
   return { mp4, png };
 }
 
+const base0 = (app, u) => `${app}-${key(u)}`;
+
 const pushMedia = (file, app) => sh("node", ["scripts/push-media.mjs", file, app]).match(/^media: (.+)$/m)[1];
+
+// Media for one unit: the files already in focalstudio/media if both are there (no render, no push), else render and push.
+// `deps` is injectable for tests.
+export function mediaFor(app, base, { has = hasRemote, render, push = pushMedia }) {
+  const mp4 = destPath(`${base}.mp4`, app);
+  const png = destPath(`${base}.png`, app);
+  if (has(mp4) && has(png)) return { mediaPath: mp4, thumbPath: png, adopted: true };
+  const r = render();
+  return { mediaPath: push(r.mp4, app), thumbPath: push(r.png, app) };
+}
 
 // ---------- Main ----------
 
@@ -164,6 +182,11 @@ export function main(argv) {
   const arg = (k) => (argv.includes(k) ? argv[argv.indexOf(k) + 1] : undefined);
   const dry = argv.includes("--dry-run");
   const week = arg("--week") ?? nextWeek();
+  const weeks = Number(arg("--weeks") ?? 1);
+  if (!Number.isInteger(weeks) || weeks < 1 || (weeks > 1 && !dry)) {
+    console.error("--weeks N (N >= 1) only works with --dry-run");
+    return 2;
+  }
   const only = arg("--app");
   const queueDir = join(ROOT, "queue");
   const files = existsSync(queueDir)
@@ -190,39 +213,44 @@ export function main(argv) {
       console.log(`${id}: nothing to draft (cadence "${app.cadence}", ${all.length} renderable clips with copy)`);
       continue;
     }
-    const used = history(files, id, all);
-    const already = files.filter((x) => x.startsWith(`${week}/${id}-`)).length;
-    const want = Math.max(0, n - already);
-    const todo = pick(all, used, want, week);
-    const times = slots(week, app.days, app.time, n).slice(already);
-    const unused = all.length - new Set(used.map(key)).size;
-    console.log(`${id}: ${week} has ${already}/${n}; ${unused} unused units in the pool`);
-    if (todo.length < want) {
-      short = true;
-      console.warn(`${id}: only ${todo.length} of ${want} posts for ${week}. Add a clip, a variant or a style.`);
-    }
-
-    todo.forEach((u, i) => {
-      // Earlier posts of this clip, including ones drafted above for this same week, so each gets the next hook.
-      const uses = used.filter((x) => x.clip === u.clip).length + todo.slice(0, i).filter((x) => x.clip === u.clip).length;
-      const base = `${id}-${key(u)}`;
-      const c = copy(app, clipCfg[u.clip], uses);
-      console.log(`${id}: ${times[i]}  ${base}${u.reuse ? ` (reuse from ${u.week})` : ""}  "${c.title}"`);
-      if (dry) return;
-      let media;
-      if (u.reuse) {
-        const old = parsePost(readFileSync(join(queueDir, u.file), "utf8"), u.file).meta;
-        media = { mediaPath: old.media, thumbPath: old.thumb };
-      } else {
-        const outDir = join(ROOT, "out", week);
-        mkdirSync(outDir, { recursive: true });
-        const r = renderOne(id, u, cat.clips[u.clip].dur, outDir);
-        media = { mediaPath: pushMedia(r.mp4, id), thumbPath: pushMedia(r.png, id) };
+    let used = history(files, id, all);
+    const rest = Number(app.rest_weeks ?? 8);
+    for (let k = 0; k < weeks; k++) {
+      const wk = addWeeks(week, k);
+      const already = k ? 0 : files.filter((x) => x.startsWith(`${wk}/${id}-`)).length;
+      const want = Math.max(0, n - already);
+      const todo = pick(all, used, want, wk, rest);
+      const times = slots(wk, app.days, app.time, n).slice(already);
+      const unused = all.length - new Set(used.map(key)).size;
+      console.log(`${id}: ${wk} has ${already}/${n}; ${unused} unused units in the pool`);
+      if (todo.length < want) {
+        short = true;
+        console.warn(`${id}: only ${todo.length} of ${want} posts for ${wk}. Add a clip, a variant or a style.`);
       }
-      mkdirSync(join(queueDir, week), { recursive: true });
-      writeFileSync(join(queueDir, week, `${base}.md`), postFile({ at: times[i], ...media, ...c }));
-      made++;
-    });
+
+      todo.forEach((u, i) => {
+        // Earlier posts of this clip, including ones drafted above for this same week, so each gets the next hook.
+        const uses = used.filter((x) => x.clip === u.clip).length + todo.slice(0, i).filter((x) => x.clip === u.clip).length;
+        const base = `${id}-${key(u)}`;
+        const c = copy(app, clipCfg[u.clip], uses);
+        console.log(`${id}: ${times[i]}  ${base}${u.reuse ? ` (reuse from ${u.week})` : ""}  "${c.title}"`);
+        if (dry) return;
+        let media;
+        if (u.reuse) {
+          const old = parsePost(readFileSync(join(queueDir, u.file), "utf8"), u.file).meta;
+          media = { mediaPath: old.media, thumbPath: old.thumb };
+        } else {
+          const outDir = join(ROOT, "out", wk);
+          mkdirSync(outDir, { recursive: true });
+          media = mediaFor(id, base, { render: () => renderOne(id, u, cat.clips[u.clip].dur, outDir) });
+          if (media.adopted) console.log(`${id}: ${base} is already in the media repo; using it`);
+        }
+        mkdirSync(join(queueDir, wk), { recursive: true });
+        writeFileSync(join(queueDir, wk, `${base}.md`), postFile({ at: times[i], ...media, ...c }));
+        made++;
+      });
+      used = [...used, ...todo.map((u) => ({ ...u, week: wk, file: `${wk}/${base0(id, u)}.md` }))];
+    }
   }
   console.log(dry ? "dry run: nothing rendered or written" : `drafted ${made} posts in queue/${week}`);
   return short ? 3 : 0;
