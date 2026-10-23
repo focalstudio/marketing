@@ -107,11 +107,18 @@ class Style(appart.Style):
         ImageDraw.Draw(cv).polygon(xy, fill=col + (255,))
 
     def paint(self, name, plist):
+        """The posed parts on a canvas that holds all of them (ears, tails and wings that swing past the box are kept),
+        centred on the box so the animal never shifts, with its feet (y = 100) on the bottom edge."""
         sp = species.SPECIES[name]
         k, pad = appart.ACTOR_H * SS / 100, 14 * SS
-        cv = Image.new("RGBA", (round(sp["w"] * k) + 2 * pad, round(100 * k) + pad), (0, 0, 0, 0))
+        xs, ys = [x for _, pts in plist for x, _ in pts], [y for _, pts in plist for _, y in pts]
+        half = max(sp["w"] / 2 - min(xs), max(xs) - sp["w"] / 2, sp["w"] / 2) * k + pad
+        top = min(0.0, min(ys)) * k - pad
+        w, h = 2 * math.ceil(half / SS) * SS, math.ceil((100 * k - top) / SS) * SS
+        ox, oy = w / 2 - sp["w"] / 2 * k, h - 100 * k
+        cv = Image.new("RGBA", (w, h), (0, 0, 0, 0))
         for role, pts in plist:
-            self.stamp(cv, [(x * k + pad, y * k + pad) for x, y in pts], self.tone(sp["colors"][role]))
+            self.stamp(cv, [(x * k + ox, y * k + oy) for x, y in pts], self.tone(sp["colors"][role]))
         return cv.resize((cv.width // SS, cv.height // SS), Image.LANCZOS)
 
     # storyboard

@@ -215,6 +215,25 @@ class Species(unittest.TestCase):
                 A.clock = 0.11
                 self.assertNotEqual(a, A.sprite(name).tobytes())
 
+    def test_nothing_is_cut(self):  # ears, tails and wings that swing past the species box stay on the sprite
+        for style in DRAWN:
+            A = core.load("meditate", style)[1].assets()
+            for name in species.SPECIES:
+                for clock, moving in ((0.0, False), (0.3, True), (0.7, True)):
+                    A.clock, A.moving = clock, moving
+                    a = A.sprite(name).getchannel("A")
+                    x0, y0, x1, _ = a.getbbox()
+                    with self.subTest(style=style, animal=name, clock=clock):
+                        self.assertTrue(x0 > 0 and y0 > 0 and x1 < a.width, (x0, y0, x1, a.size))
+
+    def test_owl_belly_is_clear(self):  # nothing is drawn over the belly (a stray dark mark once was)
+        parts = species.SPECIES["owl"]["parts"]
+        i = [role for role, *_ in parts].index("belly")
+        cx, cy, rx, ry = 50, 72, 17, 26
+        over = [role for role, pts, _, _ in parts[i + 1:]
+                if ((sum(x for x, _ in pts) / len(pts) - cx) / rx) ** 2 + ((sum(y for _, y in pts) / len(pts) - cy) / ry) ** 2 < 1]
+        self.assertEqual(over, [])
+
     def test_paper_steps_and_storybook_glides(self):  # a clock 40 ms later: the same 12 fps step in paper, the next of 24 in storybook
         for style, moves in (("paper", False), ("storybook", True)):
             A = core.load("meditate", style)[1].assets()
