@@ -114,6 +114,7 @@ test("every WildFocus clip has 3+ hooks, one title each, so a reused clip rotate
   for (const [clip, c] of Object.entries(app.clips)) {
     assert.ok(c.hooks.length >= 3, `${clip} has ${c.hooks.length} hooks`);
     assert.equal(c.titles.length, c.hooks.length, `${clip}: hooks and titles pair up`);
+    for (const t of c.titles) assert.ok(t.length <= 100, `${clip}: "${t}" is over YouTube's 100 characters`);
   }
 });
 

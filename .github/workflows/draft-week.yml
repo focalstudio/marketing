@@ -1,6 +1,6 @@
 name: draft-week
 
-# Fridays 06:00 UTC: writes one new appart story, drafts next week's app posts (renders, pushes the finals
+# Fridays 06:00 UTC: writes one new story (paper and storybook styles), drafts next week's app posts (renders, pushes the finals
 # to focalstudio/media, writes queue/<week>/*.md) and opens the PR `chore: queue <week>`. The PR
 # merges itself (after its checks pass) only when every app has a `trust_from` date that has passed, never while its yml says `paused: true`.
 # Without `trust_from` the PR waits for a manual merge, which is the approval.
@@ -89,7 +89,7 @@ jobs:
               name=$(basename "$py" .py)
               dur=$(python3 -c "import sys; from video.clips import $name as c; print(f'{c.BOARD[\"dur\"] - 0.6:.2f}')") || { drop "$name does not import"; break; }
               grep -q "^  $name:" apps/*.yml || { drop "$name has no clips: entry"; break; }
-              python3 -m video.render "$name" --style appart --preview out/story-check "1,6,12,$dur" || { drop "$name does not render"; break; }
+              python3 -m video.render "$name" --style paper --preview out/story-check "1,6,12,$dur" || { drop "$name does not render"; break; }
               echo "video/clips/$name.md" > "$STORY"
             done
           fi
