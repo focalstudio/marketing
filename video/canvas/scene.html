@@ -1,0 +1,27 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>html,body{margin:0;background:#efe7d6;overflow:hidden}canvas{display:block}</style>
+<canvas id="c"></canvas>
+<script type="module">
+// The page render.mjs drives: ?scene=<name>&w=&h=. window.ready resolves once fonts and the icon are in; frame(t)
+// draws the scene at t seconds and returns the canvas as a PNG data URL.
+const q = new URLSearchParams(location.search), W = +q.get("w"), H = +q.get("h");
+const cv = document.getElementById("c");
+cv.width = W;
+cv.height = H;
+const ctx = cv.getContext("2d");
+window.ready = (async () => {
+  const font = new FontFace("Nunito", "url(/video/fonts/Nunito%5Bwght%5D.ttf)", { weight: "200 1000" });
+  document.fonts.add(await font.load());
+  const icon = new Image();
+  icon.src = "/__icon";
+  await icon.decode().catch(() => null);
+  const scene = await import(`./scenes/${q.get("scene")}.mjs`);
+  const state = scene.setup(document, W, H, { icon: icon.naturalWidth ? icon : null });
+  window.frame = t => {
+    scene.draw(ctx, t, W, H, state);
+    return cv.toDataURL("image/png");
+  };
+  return scene.DURATION;
+})();
+</script>

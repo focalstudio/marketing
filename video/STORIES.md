@@ -34,3 +34,14 @@ peek, freeze), so the drawn styles play them without new code:
 5. **Tiny visitors**: mouse, frog and hedgehog peek up one by one; "small focus counts".
 6. **Midnight oil**: stars and a bat hopping across the sky while the owl keeps the timer.
 7. **Let it blow past**: leaves drift through, animals walk in and sit; "the day can wait".
+
+## Canvas videos (drawn in code, no animals)
+
+[canvas/](canvas/) draws a whole scene in a browser canvas, as a naturalist engraving (ink, hatching, watercolour, paper),
+and records it frame by frame from headless Chrome: `node video/canvas/render.mjs <name>` (`--preview DIR "1,5,9"` for
+stills, `--size 1080x1080` for square). These videos sell the feeling (switching off) rather than the app. A scene is
+`canvas/scenes/<name>.mjs` (`DURATION`, `SCENES`, `CAPTIONS`, `SOUND`, `setup`, `draw`), and its prompt is `canvas/<name>.md`.
+
+| Video | Premise | Length |
+|---|---|---|
+| `rain_outside` | The life of a raindrop, from the window to the cloud to the puddle | 30 s |

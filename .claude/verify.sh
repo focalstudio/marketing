@@ -4,7 +4,7 @@
 set -e
 cd "$(dirname "$0")/.."
 
-node --test scripts/*.test.mjs
+node --test scripts/*.test.mjs video/canvas/*.test.mjs
 node scripts/publish.mjs plan >/dev/null
 
 base=origin/main
