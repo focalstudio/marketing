@@ -13,7 +13,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { dirname, extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { rainArgv } from "./audio.mjs";
+import { soundArgv } from "./audio.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const FPS = 30;
@@ -127,7 +127,8 @@ async function main(argv) {
     const base = out.replace(/\.mp4$/, "");
     mkdirSync(dirname(out), { recursive: true });
     const wav = `${base}.wav`;
-    if (spawnSync(rainArgv(wav, dur, scene.SOUND)[0], rainArgv(wav, dur, scene.SOUND).slice(1), { stdio: "inherit" }).status) throw new Error("audio failed");
+    const sound = soundArgv(wav, dur, scene.SOUND);
+    if (spawnSync(sound[0], sound.slice(1), { stdio: "inherit" }).status) throw new Error("audio failed");
     const ff = spawn("ffmpeg", ["-v", "error", "-y", "-f", "image2pipe", "-framerate", String(FPS), "-c:v", "png", "-i", "-", "-i", wav,
       "-map", "0:v", "-map", "1:a", "-c:v", "libx264", "-preset", "slow", "-crf", "17", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k",
       "-shortest", "-movflags", "+faststart", out], { stdio: ["pipe", "inherit", "inherit"] });
