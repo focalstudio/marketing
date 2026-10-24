@@ -54,7 +54,7 @@ jobs:
           name: golden-fail  # the frames that missed their golden, to compare or re-bless from
           path: out/golden-fail
           if-no-files-found: ignore
-      - run: node --test scripts/*.test.mjs
+      - run: node --test scripts/*.test.mjs video/canvas/*.test.mjs
       - run: python3 -m video.render meditate --style ink out/meditate-ink.mp4
       - run: python3 -m video.render meditate --style appart out/meditate-appart.mp4
       - uses: actions/upload-artifact@v4
