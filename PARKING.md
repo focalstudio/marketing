@@ -6,6 +6,7 @@
 
 ## Parked
 
+- [ ] 2026-10-24 · found while on docs/style-library · docs/decisions/0001-style-library.md · decision to move styles, fonts and palettes into a private `focalstudio/focal-styles` repo; first-week task list and WebGL/Blender spikes are in the doc · medium
 - [ ] 2026-10-23 · found while on feat/grow-clip-pool · .github/workflows/draft-week.yml (`chore/queue-$WEEK`) · the branch name is reused, so a top-up run in a week whose queue PR already merged edits the merged PR and opens none (#28 had to be opened by hand); use a unique branch name or open the PR when the old one is merged.
 - [ ] 2026-10-23 · found while on feat/grow-clip-pool · video/styles/pixel.py · pixel ports of the appart stories need new sprites and props (it draws only rabbit, fox, deer and hedgehog, with no timer, phone, sky or pop/peek/slide motion); wait for the style metrics before investing.
 - [ ] 2026-10-23 · found while on feat/grow-clip-pool · video/tests/test_kit.py, video/styles/ink.py:25 · variants have no goldens (only the base cast renders), and `Image.effect_noise` in ink is unseeded.
