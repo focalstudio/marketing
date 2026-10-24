@@ -2,9 +2,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { rng, teardropPts, pointAngle } from "./ink.mjs";
-import { rainArgv } from "./audio.mjs";
+import { squash, hop, blink, blinkTimes } from "./toon.mjs";
+import { rainArgv, soundArgv } from "./audio.mjs";
 import { frameTimes, iconPath } from "./render.mjs";
 import * as rain from "./scenes/rain_outside.mjs";
+import * as rabbit from "./scenes/focus_rabbit.mjs";
 
 test("the hook text is on screen from the first frame and the camera moves by about 3 s", () => {
   assert.equal(rain.CAPTIONS[0].from, 0);
@@ -55,4 +57,47 @@ test("frame times step at 30 fps over the whole duration", () => {
 
 test("the icon path comes from apps/wildfocus.yml", () => {
   assert.match(iconPath(), /\.(png|jpg)$/i);
+});
+
+test("soundArgv builds rain_outside exactly as rainArgv did", () => {
+  assert.deepEqual(soundArgv("/o.wav", rain.DURATION, rain.SOUND), rainArgv("/o.wav", rain.DURATION, rain.SOUND));
+});
+
+test("focus_rabbit: hook from frame 0, captions inside the video and apart, end card after them", () => {
+  assert.equal(rabbit.CAPTIONS[0].from, 0);
+  const cs = [...rabbit.CAPTIONS].sort((a, b) => a.from - b.from);
+  cs.forEach((c, i) => {
+    assert.ok(c.from < c.to && c.to <= rabbit.DURATION);
+    if (i) assert.ok(cs[i - 1].to <= c.from);
+  });
+  assert.ok(cs.at(-1).to <= rabbit.END.from && rabbit.END.from < rabbit.DURATION);
+});
+
+test("the timer reads 25:00 until the session starts and 00:00 once it is done", () => {
+  assert.equal(rabbit.clockText(0), "25:00");
+  assert.equal(rabbit.clockText(rabbit.SESSION.from), "25:00");
+  assert.equal(rabbit.clockText(rabbit.SESSION.to), "00:00");
+  assert.equal(rabbit.clockText(rabbit.DURATION), "00:00");
+});
+
+test("squash keeps the area and a hop comes back to rest on the ground", () => {
+  for (const v of [-0.3, 0, 0.32]) { const { sx, sy } = squash(v); assert.ok(Math.abs(sx * sy - 1) < 1e-12); }
+  const h = { at: 4.8, dur: 0.7, h: 150 };
+  assert.equal(hop(h.at - 1, h.at, h.dur, h.h).y, 0);
+  assert.ok(hop(h.at + h.dur / 2, h.at, h.dur, h.h).y < -100);
+  assert.deepEqual(hop(h.at + h.dur * 3, h.at, h.dur, h.h), { y: 0, v: 0 });
+});
+
+test("blinks are seeded, uneven and brief", () => {
+  assert.deepEqual(blinkTimes(3), blinkTimes(3));
+  const ts = blinkTimes(3);
+  assert.ok(blink(ts[0] + 0.08, ts) > 0.9 && blink(ts[0] - 0.1, ts) === 0);
+});
+
+test("toon sound is full level from frame 0 and puts a sound on every story beat", () => {
+  const argv = soundArgv("/o.wav", rabbit.DURATION, rabbit.SOUND), fg = argv[argv.indexOf("-filter_complex") + 1];
+  assert.ok(!fg.includes("afade=t=in"));
+  for (const t of [...rabbit.BUZZ, rabbit.THUNK, rabbit.SESSION.from, rabbit.DONE, rabbit.HOG.at + rabbit.HOG.dur * 0.8]) assert.ok(fg.includes(`adelay=${Math.round(t * 1000)}|`), `beat ${t}`);
+  for (const h of rabbit.HOPS) assert.ok(fg.includes(`adelay=${Math.round((h.at + 0.15) * 1000)}|`), `hop ${h.at}`);
+  assert.deepEqual(argv, soundArgv("/o.wav", rabbit.DURATION, rabbit.SOUND));
 });
