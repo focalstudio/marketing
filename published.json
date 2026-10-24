@@ -602,5 +602,59 @@
     "url": "https://www.instagram.com/reel/De2s1RFCY8j/",
     "at": "2026-10-23T20:00:00Z",
     "postedAt": "2026-10-23T23:07:49.646Z"
+  },
+  {
+    "file": "queue/2026-W44/wildfocus-rare-find-appart-snow-leopard.md",
+    "platform": "x",
+    "id": "6add3081bd33ce99c3448a42",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-10-31T20:00:00.000Z",
+    "at": "2026-10-31T20:00:00Z",
+    "postedAt": "2026-10-24T22:26:09.860Z"
+  },
+  {
+    "file": "queue/2026-W44/wildfocus-rare-find-appart-snow-leopard.md",
+    "platform": "youtube",
+    "id": "6add30823d5b27036ba5f3c1",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-10-31T20:00:00.000Z",
+    "at": "2026-10-31T20:00:00Z",
+    "postedAt": "2026-10-24T22:26:10.342Z"
+  },
+  {
+    "file": "queue/2026-W43/wildfocus-slow-lane-appart.md",
+    "platform": "bluesky",
+    "id": "at://did:plc:ailhup22grj7er6ulopnhszj/app.bsky.feed.post/3mynqesfw4g2a",
+    "url": "https://bsky.app/profile/focalstudiohq.bsky.social/post/3mynqesfw4g2a",
+    "at": "2026-10-24T20:00:00Z",
+    "postedAt": "2026-10-24T22:26:12.392Z"
+  },
+  {
+    "file": "queue/2026-W44/wildfocus-rare-find-appart-snow-leopard.md",
+    "platform": "tiktok",
+    "id": "6add3084bd33ce99c3448aeb",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-10-31T20:00:00.000Z",
+    "at": "2026-10-31T20:00:00Z",
+    "postedAt": "2026-10-24T22:26:12.861Z"
+  },
+  {
+    "file": "queue/2026-W43/wildfocus-slow-lane-appart.md",
+    "platform": "threads",
+    "id": "18191627023406243",
+    "url": "https://www.threads.com/@focalstudiohq/post/De5M7_fjDhJ",
+    "at": "2026-10-24T20:00:00Z",
+    "postedAt": "2026-10-24T22:26:46.011Z"
+  },
+  {
+    "file": "queue/2026-W43/wildfocus-slow-lane-appart.md",
+    "platform": "instagram",
+    "id": "17961839022216768",
+    "url": "https://www.instagram.com/reel/De5NChdgeHX/",
+    "at": "2026-10-24T20:00:00Z",
+    "postedAt": "2026-10-24T22:27:41.176Z"
   }
 ]
