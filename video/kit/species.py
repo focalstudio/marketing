@@ -221,13 +221,18 @@ def _deer():
     return s
 
 
-def _otter():
-    c = dict(fur=(124, 88, 62), fur2=(86, 58, 42), belly=(214, 186, 150), dark=(40, 30, 28), eye=(30, 24, 22))
-    tail = [E("fur2", 14, 80, 24, 6, -8, "tail")]
-    ears = [E("fur2", 104, 62, 4.5, 4.5, 0, "ear+head")]
-    s = quad(140, c, (56, 76, 38, 14), 12, (108, 64, 12), (12, 9), ears, tail, lw=7)
-    s["parts"].insert(8, E("belly", 100, 82, 14, 7))
-    return s
+def _otter():  # standing up on its hind legs, paws at its chest, tail on the ground: the pose people know
+    c = dict(fur=(122, 84, 56), fur2=(86, 56, 38), belly=(234, 212, 178), dark=(40, 30, 28), eye=(30, 24, 22))
+    pv = {"head": (50, 40), "tail": (40, 92), "ear": (44, 14), "blink": (55, 19), "fleg": (56, 50)}
+    whisker = lambda y0, y1: P("dark", [(64, y0), (80, y1), (80, y1 + 1.2), (64, y0 + 1.2)], "head")
+    parts = [P("fur2", [(42, 84), (20, 91), (2, 98), (4, 100), (24, 100), (46, 98)], "tail"),
+             E("fur2", 44, 97, 10, 4), E("fur", 48, 66, 20, 32), E("belly", 55, 64, 12, 25), E("fur", 60, 97, 11, 4),
+             E("fur2", 50, 58, 6, 4.5, 20, "fleg"), E("fur2", 62, 56, 6, 4.5, -20, "fleg"),
+             E("fur2", 41, 14, 3.6, 3.6, 0, "ear+head"), E("fur2", 63, 12, 3.6, 3.6, 0, "ear+head"),
+             E("fur", 53, 25, 16, 14, anim="head"), E("belly", 60, 31, 11, 7.5, anim="head"),
+             E("dark", 64, 27, 3.6, 2.8, anim="head"), E("eye", 48, 20, 2.3, 2.3, anim="blink+head"), E("eye", 60, 19, 2.3, 2.3, anim="blink+head"),
+             whisker(31, 29), whisker(33, 35)]
+    return dict(w=96, colors=c, gait="hop", pivots=pv, parts=parts)
 
 
 def _duck():
@@ -266,7 +271,7 @@ def _owl():
     c = dict(fur=(150, 106, 66), fur2=(104, 70, 46), belly=(236, 214, 176), dark=(44, 32, 28), eye=(250, 196, 60), pupil=(30, 24, 22), bill=(224, 170, 60), foot=(224, 170, 60))
     pv = {"head": (50, 40), "tail": (50, 96), "wing": (30, 50), "blink": (50, 30), "ear": (50, 20)}
     parts = bird_legs("foot", [42, 58], 92, 5)[:2] + [
-        E("fur", 50, 66, 28, 34), E("belly", 50, 72, 17, 26), P("fur2", [(40, 62), (36, 76), (42, 84)]),
+        E("fur", 50, 66, 28, 34), E("belly", 50, 72, 17, 26),
         E("fur2", 24, 64, 10, 27, 8, "wing"), E("fur2", 76, 64, 10, 27, -8, "wing"),
         tri("fur2", (32, 22), (28, 2), (44, 14), "ear+head"), tri("fur2", (68, 22), (72, 2), (56, 14), "ear+head"),
         E("fur", 50, 30, 24, 20, anim="head"), E("belly", 38, 30, 11, 12, anim="head"), E("belly", 62, 30, 11, 12, anim="head"),
