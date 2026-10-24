@@ -1,0 +1,47 @@
+{
+  "duration": 4,
+  "fps": 30,
+  "w": 1080,
+  "h": 1920,
+  "push": {
+    "from": 0,
+    "to": 2.3,
+    "zoom": [
+      1,
+      1.35
+    ]
+  },
+  "flash": {
+    "frames": [
+      69,
+      70
+    ]
+  },
+  "hold": {
+    "from": 2.4,
+    "to": 4
+  },
+  "tick": {
+    "dur": 0.15
+  },
+  "hands": {
+    "hour": 304,
+    "minute": 48
+  },
+  "shadow": {
+    "dx": -0.16,
+    "dy": -0.2
+  },
+  "palette": {
+    "paper": "#d9d2c3",
+    "ink": "#26211e",
+    "case": "#8a8478",
+    "face": "#ece5d3",
+    "shade": "#b9b09c",
+    "red": "#c8372d"
+  },
+  "grain": {
+    "alpha": 0.1,
+    "seed": 5
+  }
+}
