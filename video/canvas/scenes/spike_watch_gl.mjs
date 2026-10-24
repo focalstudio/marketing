@@ -46,11 +46,11 @@ const ellipse = (x, y, rx, ry, rot = 0, seg = 48) => fan(Array.from({ length: se
 
 const VS = `#version 300 es
 in vec3 aPos; in vec3 aNrm;
-uniform mat4 uMVP, uModel; uniform bool uScreen; uniform vec2 uRes; uniform float uHull; uniform vec4 uCen;
+uniform mat4 uMVP, uModel; uniform bool uScreen; uniform vec2 uRes, uOff; uniform float uHull; uniform vec4 uCen;
 out vec3 vPos; out vec3 vN;
 void main() {
   vec4 p; vPos = aPos;
-  if (uScreen) { p = vec4(aPos.x / uRes.x * 2. - 1., 1. - aPos.y / uRes.y * 2., 0., 1.); vN = vec3(0., 0., 1.); }
+  if (uScreen) { vec2 q = aPos.xy + uOff; p = vec4(q.x / uRes.x * 2. - 1., 1. - q.y / uRes.y * 2., 0., 1.); vN = vec3(0., 0., 1.); }
   else { p = uMVP * vec4(aPos, 1.); vN = mat3(uModel) * aNrm; }
   if (uHull > 0.) {
     vec2 d = normalize((p.xy / p.w - uCen.xy / uCen.w) * uRes);
@@ -98,7 +98,7 @@ export function setup(doc, W, H) {
   const gl = cv.getContext("webgl2", { preserveDrawingBuffer: true, antialias: true, alpha: false });
   if (!gl) throw new Error("no webgl2");
   const prog3 = program(gl, VS, FS), progG = program(gl, GVS, GFS);
-  const u = Object.fromEntries(["uMVP", "uModel", "uScreen", "uRes", "uHull", "uCen", "uCol", "uShade", "uMode", "uInvert", "uAlpha", "uShadowC"]
+  const u = Object.fromEntries(["uMVP", "uModel", "uScreen", "uRes", "uOff", "uHull", "uCen", "uCol", "uShade", "uMode", "uInvert", "uAlpha", "uShadowC"]
     .map(n => [n, gl.getUniformLocation(prog3, n)]));
   const mesh = verts => {
     const vao = gl.createVertexArray(), buf = gl.createBuffer();
@@ -146,12 +146,13 @@ export function draw(ctx, t, W, H, st) {
   const VP = mul(trans(0, 1 - 2 * 0.47, 0), mul(persp(24 * RAD, W / H, 1, 40), trans(0, 0, -d)));
   const centre = apply(mul(VP, tilt), [0, 0, 0]);
 
-  const drawMesh = (m, { local = id(), col, shade = col, mode = 0, hull = 0, alpha = 1, screen = false, cen }) => {
+  const drawMesh = (m, { local = id(), off = [0, 0], col, shade = col, mode = 0, hull = 0, alpha = 1, screen = false, cen }) => {
     const model = mul(tilt, local), mvp = mul(VP, model);
     gl.bindVertexArray(m.vao);
     gl.uniformMatrix4fv(u.uMVP, false, mvp);
     gl.uniformMatrix4fv(u.uModel, false, model);
     gl.uniform1i(u.uScreen, screen);
+    gl.uniform2f(u.uOff, off[0], off[1]);
     gl.uniform4fv(u.uCen, cen ? apply(mvp, cen) : centre);
     gl.uniform3fv(u.uCol, rgb(col));
     gl.uniform3fv(u.uShade, rgb(shade));
@@ -197,7 +198,7 @@ export function draw(ctx, t, W, H, st) {
   const a = easeOut(prog(t, SHOT.hold.from, SHOT.hold.from + 0.5));
   if (a > 0) {
     const bx = W * 0.86 + (1 - a) * 80 * k, by = H * 0.93;
-    for (const m of st.rabbit) drawMesh(m, { local: trans(bx, by, 0), col: P.ink, alpha: a, screen: true, });
+    for (const m of st.rabbit) drawMesh(m, { off: [bx, by], col: P.ink, alpha: a, screen: true });
   }
 
   // grain pass
