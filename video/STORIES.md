@@ -54,3 +54,4 @@ stills, `--size 1080x1080` for square). These videos sell the feeling (switching
 |---|---|---|
 | `rain_outside` | The life of a raindrop, from the window to the cloud to the puddle (engraving, no animals) | 30 s |
 | `focus_rabbit` | One rabbit's 25-minute focus session, with a fox moving in at the end (Kawaii Chibi: `canvas/toon.mjs`) | 30 s |
+| `last25` | The last 25 minutes of an evening: a rooftop at dusk, a pocket watch, an impact frame and a time-lapse into night (anime-cel: `canvas/cel.mjs`; city sound that gives way to a focus sound) | 18.5 s |
