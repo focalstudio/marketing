@@ -13,6 +13,7 @@ this file is the short orientation. Deeper notes: [.claude/CLAUDE.md](.claude/CL
 - `published.json`: written by the publisher. Never hand-edit.
 - `scripts/`: `publish.mjs` (check, plan, publish, refresh, buffer-posts, styles), `draft-week.mjs` (weekly drafter), `push-media.mjs`.
 - `video/`: Python renderer (`kit/`, `styles/`, `clips/`, `tests/`). Goldens live in `video/tests/goldens/`. [video/STYLES.md](video/STYLES.md) lists the styles, [video/STORIES.md](video/STORIES.md) the stories.
+- `video/canvas/`: canvas 2D scenes (`scenes/`), drawing kits (`toon.mjs`, `cel.mjs`, `ink.mjs`), sound (`audio.mjs`), `render.mjs`, one prompt `.md` per video. How a story opens and closes: [video/STORIES.md](video/STORIES.md). Goldens: none; `canvas.test.mjs` covers timing and sound.
 - `apps/<app>.yml`: per-app config. `platforms.yml` + `PLATFORMS.md`: platform order. `voice.md`: tone. `GROWTH.md`: how the accounts grow and the human's routine.
 - `.github/workflows/`: `ci` and `video-tests` (PRs), `publish` (on queue push + twice daily), `refresh-tokens`, `check`.
 

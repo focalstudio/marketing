@@ -8,7 +8,8 @@ import { frameTimes, iconPath } from "./render.mjs";
 import * as rain from "./scenes/rain_outside.mjs";
 import * as rabbit from "./scenes/focus_rabbit.mjs";
 import * as last25 from "./scenes/last25.mjs";
-import { snap, makeLines } from "./cel.mjs";
+import { snap, makeLines, CLOSING } from "./cel.mjs";
+import { cityArgv } from "./audio.mjs";
 
 test("the hook text is on screen from the first frame and the camera moves by about 3 s", () => {
   assert.equal(rain.CAPTIONS[0].from, 0);
@@ -116,15 +117,30 @@ test("last25: hook from frame 0, captions inside the video and apart, end card a
   assert.equal(last25.SCENES.at(-1).to, last25.DURATION);
 });
 
-test("last25: the impact is two frames, shows its caption and has the thunder on it", () => {
+test("last25: the impact is two frames and shows its caption", () => {
   assert.equal(last25.FLASH.length, 2);
   assert.equal(last25.FLASH[1], last25.FLASH[0] + 1);
   const hit = last25.CAPTIONS.find(c => c.hit);
   assert.ok(hit.from <= last25.IMPACT && last25.IMPACT < hit.to);
-  const argv = soundArgv("/o.wav", last25.DURATION, last25.SOUND), fg = argv[argv.indexOf("-filter_complex") + 1];
+});
+
+test("last25: city sound at full level from frame 0, cut at the impact, focus bed and ticks after it", () => {
+  const argv = soundArgv("/o.wav", last25.DURATION, last25.SOUND), fg = argv[argv.indexOf("-filter_complex") + 1], S = last25.SOUND;
+  assert.equal(S.kind, "city");
   assert.ok(!fg.includes("afade=t=in"));
-  for (const b of last25.SOUND.beats) assert.ok(fg.includes(`adelay=${Math.round(b * 1000)}|`), `beat ${b}`);
+  assert.ok(fg.includes(`max(0,1-(t-${S.impact})/0.12)`), "the street cuts out at the impact");
+  for (const t of [S.impact, ...S.ticks, ...S.horns, S.done, S.done + 0.14, S.close]) assert.ok(fg.includes(`adelay=${Math.round(t * 1000)}|`), `beat ${t}`);
+  assert.ok(fg.includes(`between(t,${S.lapse.from},${S.lapse.to})`));
   assert.deepEqual(argv, soundArgv("/o.wav", last25.DURATION, last25.SOUND));
+  assert.deepEqual(argv, cityArgv("/o.wav", last25.DURATION, S));
+});
+
+test("last25: every video closes on the shared line, readable before the end card", () => {
+  const last = [...last25.CAPTIONS].sort((a, b) => a.from - b.from).at(-1);
+  assert.deepEqual(last.lines, CLOSING);
+  assert.deepEqual(CLOSING, [["Just focus on"], ["what matters."]]);
+  assert.ok(last.to - last.from >= 2.4 && last.to <= last25.END.from);
+  assert.ok(last25.END.from < last25.DURATION);
 });
 
 test("last25: the watch reads 10:08 until the lapse, then the minute hand sweeps 25 minutes", () => {

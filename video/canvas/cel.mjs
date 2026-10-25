@@ -152,3 +152,6 @@ export function cel(ctx, W, y, lines, { size = 88, alpha = 1 } = {}) {
   });
   ctx.restore();
 }
+
+// The closing words of every video, before the end card (the rain video's line). See "How a story should close" in video/STORIES.md.
+export const CLOSING = [["Just focus on"], ["what matters."]];
