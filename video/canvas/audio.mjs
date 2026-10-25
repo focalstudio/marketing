@@ -69,7 +69,41 @@ export function toonArgv(path, dur, { buzz = [], hops = [], thunk, start, done, 
     ...v.args, "-filter_complex", fg.join(";"), "-map", "[out]", "-ac", "2", path];
 }
 
-const BUILDERS = { rain: rainArgv, toon: toonArgv };
+// The last25 sound: a synthesised city (traffic rumble, hiss, a few horns, a far siren) at full level from frame 0, ducking
+// and a riser into the impact, where the street cuts out at once; then a quiet "focus" bed (a soft pad, room tone and clock ticks)
+// until the 25 minutes are done, a chime, and a chime on the closing card. No loudnorm: it would level out the drop at the
+// impact, so the gains are set by hand and an alimiter guards the peaks.
+export function cityArgv(path, dur, { impact, lapse, ticks = [], horns = [], siren = [0, 0], done, close, seed = 11 } = {}) {
+  const s = k => `:seed=${(seed * 31 + k) % 2 ** 31}`, noise = (c, k) => ["-f", "lavfi", "-i", `anoisesrc=d=${dur}:c=${c}:r=48000:a=0.8${s(k)}`];
+  const silent = ["-f", "lavfi", "-i", `anullsrc=r=48000:cl=mono:d=${dur}`];
+  const env = `if(lt(t,3.2),1,if(lt(t,${impact}),1-0.3*(t-3.2)/${impact - 3.2},max(0,1-(t-${impact})/0.12)))`;
+  const focus = `clip((t-${impact})/2,0,1)*(1-clip((t-${done})/1.5,0,1))`;
+  const ev = [
+    { at: impact, dur: 1.4, gain: 1, expr: "sin(2*PI*60*t)*exp(-t*5)+0.5*(random(0)-0.5)*exp(-t*30)" },
+    ...horns.map(at => ({ at, dur: 0.5, gain: 0.14, expr: "(sin(2*PI*410*t)+sin(2*PI*520*t))*min(1,t*40)*min(1,(0.5-t)*20)" })),
+    ...ticks.map(at => ({ at, dur: 0.12, gain: 0.3, expr: "sin(2*PI*2000*t)*exp(-t*120)" })),
+    { at: done, dur: 1.6, gain: 0.5, expr: note(1046.5) },
+    { at: done + 0.14, dur: 1.6, gain: 0.5, expr: note(1568) },
+    { at: close, dur: 1.6, gain: 0.4, expr: note(880, 4) },
+  ];
+  const v = voices(ev, 7);
+  const fg = [
+    `[0]lowpass=f=300,volume='0.9*(1+0.25*sin(2*PI*0.2*t))*${env}':eval=frame[rumble]`,
+    `[1]highpass=f=800,lowpass=f=3000,volume='0.16*${env}':eval=frame[hiss]`,
+    `[2]highpass=f=2000,volume='0.3*pow(clip((t-${impact - 1})/1,0,1),2)*between(t,${impact - 1},${impact})':eval=frame[riser]`,
+    `[3]lowpass=f=400,volume='0.35*${focus}':eval=frame[room]`,
+    `[4]aeval='(sin(2*PI*110*t)+0.8*sin(2*PI*164.81*t)+0.6*sin(2*PI*220*t)+0.4*sin(2*PI*277.18*t))*0.11*(0.8+0.2*sin(2*PI*0.25*t))*${focus}':c=mono[pad]`,
+    `[5]aeval='0.1*sin(2*PI*850*t-250/0.7*cos(2*PI*0.7*t))*between(t,${siren[0]},${siren[1]})*min(1,(t-${siren[0]})*2)*min(1,(${siren[1]}-t)*2)*${env}':c=mono[siren]`,
+    `[6]aeval='0.25*sin(2*PI*2600*t)*exp(-mod(t,0.25)*200)*between(t,${lapse.from},${lapse.to})':c=mono[tick]`,
+    ...v.filters,
+    `[rumble][hiss][riser][room][pad][siren][tick]${v.labels.join("")}amix=inputs=${v.labels.length + 7}:duration=first:normalize=0,` +
+      `atrim=0:${dur},alimiter=limit=0.9,aresample=48000,afade=t=out:st=${dur - 1.5}:d=1.5[out]`,
+  ];
+  return ["ffmpeg", "-v", "error", "-y", ...noise("brown", 0), ...noise("pink", 1), ...noise("white", 2), ...noise("brown", 3), ...silent, ...silent, ...silent,
+    ...v.args, "-filter_complex", fg.join(";"), "-map", "[out]", "-ac", "2", path];
+}
+
+const BUILDERS = { rain: rainArgv, toon: toonArgv, city: cityArgv };
 
 // The ffmpeg argv for a scene's SOUND: its `kind` picks the builder ("rain" when absent, as rain_outside has no kind).
 export const soundArgv = (path, dur, sound = {}) => BUILDERS[sound.kind || "rain"](path, dur, sound);
