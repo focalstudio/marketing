@@ -1,6 +1,7 @@
 // Engine spike, canvas 2D baseline: the shared pocket-watch shot (video/spikes/watch_shot.mjs) with a clip-path cel shadow,
 // tapered ink polygons, seeded grain, an inverted-palette flash and radial speed lines. Every frame is a pure function of t.
 import { rng, prog, easeOut } from "../ink.mjs";
+import { rabbitSilhouette } from "../../spikes/rabbit.mjs";
 import { SHOT, flashAt, zoomAt, secondAngle } from "../../spikes/watch_shot.mjs";
 
 export const DURATION = SHOT.duration, COVER = 0.5;
@@ -20,7 +21,7 @@ export function setup(doc, W, H) {
   const gx = g.getContext("2d"), img = gx.createImageData(256, 256), r = rng(SHOT.grain.seed);
   for (let i = 0; i < img.data.length; i += 4) img.data[i] = img.data[i + 1] = img.data[i + 2] = r() < 0.5 ? 0 : 255, img.data[i + 3] = 255 * r();
   gx.putImageData(img, 0, 0);
-  return { grain: g, lines: Array.from({ length: 28 }, () => ({ a: r() * TAU, w: 0.01 + r() * 0.035, in: 0.5 + r() * 0.3 })) };
+  return { rabbit: rabbitSilhouette(doc, W, H), grain: g, lines: Array.from({ length: 28 }, () => ({ a: r() * TAU, w: 0.01 + r() * 0.035, in: 0.5 + r() * 0.3 })) };
 }
 
 // A ring whose outer edge swells towards the lower right: the tapered ink line.
@@ -110,16 +111,9 @@ export function draw(ctx, t, W, H, st) {
     }
   }
 
-  // the rabbit, in silhouette at the lower-right edge, from the hold
+  // the rabbit, in silhouette at the lower-right edge, fading in over the hold
   const a = easeOut(prog(t, SHOT.hold.from, SHOT.hold.from + 0.5));
-  if (a > 0) {
-    ctx.globalAlpha = a; ctx.fillStyle = c.ink;
-    const bx = W * 0.86 + (1 - a) * 80 * k, by = H * 0.93, s = k;
-    for (const [x, y, rx, ry, rot] of [[0, 0, 150, 120, 0], [-70, -150, 70, 62, 0], [-95, -300, 22, 90, -0.15], [-45, -305, 22, 95, 0.1]]) {
-      ctx.beginPath(); ctx.ellipse(bx + x * s, by + y * s, rx * s, ry * s, rot, 0, TAU); ctx.fill();
-    }
-    ctx.globalAlpha = 1;
-  }
+  if (a > 0) { ctx.globalAlpha = a; ctx.drawImage(st.rabbit, (1 - a) * 80 * (W / 1080), 0); ctx.globalAlpha = 1; }
 
   // grain, offset each frame
   const f = Math.floor(t * SHOT.fps + 1e-6), r = rng(f + 1);

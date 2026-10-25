@@ -2,6 +2,7 @@
 // inverted-hull outline pushed out in screen space (thicker towards the lower right: the taper), a hash-noise grain pass,
 // and the flash as a uniform. Drawn offscreen, then copied onto the 2D canvas the renderer reads.
 import { rng, prog, easeOut } from "../ink.mjs";
+import { rabbitSilhouette } from "../../spikes/rabbit.mjs";
 import { SHOT, flashAt, zoomAt, secondAngle } from "../../spikes/watch_shot.mjs";
 
 export const DURATION = SHOT.duration, COVER = 0.5;
@@ -39,10 +40,6 @@ function wall(r, z0, z1, seg = 96) {
 }
 const box = (x0, y0, x1, y1, z) => fan([[x0, y0], [x1, y0], [x1, y1], [x0, y1]], z);
 const hand = (len, tail, w, z) => fan([[-w, -tail], [w, -tail], [w * 0.25, len], [-w * 0.25, len]], z);
-const ellipse = (x, y, rx, ry, rot = 0, seg = 48) => fan(Array.from({ length: seg + 1 }, (_, i) => {
-  const a = (i / seg) * TAU, px = Math.cos(a) * rx, py = Math.sin(a) * ry;
-  return [x + px * Math.cos(rot) - py * Math.sin(rot), y + px * Math.sin(rot) + py * Math.cos(rot)];
-}), 0);
 
 const VS = `#version 300 es
 in vec3 aPos; in vec3 aNrm;
@@ -113,11 +110,8 @@ export function setup(doc, W, H) {
     return { vao, n: verts.length / 6 };
   };
   const r = rng(SHOT.grain.seed), lines = Array.from({ length: 28 }, () => ({ a: r() * TAU, w: 0.01 + r() * 0.035, in: 0.5 + r() * 0.3 }));
-  const k = W / 1080;
-  const rabbit = [[0, 0, 150, 120, 0], [-70, -150, 70, 62, 0], [-95, -300, 22, 90, -0.15], [-45, -305, 22, 95, 0.1]]
-    .map(([x, y, rx, ry, rot]) => mesh(ellipse(x * k, y * k, rx * k, ry * k, rot)));
   return {
-    gl, cv, prog3, progG, u, lines, rabbit, W, H,
+    rabbit: rabbitSilhouette(doc, W, H), gl, cv, prog3, progG, u, lines, W, H,
     crown: mesh(box(-0.14, 1.0, 0.14, 1.24, -0.02)), crownCap: mesh(box(-0.14, 1.17, 0.14, 1.24, -0.01)),
     wall: mesh(wall(1, -0.12, 0.12)), cap: mesh(disc(1, 0.12)), face: mesh(disc(0.86, 0.125)),
     ticks: Array.from({ length: 12 }, (_, i) => ({ m: mesh(box(-(i % 3 ? 0.012 : 0.022), i % 3 ? 0.73 : 0.68, i % 3 ? 0.012 : 0.022, 0.8, 0.13)), a: (i * 30) * RAD })),
@@ -195,12 +189,6 @@ export function draw(ctx, t, W, H, st) {
     const lm = mesh2(gl, st.prog3, o);
     drawMesh(lm, { col: P.ink, screen: true });
   }
-  const a = easeOut(prog(t, SHOT.hold.from, SHOT.hold.from + 0.5));
-  if (a > 0) {
-    const bx = W * 0.86 + (1 - a) * 80 * k, by = H * 0.93;
-    for (const m of st.rabbit) drawMesh(m, { off: [bx, by], col: P.ink, alpha: a, screen: true });
-  }
-
   // grain pass
   gl.useProgram(st.progG);
   gl.uniform1f(gl.getUniformLocation(st.progG, "uSeed"), Math.floor(t * SHOT.fps + 1e-6) * 17.3);
@@ -208,6 +196,9 @@ export function draw(ctx, t, W, H, st) {
   gl.drawArrays(gl.TRIANGLES, 0, 3);
 
   ctx.drawImage(st.cv, 0, 0);
+  // the rabbit goes on top of the GL frame (and its grain), as a 2D overlay
+  const a = easeOut(prog(t, SHOT.hold.from, SHOT.hold.from + 0.5));
+  if (a > 0) { ctx.globalAlpha = a; ctx.drawImage(st.rabbit, (1 - a) * 80 * k, 0); ctx.globalAlpha = 1; }
 }
 
 // A throwaway mesh for the per-frame speed lines (kept out of setup so the line set can follow the flash).
