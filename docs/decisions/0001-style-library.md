@@ -103,7 +103,7 @@ Backlog: `pixel-art` (canvas port of the Pillow style, nearest-neighbour upscale
 
 ## Rendering engine spikes (done)
 
-All three engines rendered the same shot: an anime-cel pocket-watch close-up, 4 s at 30 fps, 1080×1920, with one hard cel shadow, a tapered ink outline, grain, a muted palette with one red accent, a 2-frame impact flash at 2.3 s, and the house rabbit in silhouette. Each lives on its own spike branch (`spike/webgl-cel` holds canvas 2D and WebGL, `spike/blender-cel` holds Blender) and touches no production files. The branches are not merged; code is salvaged only for the engine that wins.
+All three engines rendered the same shot: an anime-cel pocket-watch close-up, 4 s at 30 fps, 1080×1920, with one hard cel shadow, a tapered ink outline, grain, a muted palette with one red accent, a 2-frame impact flash at 2.3 s, and the house rabbit in silhouette. Each is archived as an annotated tag (`archive/spike-webgl-cel` holds canvas 2D and WebGL, `archive/spike-blender-cel` holds Blender) and touches no production files. Neither was merged; code is salvaged only for the engine that wins.
 
 | | canvas 2D | raw WebGL2 | Blender 5.2.3 (EEVEE + Freestyle) |
 |---|---|---|---|
