@@ -7,18 +7,33 @@ in [apps/wildfocus.yml](../apps/wildfocus.yml) (`styles:`), and how many posts e
 
 ## In use
 
-| Style | Look | Plays | Motion |
-|---|---|---|---|
-| `toon` | flat cartoon, thick outlines, after Gumball | `meditate` | gait cycles, 30 fps |
-| `lowpoly` | faceted 3D-ish, soft paper light | `meditate` | gait cycles, 30 fps |
-| `pixel` | 8 px pixel art, fixed palette, Bayer dissolves | `meditate` | gait cycles, 30 fps |
-| `ink` | cream paper, pencil hatching, boiling ink outlines | `meditate` | outlines redrawn every 3 frames |
-| `paper` | layered cutout paper: torn sheets, soft shadows, parallax sway, pines | every story | 12 poses a second, stop-motion feel |
-| `storybook` | flat vector picture book, warm limited palette, paper grain over every frame | every story | 24 poses a second, smooth |
+| Style | Engine | Look | Plays | Motion |
+|---|---|---|---|---|
+| `toon` | Pillow | flat cartoon, thick outlines, after Gumball | `meditate` | gait cycles, 30 fps |
+| `lowpoly` | Pillow | faceted 3D-ish, soft paper light | `meditate` | gait cycles, 30 fps |
+| `pixel` | Pillow | 8 px pixel art, fixed palette, Bayer dissolves | `meditate` | gait cycles, 30 fps |
+| `ink` | Pillow | cream paper, pencil hatching, boiling ink outlines | `meditate` | outlines redrawn every 3 frames |
+| `paper` | Pillow | layered cutout paper: torn sheets, soft shadows, parallax sway, pines | every story | 12 poses a second, stop-motion feel |
+| `storybook` | Pillow | flat vector picture book, warm limited palette, paper grain over every frame | every story | 24 poses a second, smooth |
 
 `paper` and `storybook` share [styles/_drawn.py](styles/_drawn.py) (the storyboard machinery of `appart`, with drawn art)
 and the 22 animals in [kit/species.py](kit/species.py), so a story written once plays in both and the animals really
 move: legs swing while they hop or walk, ears twitch, they blink, wings flap.
+
+## Planned (style library)
+
+IDs and decisions are in [docs/decisions/0001-style-library.md](../docs/decisions/0001-style-library.md). The engine column is the recommendation from the engine spikes: canvas 2D is the default because it matched WebGL and Blender on the test shot at the lowest cost with nothing to install. Blender is for real 3D only.
+
+| Style | Engine | Why |
+|---|---|---|
+| `naturalist-engraving` | canvas 2D | port of `video/canvas/ink.mjs`: hatching and boiling outlines |
+| `kawaii-chibi` | canvas 2D | `video/canvas/toon.mjs` already exists |
+| `wonderland-engraving` | canvas 2D | hatching on flat shapes |
+| `cartoon-hose` | canvas 2D | bezier limbs, squash and stretch, beat loops |
+| `pixel-art` | canvas 2D | nearest-neighbour upscale of a palette-locked canvas |
+| `anime-cel` | canvas 2D | the spike showed parity; use Blender only for a 3D prop or brush-style ink |
+| `mascot-flat`, `monoline-icon` | canvas 2D | flat vector |
+| `lowpoly` (Pillow today) | Blender candidate | real faceted 3D with light; spike it if `lowpoly` stays in the mix |
 
 ## Retired
 

@@ -101,13 +101,28 @@ Backlog: `pixel-art` (canvas port of the Pillow style, nearest-neighbour upscale
 - **anime-cel** (flat cel shading, hard line-weight variation, muted palette, grain, cinematic framing; general traits only, no series' characters or marks): feasible are tapered strokes as filled polygons, one hard shadow via a clip path, one accent colour, grain, letterbox, speed lines, impact frames and camera push or shake. Not feasible: character acting, turnarounds, painted backgrounds, hair or cloth simulation. Keep shots tight and silhouetted. Vignette "Last 25": rooftop silhouette, watch macro, impact frame "Start.", calm wide shot with icon.
 - **pixel-art**: fully feasible.
 
-## Rendering engine spikes (pending)
+## Rendering engine spikes (done)
 
-Both render the same shot: an anime-cel pocket-watch close-up, about 4 s at 30 fps, 1080×1920, with one hard cel shadow, ink outline, grain, a muted palette with one red accent, a 2-frame impact flash near 2.5 s, and the rabbit in silhouette at the frame edge. Each is time-boxed to one day on its own branch and touches no production files.
+All three engines rendered the same shot: an anime-cel pocket-watch close-up, 4 s at 30 fps, 1080×1920, with one hard cel shadow, a tapered ink outline, grain, a muted palette with one red accent, a 2-frame impact flash at 2.3 s, and the house rabbit in silhouette. Each lives on its own spike branch (`spike/webgl-cel` holds canvas 2D and WebGL, `spike/blender-cel` holds Blender) and touches no production files. The branches are not merged; code is salvaged only for the engine that wins.
 
-- `spike/webgl-cel`: raw WebGL2, no libraries. An offscreen WebGL canvas is copied into the existing 2D context each frame, so `render.mjs` and `scene.html` are unchanged. Cel ramp, outline pass, hash-noise grain, procedural watch geometry. Render twice and compare; if frames differ, try `--use-angle=swiftshader`.
-- `spike/blender-cel`: Blender (`brew install --cask blender`) driven by a `bpy` script, EEVEE toon material, Freestyle or Line Art for ink lines, compositor grain and flash. No `.blend` committed.
-- Compare on a contact sheet at three fixed times: look, code size, render time, determinism, CI cost (install size, runtime on `ubuntu-latest`), and how easily Claude can edit it. Adopt an engine only if it clearly beats canvas 2D on this shot. The verdict is added here.
+| | canvas 2D | raw WebGL2 | Blender 5.2.3 (EEVEE + Freestyle) |
+|---|---|---|---|
+| Render time, 4 s | about 19 s | about 35 s | 62 s frames + 18 s encode |
+| mp4 size | 20 MB | 64 MB | 118 MB (ffmpeg noise grain) |
+| Deterministic, two runs | yes | yes | yes, by decoded pixels (PNG metadata differs) |
+| Code | 125 lines | 216 lines | 319 lines Python + 9 shell |
+| Install | none (Chrome) | none (Chrome) | 907 MB app |
+| Look | flat, clean vector ink | almost identical to 2D, no visible gain | almost identical, plus a brush-style tapered line |
+
+Caveats: the three differ slightly in the grain (Blender's is ffmpeg's, added at encode time) and in the sound (2D and WebGL carry the quiet rain bed; Blender is silent).
+
+**Verdict**
+
+- **canvas 2D is the default engine.** It matched the other two on this shot at the lowest cost and needs no install, which keeps CI and Claude's edits simple.
+- **WebGL is dropped.** It looks the same at about twice the render time and more code.
+- **Blender is kept as a fallback**, for what canvas 2D cannot do: real 3D (objects turning in depth, faceted low-poly with real light) and brush-style Freestyle ink. It is not in `ubuntu-latest`, so it would be a download of roughly 300 MB per CI run unless cached. Its renders are made locally and committed to `inbox/`.
+
+The engine recommended for each style is in [video/STYLES.md](../../video/STYLES.md).
 
 ## Not chosen
 
