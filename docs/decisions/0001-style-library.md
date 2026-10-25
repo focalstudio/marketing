@@ -1,6 +1,6 @@
 # 0001 · A reusable style library for Focal Studio
 
-Status: accepted 2026-10-24 · Spikes (WebGL, Blender) not yet run · Nothing built yet
+Status: accepted 2026-10-24 · Engine spikes run: canvas 2D is the default · Nothing built yet
 
 ## Context
 
