@@ -1,7 +1,7 @@
 // The anime-cel drawing kit: flat cel bands with one hard shadow, tapered ink as filled polygons, seeded grain, speed lines
 // and an inverted-palette impact. General traits only (no series, characters or marks). Plain canvas 2D, no dependencies.
 // Every function is a pure function of its arguments; the scenes drive it with t.
-import { rng, clamp, lerp } from "./ink.mjs";
+import { rng, clamp, lerp, prog, easeOut } from "./ink.mjs";
 
 export const PAL = { paper: "#d9d2c3", ink: "#26211e", case: "#8a8478", face: "#ece5d3", shade: "#b9b09c", red: "#c8372d" };
 export const TAU = Math.PI * 2;
@@ -153,5 +153,41 @@ export function cel(ctx, W, y, lines, { size = 88, alpha = 1 } = {}) {
   ctx.restore();
 }
 
-// The closing words of every video, before the end card (the rain video's line). See "How a story should close" in video/STORIES.md.
+// The end card of every video (see "How a story should end" in video/STORIES.md): the real app icon as a sticker, the name,
+// the closing line and the store line, on a night page that fades in over the last scene. `from` is when it starts; it holds
+// at least 3 s. The grain goes over it.
 export const CLOSING = [["Just focus on"], ["what matters."]];
+export const STORE = "Available on iOS";
+export const NIGHT = "#0f1424";
+
+export function endCard(ctx, t, W, H, { icon, from, tile, title = "WildFocus" }) {
+  const k = W / 1080, a = easeOut(prog(t, from, from + 0.5)), s = 260 * k, cy = H * 0.36;
+  if (a <= 0) return;
+  ctx.save();
+  ctx.globalAlpha = a;
+  ctx.fillStyle = NIGHT;
+  ctx.fillRect(0, 0, W, H);
+  const pop = 0.85 + 0.15 * easeOut(prog(t, from + 0.1, from + 0.6));
+  ctx.translate(W / 2, cy);
+  ctx.scale(pop, pop);
+  if (icon) {
+    ctx.fillStyle = PAL.ink;
+    ctx.beginPath(); ctx.roundRect(-s / 2 + 8 * k, -s / 2 + 14 * k, s, s, s * 0.225); ctx.fill();
+    ctx.save();
+    ctx.beginPath(); ctx.roundRect(-s / 2, -s / 2, s, s, s * 0.225); ctx.clip();
+    ctx.drawImage(icon, -s / 2, -s / 2, s, s);
+    ctx.restore();
+    ctx.lineWidth = 6 * k;
+    ctx.strokeStyle = PAL.face;
+    ctx.beginPath(); ctx.roundRect(-s / 2, -s / 2, s, s, s * 0.225); ctx.stroke();
+  }
+  ctx.restore();
+  cel(ctx, W, cy + s / 2 + 130 * k, [[title]], { size: 120 * k, alpha: a });
+  const bar = prog(t, from + 0.4, from + 0.9);
+  ctx.fillStyle = PAL.red;
+  ctx.fillRect(W / 2 - 160 * k * bar, cy + s / 2 + 220 * k, 320 * k * bar, 10 * k);
+  cel(ctx, W, cy + s / 2 + 300 * k, CLOSING, { size: 72 * k, alpha: prog(t, from + 0.7, from + 1.2) });
+  cel(ctx, W, cy + s / 2 + 520 * k, [[STORE]], { size: 46 * k, alpha: prog(t, from + 1.2, from + 1.7) });
+  ctx.restore();
+  grain(ctx, t, W, H, tile);
+}

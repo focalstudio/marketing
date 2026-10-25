@@ -2,12 +2,12 @@
 // in canvas 2D with the cel kit. Every frame is a pure function of t; see last25.md for the prompt.
 import { rng, prog, easeOut, easeIo, lerp } from "../ink.mjs";
 import { critter } from "../toon.mjs";
-import { PAL, TAU, mix, snap, watch, makeLines, speedLines, grainPattern, grain, letterbox, invert, cel, CLOSING } from "../cel.mjs";
+import { PAL, TAU, mix, snap, watch, makeLines, speedLines, grainPattern, grain, letterbox, invert, cel, endCard, CLOSING, STORE } from "../cel.mjs";
 
-export const DURATION = 19, COVER = 1.5;
+export const DURATION = 18.5, COVER = 1.5;
 export const FLASH = [210, 211];                     // frames: 7.0 s and 7.033 s, palette inverted
 export const IMPACT = FLASH[0] / 30, LAPSE = { from: 7.1, to: 14 }, WATCH = { from: 3.2, to: 14.2 };
-export const SOUND = { kind: "city", impact: IMPACT, lapse: LAPSE, ticks: [4, 5, 6], horns: [0.9, 2.2, 2.45, 4.6, 5.8], siren: [1.6, 3.8], done: 14, close: 16.8 };
+export const SOUND = { kind: "city", impact: IMPACT, lapse: LAPSE, ticks: [4, 5, 6], horns: [0.9, 2.2, 2.45, 4.6, 5.8], siren: [1.6, 3.8], done: 14, close: 15.3 };
 export const SCENES = [{ name: "roof", from: 0, to: 3.2 }, { name: "watch", from: 3.2, to: 14.2 }, { name: "night", from: 14.2, to: DURATION }];
 const R_ = t => ({ t, c: PAL.red });
 export const CAPTIONS = [
@@ -15,9 +15,8 @@ export const CAPTIONS = [
   { from: 3.5, to: 6.8, lines: [["Phone down."]], size: 96 },
   { from: 7.0, to: 7.3, lines: [["Start."]], size: 230, y: 0.5, hit: true },
   { from: 8.0, to: 13.4, lines: [[R_("25 minutes.")], ["Nothing else."]] },
-  { from: 14.2, to: 16.6, lines: CLOSING, y: 0.27 },
 ];
-export const END = { from: 16.8, title: "WildFocus", line: "25 minutes. Phone down." };
+export const END = { from: 15.3, title: "WildFocus", lines: CLOSING, store: STORE };
 
 const SKY = { dusk: ["#3b3552", "#6b4a68", "#b85f5a", "#e49a5a", "#f2c27a"], night: ["#0f1424", "#171d33", "#232a47", "#2f3558", "#3a3f66"] };
 const ROOF = 0.875;
@@ -50,7 +49,6 @@ export const clock = t => {
 
 export function draw(ctx, t, W, H, st) {
   const k = W / 1080, f = Math.floor(t * 30 + 1e-6), flash = FLASH.includes(f), u = prog(t, LAPSE.from, LAPSE.to);
-  if (t >= END.from) return endCard(ctx, t, W, H, st);
   ctx.save();
   ctx.translate(W / 2, H * 0.6);
   const push = 1 + 0.08 * prog(t, 0, 14);
@@ -76,6 +74,7 @@ export function draw(ctx, t, W, H, st) {
   }
   if (flash) invert(ctx, W, H);
   grain(ctx, t, W, H, st.tile);
+  endCard(ctx, t, W, H, { icon: st.icon, from: END.from, tile: st.tile });
 }
 
 // Sky in five flat cel bands, a sun that sinks and a moon that rises, a skyline with windows, the roof and the rabbit.
@@ -112,37 +111,4 @@ function scenery(ctx, t, W, H, st, u) {
   ctx.fillStyle = PAL.ink;
   ctx.fillRect(-W, roofY, 3 * W, H);
   ctx.drawImage(st.rab, 0, 0);
-}
-
-// Night page: the real app icon as a sticker with a lip, the name in paper, the line under a red bar.
-function endCard(ctx, t, W, H, st) {
-  const k = W / 1080, a = easeOut(prog(t, END.from, END.from + 0.5)), s = 260 * k, cy = H * 0.4;
-  ctx.save();
-  ctx.fillStyle = SKY.night[0];
-  ctx.fillRect(0, 0, W, H);
-  ctx.globalAlpha = a;
-  const pop = 0.85 + 0.15 * easeOut(prog(t, END.from + 0.1, END.from + 0.6));
-  ctx.translate(W / 2, cy);
-  ctx.scale(pop, pop);
-  if (st.icon) {
-    ctx.fillStyle = PAL.ink;
-    ctx.beginPath(); ctx.roundRect(-s / 2 + 8 * k, -s / 2 + 14 * k, s, s, s * 0.225); ctx.fill();
-    ctx.save();
-    ctx.beginPath(); ctx.roundRect(-s / 2, -s / 2, s, s, s * 0.225); ctx.clip();
-    ctx.drawImage(st.icon, -s / 2, -s / 2, s, s);
-    ctx.restore();
-    ctx.lineWidth = 6 * k;
-    ctx.strokeStyle = PAL.face;
-    ctx.beginPath(); ctx.roundRect(-s / 2, -s / 2, s, s, s * 0.225); ctx.stroke();
-  }
-  ctx.restore();
-  cel(ctx, W, cy + s * 0.5 + 140 * k, [[END.title]], { size: 128 * k, alpha: a });
-  ctx.globalAlpha = prog(t, END.from + 0.4, END.from + 0.9);
-  ctx.fillStyle = PAL.red;
-  ctx.fillRect(W / 2 - 160 * k, cy + s * 0.5 + 240 * k, 320 * k, 10 * k);
-  cel(ctx, W, cy + s * 0.5 + 310 * k, [[END.line]], { size: 54 * k });
-  ctx.restore();
-  ctx.save();
-  grain(ctx, t, W, H, st.tile);
-  ctx.restore();
 }

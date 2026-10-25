@@ -8,7 +8,7 @@ import { frameTimes, iconPath } from "./render.mjs";
 import * as rain from "./scenes/rain_outside.mjs";
 import * as rabbit from "./scenes/focus_rabbit.mjs";
 import * as last25 from "./scenes/last25.mjs";
-import { snap, makeLines, CLOSING } from "./cel.mjs";
+import { snap, makeLines, CLOSING, STORE } from "./cel.mjs";
 import { cityArgv } from "./audio.mjs";
 
 test("the hook text is on screen from the first frame and the camera moves by about 3 s", () => {
@@ -135,12 +135,14 @@ test("last25: city sound at full level from frame 0, cut at the impact, focus be
   assert.deepEqual(argv, cityArgv("/o.wav", last25.DURATION, S));
 });
 
-test("last25: every video closes on the shared line, readable before the end card", () => {
-  const last = [...last25.CAPTIONS].sort((a, b) => a.from - b.from).at(-1);
-  assert.deepEqual(last.lines, CLOSING);
+test("every video ends on the shared card: the closing line and the store line, held for 3 s", () => {
   assert.deepEqual(CLOSING, [["Just focus on"], ["what matters."]]);
-  assert.ok(last.to - last.from >= 2.4 && last.to <= last25.END.from);
-  assert.ok(last25.END.from < last25.DURATION);
+  assert.equal(STORE, "Available on iOS");
+  assert.deepEqual(last25.END.lines, CLOSING);
+  assert.equal(last25.END.store, STORE);
+  assert.ok(last25.DURATION - last25.END.from >= 3);
+  assert.ok(Math.max(...last25.CAPTIONS.map(c => c.to)) <= last25.END.from);
+  assert.equal(last25.SOUND.close, last25.END.from);
 });
 
 test("last25: the watch reads 10:08 until the lapse, then the minute hand sweeps 25 minutes", () => {

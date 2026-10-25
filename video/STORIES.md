@@ -22,14 +22,13 @@ Posts already published in `appart` (W43-W44 queue) keep their media; new ones r
 The first line of text is on screen and readable within a second, and the premise is clear by 3 s. No empty opening shot.
 Hook lines are one sentence a person would say. See "Shorts: what we optimise for" in [GROWTH.md](../GROWTH.md).
 
-## How a story should close
+## How a story should end
 
-Every video closes on the same words, in the same place: **"Just focus on" / "what matters."** as the last caption, held for
-at least 2.4 s, and then the end card (icon, "WildFocus", "25 minutes. Phone down."). It applies to every new video, drawn
-story or canvas scene, whatever the style or engine. In canvas scenes import `CLOSING` from
-[canvas/cel.mjs](canvas/cel.mjs) and use it as the last entry of `CAPTIONS`, with `END.from` after it. The words come from
-the rain video ([canvas/scenes/rain_outside.mjs](canvas/scenes/rain_outside.mjs)); `focus_rabbit` predates the rule and
-closes on "Someone new moved in.".
+Every video ends on the same card, held for at least 3 s: the real app icon as a sticker, "WildFocus", **"Just focus on /
+what matters."** and a small "Available on iOS". It applies to every new video, drawn story or canvas scene, whatever the
+style or engine. In canvas scenes call `endCard` from [canvas/cel.mjs](canvas/cel.mjs) (`CLOSING` and `STORE` hold the words)
+and set `END.from` after the last caption; do not draw your own. The words come from the rain video's closing line.
+`rain_outside` and `focus_rabbit` predate the rule and keep their own cards.
 
 ## Story ideas
 
