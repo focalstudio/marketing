@@ -740,5 +740,83 @@
     "dueAt": "2026-10-27T12:00:00.000Z",
     "at": "2026-10-27T12:00:00Z",
     "postedAt": "2026-10-26T17:12:08.594Z"
+  },
+  {
+    "file": "queue/2026-W45/wildfocus-rain-outside-canvas.md",
+    "platform": "x",
+    "id": "6adfc5db2e4832a623d8876e",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-11-02T20:00:00.000Z",
+    "at": "2026-11-02T20:00:00Z",
+    "postedAt": "2026-10-26T21:27:55.196Z"
+  },
+  {
+    "file": "queue/2026-W45/wildfocus-rain-outside-canvas.md",
+    "platform": "youtube",
+    "id": "6adfc5dbca308c8a23274d1f",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-11-02T20:00:00.000Z",
+    "at": "2026-11-02T20:00:00Z",
+    "postedAt": "2026-10-26T21:27:55.813Z"
+  },
+  {
+    "file": "queue/2026-W44/wildfocus-short-break-appart.md",
+    "platform": "bluesky",
+    "id": "at://did:plc:ailhup22grj7er6ulopnhszj/app.bsky.feed.post/3myso2inumg2f",
+    "url": "https://bsky.app/profile/focalstudiohq.bsky.social/post/3myso2inumg2f",
+    "at": "2026-10-26T20:00:00Z",
+    "postedAt": "2026-10-26T21:27:57.752Z"
+  },
+  {
+    "file": "queue/2026-W44/focalstudio-intro.md",
+    "platform": "bluesky",
+    "id": "at://did:plc:ailhup22grj7er6ulopnhszj/app.bsky.feed.post/3myso2keqy72l",
+    "url": "https://bsky.app/profile/focalstudiohq.bsky.social/post/3myso2keqy72l",
+    "at": "2026-10-26T21:00:00Z",
+    "postedAt": "2026-10-26T21:27:59.518Z"
+  },
+  {
+    "file": "queue/2026-W45/wildfocus-rain-outside-canvas.md",
+    "platform": "tiktok",
+    "id": "6adfc5df465475d287772443",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-11-02T20:00:00.000Z",
+    "at": "2026-11-02T20:00:00Z",
+    "postedAt": "2026-10-26T21:27:59.966Z"
+  },
+  {
+    "file": "queue/2026-W44/wildfocus-short-break-appart.md",
+    "platform": "threads",
+    "id": "18128630744493101",
+    "url": "https://www.threads.com/@focalstudiohq/post/De-P3YED3_1",
+    "at": "2026-10-26T20:00:00Z",
+    "postedAt": "2026-10-26T21:28:34.205Z"
+  },
+  {
+    "file": "queue/2026-W44/focalstudio-intro.md",
+    "platform": "threads",
+    "id": "17941880145374028",
+    "url": "https://www.threads.com/@focalstudiohq/post/De-P7XFlFyb",
+    "at": "2026-10-26T21:00:00Z",
+    "postedAt": "2026-10-26T21:29:06.018Z"
+  },
+  {
+    "file": "queue/2026-W44/wildfocus-short-break-appart.md",
+    "platform": "instagram",
+    "id": "17970488492960018",
+    "url": "https://www.instagram.com/reel/De-P_aGAOo4/",
+    "at": "2026-10-26T20:00:00Z",
+    "postedAt": "2026-10-26T21:29:43.703Z"
+  },
+  {
+    "file": "queue/2026-W44/focalstudio-intro.md",
+    "platform": "instagram",
+    "id": "18116217245016408",
+    "url": "https://www.instagram.com/reel/De-QD5wFRik/",
+    "at": "2026-10-26T21:00:00Z",
+    "postedAt": "2026-10-26T21:30:19.927Z"
   }
 ]
