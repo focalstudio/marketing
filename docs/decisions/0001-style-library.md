@@ -58,7 +58,7 @@ Goal: one low-maintenance library of styles, fonts and palettes that Claude can 
    - Pros: more cartoon display faces; permissive for commercial use; rendered output carries no obligations.
    - Cons: vendoring is redistribution, so keep `LICENSE`, keep any `NOTICE`, and mark modifications (subsetting counts); the lint must handle two licence shapes; the licence was not written for fonts.
    - Net: neither licence carries real legal risk if the licence file ships. The risk is provenance, so we take fonts only from google/fonts. The lint requires `LICENSE.txt`, plus `NOTICE` if upstream ships one.
-8. **Style names**: planned IDs are `naturalist-engraving`, `kawaii-chibi`, `wonderland-engraving`, `cartoon-hose`, `pixel-art`, `anime-cel`, plus `mascot-flat` and `monoline-icon` reserved for logo and icon work. The six Pillow styles get card-only entries (`engine: pillow`), with previews copied once from today's goldens.
+8. **Style names**: planned IDs are `naturalist-engraving`, `kawaii-chibi`, `wonderland-engraving`, `cartoon-hose`, `pixel-art`, `anime-cel`, plus `sumi-ink` and `toon-cel` (added with the gallery cards) and `mascot-flat` and `monoline-icon` reserved for logo and icon work. The six Pillow styles get card-only entries (`engine: pillow`), with previews copied once from today's goldens.
 
 ## Repo layout (focal-styles)
 

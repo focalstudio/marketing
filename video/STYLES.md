@@ -5,6 +5,11 @@ One drawing kit per style in [styles/](styles/). Every style implements the cont
 in [apps/wildfocus.yml](../apps/wildfocus.yml) (`styles:`), and how many posts each style gets a week by `mix:`.
 `python3 -m video.render --list` prints what exists. Rule for the app's icon: always the real one, never redrawn.
 
+**Gallery:** [docs/styles/index.html](../docs/styles/index.html) shows every style (stills, palette, fonts, an example prompt) from the
+cards in [styles/cards/](styles/cards/); open it in a browser. A new style ships with a card (`<id>.md`, same fields as the others) and
+three stills: `node scripts/gallery.mjs previews --only <id>`, then `node scripts/gallery.mjs build`. `node --test scripts/gallery.test.mjs`
+fails if a card is incomplete or the page is stale. Fonts are in [fonts/fonts.json](fonts/fonts.json).
+
 ## In use
 
 | Style | Engine | Look | Plays | Motion |
@@ -32,6 +37,8 @@ IDs and decisions are in [docs/decisions/0001-style-library.md](../docs/decision
 | `cartoon-hose` | canvas 2D | bezier limbs, squash and stretch, beat loops |
 | `pixel-art` | canvas 2D | nearest-neighbour upscale of a palette-locked canvas |
 | `anime-cel` | canvas 2D | the spike showed parity; use Blender only for a 3D prop or brush-style ink |
+| `sumi-ink` | canvas 2D | brush ink as tapered polygons (as in `cel.mjs`), grey washes, empty paper |
+| `toon-cel` | canvas 2D | `toon` with one hard cel shadow band per shape |
 | `mascot-flat`, `monoline-icon` | canvas 2D | flat vector |
 | `lowpoly` (Pillow today) | Blender candidate | real faceted 3D with light; spike it if `lowpoly` stays in the mix |
 
