@@ -17,7 +17,7 @@ One evening, 25 minutes, told in 18.5 s:
   the sun sinks, the moon rises, stars appear, the windows light up. "25 minutes. Nothing else." The rabbit does not move.
 - **14-15.3 s.** The watch leaves; a calm night wide shot.
 - **15.3-18.5 s.** The shared end card, the same in every video: the real WildFocus icon as a sticker, "WildFocus", "Just focus
-  on / what matters." and "Available on iOS", on night blue.
+  on / what matters." and "Free on iOS", on night blue.
 - **Sound.** Made in ffmpeg (`cityArgv`): a city (traffic rumble, hiss, a few horns, a far siren) from the first frame, ducking
   with a riser into the impact, where the street cuts out at once with a low boom. Then the focus sound: a soft pad, room
   tone and clock ticks, until a chime at 14 s. A soft chime as the end card arrives. `-silent.mp4` is for adding a platform sound.

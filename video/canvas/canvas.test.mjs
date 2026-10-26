@@ -4,12 +4,13 @@ import assert from "node:assert/strict";
 import { rng, teardropPts, pointAngle } from "./ink.mjs";
 import { squash, hop, blink, blinkTimes } from "./toon.mjs";
 import { rainArgv, soundArgv } from "./audio.mjs";
-import { frameTimes, iconPath } from "./render.mjs";
+import { frameTimes, iconPath, animalPath } from "./render.mjs";
 import * as rain from "./scenes/rain_outside.mjs";
 import * as rabbit from "./scenes/focus_rabbit.mjs";
 import * as last25 from "./scenes/last25.mjs";
 import { snap, makeLines, CLOSING, STORE } from "./cel.mjs";
-import { cityArgv } from "./audio.mjs";
+import { cityArgv, introArgv } from "./audio.mjs";
+import * as intro from "./scenes/studio_intro.mjs";
 
 test("the hook text is on screen from the first frame and the camera moves by about 3 s", () => {
   assert.equal(rain.CAPTIONS[0].from, 0);
@@ -137,7 +138,7 @@ test("last25: city sound at full level from frame 0, cut at the impact, focus be
 
 test("every video ends on the shared card: the closing line and the store line, held for 3 s", () => {
   assert.deepEqual(CLOSING, [["Just focus on"], ["what matters."]]);
-  assert.equal(STORE, "Available on iOS");
+  assert.equal(STORE, "Free on iOS");
   assert.deepEqual(last25.END.lines, CLOSING);
   assert.equal(last25.END.store, STORE);
   assert.ok(last25.DURATION - last25.END.from >= 3);
@@ -157,4 +158,67 @@ test("cel: the second hand snaps once a second and the speed lines are seeded", 
   assert.ok(snap(3.5) > 18 && snap(3.5) <= 24.001);
   assert.deepEqual(makeLines(5), makeLines(5));
   assert.equal(makeLines(5).length, 28);
+});
+
+test("studio_intro: hook from frame 0, captions inside the video and apart, 45 s, end card held for 3 s", () => {
+  assert.equal(intro.DURATION, 45);
+  assert.equal(intro.CAPTIONS[0].from, 0);
+  const cs = [...intro.CAPTIONS].sort((a, b) => a.from - b.from);
+  cs.forEach((c, i) => {
+    assert.ok(c.from < c.to && c.to <= intro.DURATION);
+    if (i) assert.ok(cs[i - 1].to <= c.from);
+  });
+  assert.ok(cs.at(-1).to <= intro.END.from);
+  assert.ok(intro.DURATION - intro.END.from >= 3);
+  assert.deepEqual(intro.END.lines, CLOSING);
+  assert.equal(intro.END.store, STORE);
+  assert.equal(intro.SOUND.close, intro.END.from);
+  for (let i = 1; i < intro.SCENES.length; i++) assert.ok(intro.SCENES[i].from <= intro.SCENES[i - 1].to, intro.SCENES[i].name);
+  assert.equal(intro.SCENES.at(-1).to, intro.DURATION);
+});
+
+test("studio_intro: music only without a voice, music ducked under the voice with one", () => {
+  const dry = introArgv("/o.wav", intro.DURATION, { ...intro.SOUND, voice: undefined }), wet = introArgv("/o.wav", intro.DURATION, { ...intro.SOUND, voice: "/v.wav", voiceAt: 0.3 });
+  const fgOf = a => a[a.indexOf("-filter_complex") + 1];
+  assert.ok(!dry.includes("/v.wav") && !fgOf(dry).includes("sidechaincompress"));
+  assert.ok(wet.includes("/v.wav") && fgOf(wet).includes("sidechaincompress"));
+  assert.ok(fgOf(wet).includes("adelay=300|300"), "the voice starts at voiceAt");
+  assert.ok(fgOf(dry).includes(`adelay=${intro.SOUND.close * 1000}|`), "chime as the end card arrives");
+  assert.deepEqual(dry, soundArgv("/o.wav", intro.DURATION, { ...intro.SOUND, voice: undefined }));
+});
+
+test("animalPath finds the app's cast PNGs and refuses anything but a plain id", () => {
+  assert.ok(animalPath("orangutan").endsWith("/src/assets/animals/orangutan.png"));
+  for (const bad of ["../x", "a/b", "Rabbit", "rabbit.png", ""]) assert.throws(() => animalPath(bad), /bad animal id/, bad);
+});
+
+test("studio_intro: every review beat falls inside the video, and the app's animals are the ones preloaded", () => {
+  for (const b of intro.BEATS) assert.ok(b.t >= 0 && b.t < intro.DURATION, `beat ${b.t}`);
+  assert.deepEqual(intro.ANIMALS, ["rabbit", "fox", "otter", "orangutan"]);
+});
+
+test("studio_intro: the phone is held, wound up, then thrown off screen with no paws on it", () => {
+  const { from, release, to } = intro.THROW, base = 1344;
+  assert.ok(from < release && release < to && to <= 5.4);
+  const held = intro.phonePose(0, base), start = intro.phonePose(from, base);
+  assert.equal(held.held, true);
+  assert.deepEqual([held.x, held.y], [start.x, start.y]);
+  assert.equal(intro.phonePose(release - 0.01, base).held, true);
+  for (const t of [release, (release + to) / 2, to]) assert.equal(intro.phonePose(t, base).held, false, `t ${t}`);
+  assert.ok(intro.phonePose(to, base).x > 1080 + 200, "off the right edge by the end of the throw");
+  assert.ok(intro.phonePose(to, base).rot > intro.phonePose(release, base).rot, "it spins");
+});
+
+test("studio_intro: a whoosh sounds at the release", () => {
+  const argv = soundArgv("/o.wav", intro.DURATION, { ...intro.SOUND, voice: undefined }), fg = argv[argv.indexOf("-filter_complex") + 1];
+  assert.equal(intro.SOUND.throw, intro.THROW.release);
+  assert.ok(fg.includes(`adelay=${Math.round(intro.SOUND.throw * 1000)}|`));
+});
+
+test("studio_intro: a bunny holding something has bent arms (shoulder, elbow, hand), and goes back to resting arms after the throw", () => {
+  const held = intro.armsHook(1);
+  for (const side of ["l", "r"]) assert.equal(held[side].length, 3);
+  assert.ok(intro.armsHook(intro.THROW.release + 0.1).r && !intro.armsHook(intro.THROW.release + 0.1).l, "only the throwing arm swings");
+  assert.equal(intro.armsHook(intro.THROW.release + 0.5), null);
+  for (const a of [intro.armsRead(), intro.armsLift(-150), intro.armsPaint(0, [-100, -146])]) for (const side of ["l", "r"]) assert.equal(a[side].length, 3);
 });

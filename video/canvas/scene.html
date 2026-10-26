@@ -17,7 +17,41 @@ window.ready = (async () => {
   icon.src = "/__icon";
   await icon.decode().catch(() => null);
   const scene = await import(`./scenes/${q.get("scene")}.mjs`);
-  const state = scene.setup(document, W, H, { icon: icon.naturalWidth ? icon : null });
+  const animals = {};
+  await Promise.all((scene.ANIMALS || []).map(async id => {
+    const img = new Image();
+    img.src = `/__animal/${id}.png`;
+    await img.decode().catch(() => null);
+    if (img.naturalWidth) animals[id] = img;
+  }));
+  const state = scene.setup(document, W, H, { icon: icon.naturalWidth ? icon : null, animals });
+  // A labelled contact sheet of stills (review gate 2): window.sheet([t, ...], columns) returns a PNG data URL.
+  window.sheet = (times, cols = 4) => {
+    const cw = 360, ch = Math.round(cw * H / W), lab = 96, rows = Math.ceil(times.length / cols), sc = document.createElement("canvas");
+    sc.width = cols * cw;
+    sc.height = rows * (ch + lab);
+    const g = sc.getContext("2d");
+    g.fillStyle = "#1c1c1e";
+    g.fillRect(0, 0, sc.width, sc.height);
+    times.forEach((t, i) => {
+      const x = (i % cols) * cw, y = Math.floor(i / cols) * (ch + lab), beat = (scene.BEATS || []).find(b => b.t === t) || {};
+      scene.draw(ctx, t, W, H, state);
+      g.drawImage(cv, x + 2, y, cw - 4, ch);
+      g.fillStyle = "#fff";
+      g.font = "800 22px Nunito";
+      g.fillText(`${t}s  ${beat.word || ""}`, x + 10, y + ch + 28);
+      g.fillStyle = "#c9c9ce";
+      g.font = "600 16px Nunito";
+      const words = (beat.say || "").split(" ");
+      let line = "", row = 0;
+      for (const w of words) {
+        if (g.measureText(line + w).width > cw - 24 && row < 2) { g.fillText(line, x + 10, y + ch + 52 + row * 20); line = ""; row++; }
+        line += w + " ";
+      }
+      g.fillText(line, x + 10, y + ch + 52 + row * 20);
+    });
+    return sc.toDataURL("image/png");
+  };
   window.frame = t => {
     scene.draw(ctx, t, W, H, state);
     return cv.toDataURL("image/png");

@@ -10,7 +10,7 @@ How Focal Studio posts sound. The weekly drafter reads this before writing anyth
 - British spelling (optimise, colour, £).
 - One idea per post. No threads longer than 4 posts.
 - At most one link per post, and only when it answers something the post raised.
-- Every video ends on the same card: icon, WildFocus, "Just focus on what matters.", "Available on iOS" (see `video/STORIES.md`).
+- Every video ends on the same card: icon, WildFocus, "Just focus on what matters.", "Free on iOS" (see `video/STORIES.md`).
 - Kit posts talk to developers: name the tool, the file, the command.
 - App posts talk to people who'll use the app: no jargon, no stack talk, except the
   "built with Claude Code" line on X and Bluesky.

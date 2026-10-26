@@ -157,7 +157,7 @@ export function cel(ctx, W, y, lines, { size = 88, alpha = 1 } = {}) {
 // the closing line and the store line, on a night page that fades in over the last scene. `from` is when it starts; it holds
 // at least 3 s. The grain goes over it.
 export const CLOSING = [["Just focus on"], ["what matters."]];
-export const STORE = "Available on iOS";
+export const STORE = "Free on iOS";
 export const NIGHT = "#0f1424";
 
 export function endCard(ctx, t, W, H, { icon, from, tile, title = "WildFocus" }) {

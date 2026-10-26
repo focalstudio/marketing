@@ -3,6 +3,7 @@
 // DevTools protocol (Node's built-in WebSocket; no dependencies). Each frame is the page's frame(t) PNG, piped to ffmpeg.
 //
 //   node video/canvas/render.mjs rain_outside [out.mp4] [--size 1080x1080] [--preview DIR "0.5,4,10"]
+//                              [--sheet OUT.png "0.5,4,10"]  (one labelled contact sheet of stills)
 //
 // Writes out.mp4 (default inbox/wildfocus/<name>.mp4), <out>-silent.mp4 (add a platform sound when posting) and
 // <out>-cover.jpg. Chrome: CHROME_BIN, else the macOS app, else google-chrome on PATH. The app icon is read from the app
@@ -19,12 +20,22 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const FPS = 30;
 const TYPES = { ".html": "text/html", ".mjs": "text/javascript", ".js": "text/javascript", ".ttf": "font/ttf", ".png": "image/png" };
 
+const appYml = app => readFileSync(join(ROOT, "apps", `${app}.yml`), "utf8");
+const ymlVal = (yml, k) => (yml.match(new RegExp(`^\\s*${k}:\\s*["']?([^"'#\\n]+?)["']?\\s*(#.*)?$`, "m")) || [])[1];
+const appRepo = (yml, name = ymlVal(yml, "repo").split("/").pop()) =>
+  process.env.APP_REPO_DIR || process.env.WILDFOCUS_REPO || join(process.env.APPS_DIR || join(ROOT, ".."), name);
+
 export function iconPath(app = "wildfocus") {
-  const yml = readFileSync(join(ROOT, "apps", `${app}.yml`), "utf8");
-  const val = k => (yml.match(new RegExp(`^${k}:\\s*["']?([^"'#\\n]+?)["']?\\s*(#.*)?$`, "m")) || [])[1];
-  const name = val("repo").split("/").pop();
-  const repo = process.env.APP_REPO_DIR || process.env.WILDFOCUS_REPO || join(process.env.APPS_DIR || join(ROOT, ".."), name);
-  return join(repo, val("icon"));
+  const yml = appYml(app);
+  return join(appRepo(yml), ymlVal(yml, "icon"));
+}
+
+// A cast PNG of the app (apps/<app>.yml `assets.cast`, e.g. src/assets/animals/*.png), by id. Ids are lowercase words, so
+// nothing outside the cast folder can be asked for.
+export function animalPath(id, app = "wildfocus") {
+  if (!/^[a-z_]+$/.test(id)) throw new Error(`bad animal id: ${id}`);
+  const yml = appYml(app);
+  return join(appRepo(yml), dirname(ymlVal(yml, "cast")), `${id}.png`);
 }
 
 export function frameTimes(duration, fps = FPS) {
@@ -35,8 +46,9 @@ function serve() {
   const icon = iconPath();
   const srv = createServer((req, res) => {
     const url = decodeURIComponent(req.url.split("?")[0]);
-    const file = url === "/__icon" ? icon : normalize(join(ROOT, url));
-    if (!file.startsWith(ROOT) && file !== icon || !existsSync(file)) return res.writeHead(404).end();
+    const animal = url.match(/^\/__animal\/([a-z_]+)\.png$/);
+    const file = url === "/__icon" ? icon : animal ? animalPath(animal[1]) : normalize(join(ROOT, url));
+    if (!file.startsWith(ROOT) && file !== icon && !animal || !existsSync(file)) return res.writeHead(404).end();
     res.writeHead(200, { "Content-Type": TYPES[extname(file)] || "application/octet-stream" }).end(readFileSync(file));
   });
   return new Promise(ok => srv.listen(0, "127.0.0.1", () => ok(srv)));
@@ -100,6 +112,7 @@ async function main(argv) {
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--size") opt.size = argv[++i];
     else if (argv[i] === "--preview") opt.preview = [argv[++i], argv[++i]];
+    else if (argv[i] === "--sheet") opt.sheet = [argv[++i], argv[++i]];
     else pos.push(argv[i]);
   }
   const [name = "rain_outside", outArg] = pos;
@@ -115,6 +128,13 @@ async function main(argv) {
     }
     if (!dur) throw new Error("scene never became ready");
     const png = async t => Buffer.from((await b.evaluate(`frame(${t})`)).split(",")[1], "base64");
+    if (opt.sheet) {
+      const [file, times] = opt.sheet;
+      mkdirSync(dirname(resolve(file)), { recursive: true });
+      writeFileSync(file, Buffer.from((await b.evaluate(`sheet(${JSON.stringify(times.split(",").map(Number))})`)).split(",")[1], "base64"));
+      console.log(`sheet ${file}`);
+      return;
+    }
     if (opt.preview) {
       const [dir, times] = opt.preview;
       mkdirSync(dir, { recursive: true });

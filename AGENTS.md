@@ -21,6 +21,7 @@ this file is the short orientation. Deeper notes: [.claude/CLAUDE.md](.claude/CL
 - Posts go out to real accounts. Don't run `publish` without `--dry-run` locally; CI publishes.
 - Secrets live in repo secrets only (see [SETUP.md](SETUP.md)). Never commit `.env`, tokens or API keys.
 - Media is public once pushed to `focalstudio/media`. Check it before `push-media.mjs`.
+- New videos get two approvals before a full render: a style sheet, then a keyframe sheet (see "Review gates" in [video/STORIES.md](video/STORIES.md)).
 - Pin Pillow as in `video-tests.yml`: goldens only match with that wheel. Re-bless goldens deliberately, never to silence a failure.
 
 ## Validation
