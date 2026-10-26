@@ -1,6 +1,9 @@
 // Rain made with ffmpeg: a pink-noise rain bed over a brown-noise body, drips from a seeded scatter, a plink on each
 // story beat (the drop landing), and one far-off rumble. Full level from frame 0 (the hook is heard at once), easing as
 // the rain stops, faded out at the end.
+import { existsSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { rng } from "./ink.mjs";
 
 export function rainArgv(path, dur, { beats = [], rumble = 6, easeFrom = dur - 6, seed = 7, drips = 22 } = {}) {
@@ -103,7 +106,39 @@ export function cityArgv(path, dur, { impact, lapse, ticks = [], horns = [], sir
     ...v.args, "-filter_complex", fg.join(";"), "-map", "[out]", "-ac", "2", path];
 }
 
-const BUILDERS = { rain: rainArgv, toon: toonArgv, city: cityArgv };
+// The studio_intro sound: a soft piano arpeggio over a low pad at 70 bpm (C, G, Am, F), a chime as the end card arrives. With a
+// `voice` WAV (started `voiceAt` s in) the music ducks under it; without one it is music only, so drafts render before the voice exists.
+export function introArgv(path, dur, { voice, voiceAt = 0, close, throw: toss, bpm = 70 } = {}) {
+  const beat = 60 / bpm, chords = [[130.81, 261.63, 329.63, 392], [98, 246.94, 293.66, 392], [110, 261.63, 329.63, 440], [87.31, 261.63, 349.23, 440]];
+  const ev = [];
+  for (let i = 0; i * beat < dur - 2; i++) {
+    const c = chords[Math.floor(i / 4) % 4], hz = [c[1], c[2], c[3], c[2]][i % 4];
+    ev.push({ at: i * beat, dur: 2.6, gain: i % 4 ? 0.2 : 0.26, expr: note(hz, 2.2) });
+    if (i % 4 === 0) ev.push({ at: i * beat, dur: 3.4, gain: 0.3, expr: note(c[0], 1.1) });
+  }
+  if (toss != null) ev.push({ at: toss, dur: 0.6, gain: 0.25, expr: "sin(2*PI*(500+1200*exp(-t*6))*t)*exp(-t*4)" });  // the whoosh of the throw
+  ev.push({ at: close, dur: 1.8, gain: 0.35, expr: note(880, 3.5) }, { at: close + 0.14, dur: 1.8, gain: 0.3, expr: note(1318.5, 3.5) });
+  const v = voices(ev, 1), vi = v.labels.length + 1;
+  const pad = `aeval='(sin(2*PI*65.41*t)+0.7*sin(2*PI*130.81*t)+0.5*sin(2*PI*196*t)+0.3*sin(2*PI*329.63*t))*0.08*(0.85+0.15*sin(2*PI*0.12*t))*min(1,t/2)':c=mono[pad]`;
+  const music = `[pad]${v.labels.join("")}amix=inputs=${v.labels.length + 1}:duration=first:normalize=0`;
+  const tail = `atrim=0:${dur},loudnorm=I=-16:TP=-1.5:LRA=7,aresample=48000,afade=t=out:st=${dur - 1.5}:d=1.5[out]`;
+  const fg = [pad.replace("aeval", "[0]aeval"), ...v.filters];
+  if (voice) {
+    const ms = Math.round(voiceAt * 1000);
+    fg.push(`${music},volume=0.8[mus]`,
+      `[${vi}]aformat=channel_layouts=mono,aresample=48000,adelay=${ms}|${ms},apad=whole_dur=${dur},asplit=2[vk][vm]`,
+      `[mus][vk]sidechaincompress=threshold=0.02:ratio=8:attack=20:release=500[duck]`,
+      `[duck][vm]amix=inputs=2:duration=first:normalize=0,${tail}`);
+  } else fg.push(`${music},${tail}`);
+  return ["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", `anullsrc=r=48000:cl=mono:d=${dur}`, ...v.args, ...(voice ? ["-i", voice] : []),
+    "-filter_complex", fg.join(";"), "-map", "[out]", "-ac", "2", path];
+}
+
+// A scene's `voice` is a repo path; it counts only once the WAV is there.
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+const introSound = (path, dur, s) => introArgv(path, dur, { ...s, voice: s.voice && existsSync(resolve(ROOT, s.voice)) ? resolve(ROOT, s.voice) : undefined });
+
+const BUILDERS = { rain: rainArgv, toon: toonArgv, city: cityArgv, intro: introSound };
 
 // The ffmpeg argv for a scene's SOUND: its `kind` picks the builder ("rain" when absent, as rain_outside has no kind).
 export const soundArgv = (path, dur, sound = {}) => BUILDERS[sound.kind || "rain"](path, dur, sound);

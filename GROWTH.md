@@ -34,7 +34,7 @@ treat the numbers as rough). Re-check every quarter, like [PLATFORMS.md](PLATFOR
 **Once (setup, ~1 h)**
 - Bio with keywords and one clear line: "Cute focus apps. Android beta now, iOS soon."
 - Link in bio on all three; profile photo and name the same everywhere (Focal Studio).
-- Pin an intro video on TikTok and YouTube.
+- Pin the `studio_intro` video ([video/canvas/studio_intro.md](video/canvas/studio_intro.md)) by hand once it has posted: TikTok "Pin", YouTube channel trailer plus pin, and "Pin to profile" on Instagram, X, Bluesky and Threads. No API does it.
 - Follow 30-50 accounts in focus, study and productivity on each platform. This tells the platform which niche the
   account belongs to; it is not a follow-back trade (see below).
 - Install the Buffer mobile app and allow notifications ([SETUP.md](SETUP.md) step 1).

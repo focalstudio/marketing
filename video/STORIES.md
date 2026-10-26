@@ -25,7 +25,7 @@ Hook lines are one sentence a person would say. See "Shorts: what we optimise fo
 ## How a story should end
 
 Every video ends on the same card, held for at least 3 s: the real app icon as a sticker, "WildFocus", **"Just focus on /
-what matters."** and a small "Available on iOS". It applies to every new video, drawn story or canvas scene, whatever the
+what matters."** and a small "Free on iOS". It applies to every new video, drawn story or canvas scene, whatever the
 style or engine. In canvas scenes call `endCard` from [canvas/cel.mjs](canvas/cel.mjs) (`CLOSING` and `STORE` hold the words)
 and set `END.from` after the last caption; do not draw your own. The words come from the rain video's closing line.
 `rain_outside` and `focus_rabbit` predate the rule and keep their own cards.
@@ -54,4 +54,15 @@ stills, `--size 1080x1080` for square). These videos sell the feeling (switching
 |---|---|---|
 | `rain_outside` | The life of a raindrop, from the window to the cloud to the puddle (engraving, no animals) | 30 s |
 | `focus_rabbit` | One rabbit's 25-minute focus session, with a fox moving in at the end (Kawaii Chibi: `canvas/toon.mjs`) | 30 s |
+| `studio_intro` | Who Focal Studio is, what it values and its first app, narrated over synthesised music; the video we pin on every profile. A kawaii bunny animation (`canvas/kawaii.mjs`) with the app's low-poly animals on rarity cards; voice WAV in `canvas/voice/` | 45 s |
 | `last25` | The last 25 minutes of an evening: a rooftop at dusk, a pocket watch, an impact frame and a time-lapse into night (anime-cel: `canvas/cel.mjs`; city sound that gives way to a focus sound) | 18.5 s |
+
+## Review gates
+
+Before any full render of a new video, show two images and wait for approval of each: a style sheet (the characters, props, type,
+palette and any app art, as a one-frame scene `scenes/<name>_style.mjs`) and a keyframe sheet (one labelled still per beat:
+`node video/canvas/render.mjs <name> --sheet OUT.png "t1,t2,..."`, labels from the scene's `BEATS`). Renders are slow, so a look
+the owner dislikes is caught before it costs one. `studio_intro` is the first video made this way.
+
+`studio_intro` shows the app's own low-poly animal art, an exception to "animated originals only" in [GROWTH.md](../GROWTH.md),
+made at the owner's request for the app segment; its bunnies are drawn in code.
