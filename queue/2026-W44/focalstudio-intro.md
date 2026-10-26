@@ -1,7 +1,7 @@
 ---
 stream: app
 platforms: [x, youtube, bluesky, tiktok, threads, instagram]
-at: 2026-10-27T12:00:00Z
+at: 2026-10-26T21:00:00Z
 media: wildfocus/wildfocus-studio-intro.mp4
 thumb: wildfocus/wildfocus-studio-intro.jpg
 title: "Who we are: Focal Studio, calm apps that give you your time back | WildFocus"
