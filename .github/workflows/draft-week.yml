@@ -126,16 +126,19 @@ jobs:
           git push -q --force origin "$branch"
           story=""; [ -f "$STORY" ] && story=$(cat "$STORY")
           node scripts/queue-pr.mjs body --week "$WEEK" ${story:+--story "$story"} > "$RUNNER_TEMP/body.md"
-          if gh pr view "$branch" --json number >/dev/null 2>&1; then
-            gh pr edit "$branch" --title "chore: queue $WEEK" --body-file "$RUNNER_TEMP/body.md"
+          # The branch name repeats within a week, so a merged PR can share it: look only at an open one, by number.
+          num=$(gh pr list --head "$branch" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$num" ]; then
+            gh pr edit "$num" --title "chore: queue $WEEK" --body-file "$RUNNER_TEMP/body.md"
           else
             gh pr create --base main --head "$branch" --title "chore: queue $WEEK" --body-file "$RUNNER_TEMP/body.md"
+            num=$(gh pr list --head "$branch" --state open --json number --jq '.[0].number')
           fi
           # Tests and `plan` passed above or this step would not run. The date and the kill switch decide the rest.
           # No branch protection on a private free-plan repo, so `--auto` has nothing to wait for. Wait for the PR's own
           # checks (ci, video-tests) here, then merge; merging as the bot also triggers publish.yml.
           if node scripts/queue-pr.mjs gate; then
             sleep 30  # let the PR's checks register
-            gh pr checks "$branch" --watch --fail-fast --interval 20
-            gh pr merge "$branch" --squash
+            gh pr checks "$num" --watch --fail-fast --interval 20
+            gh pr merge "$num" --squash
           fi
