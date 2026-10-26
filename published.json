@@ -710,5 +710,35 @@
     "url": "https://www.instagram.com/reel/De7yaPvkuN2/",
     "at": "2026-10-25T20:00:00Z",
     "postedAt": "2026-10-25T22:32:37.702Z"
+  },
+  {
+    "file": "queue/2026-W44/focalstudio-intro.md",
+    "platform": "x",
+    "id": "6adf89e7c0781bde2d2ed87b",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-10-27T12:00:00.000Z",
+    "at": "2026-10-27T12:00:00Z",
+    "postedAt": "2026-10-26T17:12:07.215Z"
+  },
+  {
+    "file": "queue/2026-W44/focalstudio-intro.md",
+    "platform": "youtube",
+    "id": "6adf89e7c0781bde2d2ed9c2",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-10-27T12:00:00.000Z",
+    "at": "2026-10-27T12:00:00Z",
+    "postedAt": "2026-10-26T17:12:07.959Z"
+  },
+  {
+    "file": "queue/2026-W44/focalstudio-intro.md",
+    "platform": "tiktok",
+    "id": "6adf89e8fd915805681fb25d",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-10-27T12:00:00.000Z",
+    "at": "2026-10-27T12:00:00Z",
+    "postedAt": "2026-10-26T17:12:08.594Z"
   }
 ]
