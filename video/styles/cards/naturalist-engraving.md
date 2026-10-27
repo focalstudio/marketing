@@ -2,6 +2,7 @@
 id: naturalist-engraving
 name: Naturalist engraving
 status: built
+family: "Ink & engraving"
 engine: canvas
 summary: "Pen lines, hatching and washes on cream paper, like a field guide plate."
 source: video/canvas/ink.mjs

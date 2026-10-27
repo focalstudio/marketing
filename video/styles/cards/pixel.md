@@ -2,6 +2,7 @@
 id: pixel
 name: Pixel
 status: in-use
+family: "Pixel & retro"
 engine: pillow
 summary: "8 px pixel art on a fixed 26-colour palette with Bayer dither dissolves."
 source: video/styles/pixel.py

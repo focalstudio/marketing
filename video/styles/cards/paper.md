@@ -2,6 +2,7 @@
 id: paper
 name: Paper
 status: in-use
+family: "Paper, paint & print"
 engine: pillow
 summary: "Layered cutout paper with torn edges, soft shadows and stop-motion sway."
 source: video/styles/paper.py

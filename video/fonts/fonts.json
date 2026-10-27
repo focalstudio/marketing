@@ -1,14 +1,144 @@
 [
-  { "family": "Nunito", "status": "installed", "file": "Nunito[wght].ttf", "license": "OFL-1.1", "licenseFile": "OFL.txt", "source": "ofl/nunito/Nunito[wght].ttf", "role": "brand and every canvas and Pillow caption", "styles": ["toon", "lowpoly", "pixel", "ink", "paper", "storybook", "appart", "naturalist-engraving", "kawaii-chibi", "kawaii", "anime-cel", "pixel-art", "sumi-ink", "toon-cel"] },
-  { "family": "Fredoka", "status": "planned", "license": "OFL-1.1", "source": "ofl/fredoka", "role": "rounded mascot type", "styles": ["mascot-flat"] },
-  { "family": "Manrope", "status": "planned", "license": "OFL-1.1", "source": "ofl/manrope", "role": "monoline icon labels", "styles": [] },
-  { "family": "IM Fell English", "status": "planned", "license": "OFL-1.1", "source": "ofl/imfellenglish", "role": "engraving captions", "styles": [] },
-  { "family": "EB Garamond", "status": "planned", "license": "OFL-1.1", "source": "ofl/ebgaramond", "role": "engraving body text", "styles": [] },
-  { "family": "IM Fell DW Pica", "status": "planned", "license": "OFL-1.1", "source": "ofl/imfelldwpica", "role": "Victorian captions", "styles": ["wonderland-engraving"] },
-  { "family": "Titan One", "status": "planned", "license": "OFL-1.1", "source": "ofl/titanone", "role": "rubber-hose titles", "styles": ["cartoon-hose"] },
-  { "family": "Lilita One", "status": "planned", "license": "OFL-1.1", "source": "ofl/lilitaone", "role": "rubber-hose titles", "styles": ["cartoon-hose"] },
-  { "family": "Luckiest Guy", "status": "planned", "license": "Apache-2.0", "source": "apache/luckiestguy", "role": "comic titles", "styles": [] },
-  { "family": "Anton", "status": "planned", "license": "OFL-1.1", "source": "ofl/anton", "role": "cel impact type", "styles": [] },
-  { "family": "M PLUS 1", "status": "planned", "license": "OFL-1.1", "source": "ofl/mplus1", "role": "cel body type", "styles": [] },
-  { "family": "Dela Gothic One", "status": "planned", "license": "OFL-1.1", "source": "ofl/delagothicone", "role": "cel impact type", "styles": [] }
+  {
+    "family": "Nunito",
+    "status": "installed",
+    "file": "Nunito[wght].ttf",
+    "license": "OFL-1.1",
+    "licenseFile": "OFL.txt",
+    "source": "ofl/nunito/Nunito[wght].ttf",
+    "role": "brand and every canvas and Pillow caption",
+    "styles": [
+      "anime-cel",
+      "appart",
+      "chibi-sparkle",
+      "claymation",
+      "crayon",
+      "crt-vhs",
+      "diorama",
+      "felt",
+      "gameboy",
+      "ink",
+      "kawaii-chibi",
+      "kawaii",
+      "lowpoly-2d",
+      "lowpoly-3d",
+      "lowpoly",
+      "naturalist-engraving",
+      "paper",
+      "pixel",
+      "risograph",
+      "sticker-sheet",
+      "storybook",
+      "sumi-ink",
+      "toon-3d",
+      "toon-cel",
+      "toon",
+      "voxel",
+      "watercolor"
+    ],
+    "weight": "200 1000"
+  },
+  {
+    "family": "Fredoka",
+    "status": "installed",
+    "license": "OFL-1.1",
+    "source": "ofl/fredoka/Fredoka[wdth,wght].ttf",
+    "role": "rounded mascot type",
+    "styles": [
+      "mascot-flat"
+    ],
+    "file": "fredoka/Fredoka[wdth,wght].ttf",
+    "licenseFile": "fredoka/OFL.txt",
+    "weight": "300 700"
+  },
+  {
+    "family": "Manrope",
+    "status": "planned",
+    "license": "OFL-1.1",
+    "source": "ofl/manrope",
+    "role": "monoline icon labels",
+    "styles": []
+  },
+  {
+    "family": "IM Fell English",
+    "status": "planned",
+    "license": "OFL-1.1",
+    "source": "ofl/imfellenglish",
+    "role": "engraving captions",
+    "styles": []
+  },
+  {
+    "family": "EB Garamond",
+    "status": "planned",
+    "license": "OFL-1.1",
+    "source": "ofl/ebgaramond",
+    "role": "engraving body text",
+    "styles": []
+  },
+  {
+    "family": "IM Fell DW Pica",
+    "status": "installed",
+    "license": "OFL-1.1",
+    "source": "ofl/imfelldwpica/IMFePIrm28P.ttf",
+    "role": "Victorian captions",
+    "styles": [
+      "wonderland-engraving"
+    ],
+    "file": "im-fell-dw-pica/IMFePIrm28P.ttf",
+    "licenseFile": "im-fell-dw-pica/OFL.txt",
+    "weight": "400"
+  },
+  {
+    "family": "Titan One",
+    "status": "installed",
+    "license": "OFL-1.1",
+    "source": "ofl/titanone/TitanOne-Regular.ttf",
+    "role": "rubber-hose titles",
+    "styles": [
+      "cartoon-hose"
+    ],
+    "file": "titan-one/TitanOne-Regular.ttf",
+    "licenseFile": "titan-one/OFL.txt",
+    "weight": "400"
+  },
+  {
+    "family": "Lilita One",
+    "status": "planned",
+    "license": "OFL-1.1",
+    "source": "ofl/lilitaone",
+    "role": "rubber-hose titles",
+    "styles": []
+  },
+  {
+    "family": "Luckiest Guy",
+    "status": "planned",
+    "license": "Apache-2.0",
+    "source": "apache/luckiestguy",
+    "role": "comic titles",
+    "styles": []
+  },
+  {
+    "family": "Anton",
+    "status": "planned",
+    "license": "OFL-1.1",
+    "source": "ofl/anton",
+    "role": "cel impact type",
+    "styles": []
+  },
+  {
+    "family": "M PLUS 1",
+    "status": "planned",
+    "license": "OFL-1.1",
+    "source": "ofl/mplus1",
+    "role": "cel body type",
+    "styles": []
+  },
+  {
+    "family": "Dela Gothic One",
+    "status": "planned",
+    "license": "OFL-1.1",
+    "source": "ofl/delagothicone",
+    "role": "cel impact type",
+    "styles": []
+  }
 ]

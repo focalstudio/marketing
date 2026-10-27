@@ -1,26 +1,33 @@
 ---
 id: wonderland-engraving
 name: Wonderland engraving
-status: planned
+status: demo
+family: "Ink & engraving"
 engine: canvas
-summary: "Victorian wood-engraving hatching on flat shapes, in the manner of Tenniel."
-previews: 0
+summary: "Victorian wood-engraving: flat shapes modelled with dense parallel and cross hatching, a ruled border and a serif plate caption."
+source: video/canvas/scenes/style_wonderland-engraving.mjs
+previews_from: canvas style_wonderland-engraving 0.5,1.5,2.5
+previews: 3
 fonts: [IM Fell DW Pica]
 used_in: []
 palette:
   paper: "#efe7d6"
   ink: "#2f2924"
-prompt: "Victorian wood engraving: dense parallel and cross hatching on flat black-and-cream shapes, fine ruled border, Fell-type caption beneath. Subject: a rabbit in a waistcoat checking a large pocket watch, 9:16."
+  ink-wash: "#b9b2a4"
+  hatch-light: "#8f887d"
+prompt: "Victorian wood engraving, portrait 9:16: only cream paper and dark brown ink, every shape flat and modelled with dense parallel hatching and cross-hatching on its lower-right side (light from the upper left), short fur flicks on the lit side, a sky of ruled horizontal lines fading to the horizon, a double ruled border with diamond corners, a serif caption beneath (IM Fell DW Pica, Twenty-five Minutes of Quiet.). Subject: a rabbit sitting in profile beside a large arched alarm-clock style timer reading 25:00 on a grassy plain with hills and clouds, the pen lines redrawn six times a second."
 ---
 
 ## Look
-Hatching on flat shapes with a ruled border and a serif caption. Reuses the pen, hatch and boil helpers in `video/canvas/ink.mjs`.
+Paper and ink only. Form comes from line density: sparse flicks where the light falls, parallel hatching on the shadow side and cross-hatching in the darkest part, with a heavier outline on the shadow edge. Ruled double border, a plate title and a serif caption. Pen lines boil six times a second; the hatching stays put. Reuses `pen`, `hatch`, `dashes` and `boil` from `video/canvas/ink.mjs`.
 
 ## Do
-- Model form with line density only.
+- Keep one light direction (upper left) for every shape and cast shadow.
+- Let line density, never grey fill, make a shape look round.
 
 ## Don't
-- No colour and no copy of any specific illustrator's characters.
+- No colour at all, no soft shading and no gradients.
+- No copy of any specific illustrator's characters.
 
 ## Prompt recipe
-Victorian wood engraving, dense hatching on flat shapes, ruled border, serif caption. Subject: {subject}, 9:16.
+Victorian wood engraving, only paper and ink, flat shapes modelled with dense parallel and cross hatching, ruled border, serif caption beneath. Subject: {subject}, 9:16.

@@ -14,6 +14,7 @@ this file is the short orientation. Deeper notes: [.claude/CLAUDE.md](.claude/CL
 - `scripts/`: `publish.mjs` (check, plan, publish, refresh, buffer-posts, styles), `draft-week.mjs` (weekly drafter), `push-media.mjs`.
 - `video/`: Python renderer (`kit/`, `styles/`, `clips/`, `tests/`). Goldens live in `video/tests/goldens/`. [video/STYLES.md](video/STYLES.md) lists the styles, [video/STORIES.md](video/STORIES.md) the stories.
 - `video/styles/cards/`: one card per style (stills, palette, fonts, example prompt); `node scripts/gallery.mjs build` writes the browsable gallery `docs/styles/index.html`. A new style ships with a card.
+- `video/blender/`: Blender engine for real 3D styles (`render.py`, `subject.py`, `styles/<id>.py`); run locally with `blender -b --factory-startup -P video/blender/render.py -- <id> <outdir> <frames>`.
 - `video/canvas/`: canvas 2D scenes (`scenes/`), drawing kits (`toon.mjs`, `cel.mjs`, `ink.mjs`), sound (`audio.mjs`), `render.mjs`, one prompt `.md` per video. How a story opens and ends (the shared end card): [video/STORIES.md](video/STORIES.md). Goldens: none; `canvas.test.mjs` covers timing and sound.
 - `apps/<app>.yml`: per-app config. `platforms.yml` + `PLATFORMS.md`: platform order. `voice.md`: tone. `GROWTH.md`: how the accounts grow and the human's routine.
 - `.github/workflows/`: `ci` and `video-tests` (PRs), `publish` (on queue push + twice daily), `refresh-tokens`, `check`.

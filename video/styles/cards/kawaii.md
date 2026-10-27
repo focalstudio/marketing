@@ -2,6 +2,7 @@
 id: kawaii
 name: Kawaii flat
 status: built
+family: "Kawaii & cute"
 engine: canvas
 summary: "White bunnies with one thick plum outline, pink ears and blush, on pastel pages."
 source: video/canvas/kawaii.mjs
