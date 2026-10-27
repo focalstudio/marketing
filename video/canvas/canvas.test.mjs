@@ -11,6 +11,13 @@ import * as last25 from "./scenes/last25.mjs";
 import { snap, makeLines, CLOSING, STORE } from "./cel.mjs";
 import { cityArgv, introArgv } from "./audio.mjs";
 import * as intro from "./scenes/studio_intro.mjs";
+import { mkdtempSync, symlinkSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, dirname } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { STYLES, scaffold } from "./new.mjs";
+
+const HERE = dirname(fileURLToPath(import.meta.url));
 
 test("the hook text is on screen from the first frame and the camera moves by about 3 s", () => {
   assert.equal(rain.CAPTIONS[0].from, 0);
@@ -221,4 +228,35 @@ test("studio_intro: a bunny holding something has bent arms (shoulder, elbow, ha
   assert.ok(intro.armsHook(intro.THROW.release + 0.1).r && !intro.armsHook(intro.THROW.release + 0.1).l, "only the throwing arm swings");
   assert.equal(intro.armsHook(intro.THROW.release + 0.5), null);
   for (const a of [intro.armsRead(), intro.armsLift(-150), intro.armsPaint(0, [-100, -146])]) for (const side of ["l", "r"]) assert.equal(a[side].length, 3);
+});
+
+test("new.mjs scaffolds a scene per style that imports and follows the timing rules, and never overwrites", async () => {
+  for (const style of Object.keys(STYLES)) {
+    const dir = mkdtempSync(join(tmpdir(), "focal-scaffold-"));
+    try {
+      for (const kit of ["ink", "cel", "toon", "kawaii", "audio"]) symlinkSync(join(HERE, `${kit}.mjs`), join(dir, `${kit}.mjs`));
+      const [main, sheet] = scaffold("demo_scaffold", style, dir);
+      assert.throws(() => scaffold("demo_scaffold", style, dir), /not overwriting/);
+      const s = await import(pathToFileURL(main).href);
+      await import(pathToFileURL(sheet).href);
+      assert.equal(s.CAPTIONS[0].from, 0, style);
+      const cs = [...s.CAPTIONS].sort((a, b) => a.from - b.from);
+      cs.forEach((c, i) => { assert.ok(c.from < c.to && c.to <= s.DURATION); if (i) assert.ok(cs[i - 1].to <= c.from); });
+      assert.ok(cs.at(-1).to <= s.END.from && s.DURATION - s.END.from >= 3, style);
+      assert.deepEqual(s.END.lines, CLOSING);
+      assert.equal(s.END.store, STORE);
+      assert.equal(s.SCENES.at(-1).to, s.DURATION);
+      for (const b of s.BEATS) assert.ok(b.t >= 0 && b.t < s.DURATION, `beat ${b.t}`);
+      assert.ok(soundArgv("/o.wav", s.DURATION, s.SOUND).includes("ffmpeg"));
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  }
+  assert.throws(() => scaffold("Bad-Name", "toon", tmpdir()), /bad name/);
+  assert.throws(() => scaffold("ok", "nope", tmpdir()), /unknown style/);
+});
+
+test("canvas code is deterministic: no Math.random, Date.now, performance.now or fetch in kits or scenes", () => {
+  const files = [...readdirSync(HERE).filter(f => f.endsWith(".mjs") && !f.endsWith(".test.mjs") && f !== "render.mjs" && f !== "new.mjs").map(f => join(HERE, f)),
+    ...readdirSync(join(HERE, "scenes")).map(f => join(HERE, "scenes", f))];
+  const code = f => readFileSync(f, "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "").replace(/\s\/\/ .*$/gm, "");
+  for (const f of files) assert.doesNotMatch(code(f), /Math\.random|Date\.now|performance\.now|\bfetch\(/, f);
 });

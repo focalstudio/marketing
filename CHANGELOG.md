@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added the `canvas-video` Claude Code skill (`.claude/skills/canvas-video/`: scene contract, work loop with the two review gates, story, style, motion and review notes; structure adapted from HeyGen's Apache-2.0 `/hyperframes` skill) and `video/canvas/new.mjs`, which scaffolds a scene, its style sheet and its prompt in a chosen kit. `canvas.test.mjs` now also covers the scaffold and fails if kit or scene code uses `Math.random`, `Date.now`, `performance.now` or `fetch`.
+
 - Fixed: a `draft-week` top-up run in a week whose queue PR had already merged edited that merged PR and opened no new one (#28 had to be opened by hand). The step now looks only at an open PR for the branch, by number, for the edit, the checks and the merge.
 - Added `studio_intro`, a 45 s kawaii canvas video that introduces Focal Studio (who we are, what we value, WildFocus with the app's own low-poly animals on rarity cards, apps to come) for pinning on every profile. New `video/canvas/kawaii.mjs` (flat vector bunnies and props), `introArgv` in `audio.mjs` (synthesised piano and pad ducked under a Kokoro voice-over WAV, so the post carries the AI label), `render.mjs` serves the app's animal PNGs and `--sheet` writes a labelled contact sheet of stills. The narration is plain, intermediate English, the bunny throws the phone away (with a whoosh) instead of dropping it, and the goals beat shows bunnies painting, reading and lifting with elbowed arms. New rule: a style sheet and a keyframe sheet are approved before any full render (`video/STORIES.md`, `AGENTS.md`).
 - Changed the shared end card's store line from "Available on iOS" to "Free on iOS" (`STORE` in `cel.mjs`, `voice.md`, `video/STORIES.md`); the Python clips already said it.
