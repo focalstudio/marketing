@@ -58,7 +58,7 @@ Goal: one low-maintenance library of styles, fonts and palettes that Claude can 
    - Pros: more cartoon display faces; permissive for commercial use; rendered output carries no obligations.
    - Cons: vendoring is redistribution, so keep `LICENSE`, keep any `NOTICE`, and mark modifications (subsetting counts); the lint must handle two licence shapes; the licence was not written for fonts.
    - Net: neither licence carries real legal risk if the licence file ships. The risk is provenance, so we take fonts only from google/fonts. The lint requires `LICENSE.txt`, plus `NOTICE` if upstream ships one.
-8. **Style names**: planned IDs are `naturalist-engraving`, `kawaii-chibi`, `wonderland-engraving`, `cartoon-hose`, `pixel-art`, `anime-cel`, plus `mascot-flat` and `monoline-icon` reserved for logo and icon work. The six Pillow styles get card-only entries (`engine: pillow`), with previews copied once from today's goldens.
+8. **Style names**: planned IDs are `naturalist-engraving`, `kawaii-chibi`, `wonderland-engraving`, `cartoon-hose`, `pixel-art`, `anime-cel`, plus `sumi-ink`, `toon-cel`, `chibi-sparkle`, `sticker-sheet`, `gameboy`, `iso-pixel`, `crt-vhs`, `watercolor`, `risograph`, `crayon`, `lowpoly-2d` (canvas) and `lowpoly-3d`, `voxel`, `claymation`, `toon-3d`, `felt`, `diorama` (Blender), all added with the style demos and `mascot-flat` and `monoline-icon` reserved for logo and icon work. The six Pillow styles get card-only entries (`engine: pillow`), with previews copied once from today's goldens.
 
 ## Repo layout (focal-styles)
 
@@ -123,6 +123,10 @@ Caveats: the three differ slightly in the grain (Blender's is ffmpeg's, added at
 - **Blender is kept as a fallback**, for what canvas 2D cannot do: real 3D (objects turning in depth, faceted low-poly with real light) and brush-style Freestyle ink. It is not in `ubuntu-latest`, so it would be a download of roughly 300 MB per CI run unless cached. Its renders are made locally and committed to `inbox/`.
 
 The engine recommended for each style is in [video/STYLES.md](../../video/STYLES.md).
+
+## Blender for the 3D demos (2026-10-27)
+
+Blender 5.2.3 (EEVEE, `video/blender/render.py`) renders the six 3D demos as stills at 1080x1920, 2-8 s each, built entirely in code (no .blend files). It stays a local-only engine: it is not in `ubuntu-latest`, so no CI job renders it, and `gallery.test.mjs` only checks the committed stills exist.
 
 ## Not chosen
 

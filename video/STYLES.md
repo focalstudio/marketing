@@ -5,6 +5,11 @@ One drawing kit per style in [styles/](styles/). Every style implements the cont
 in [apps/wildfocus.yml](../apps/wildfocus.yml) (`styles:`), and how many posts each style gets a week by `mix:`.
 `python3 -m video.render --list` prints what exists. Rule for the app's icon: always the real one, never redrawn.
 
+**Gallery:** [docs/styles/index.html](../docs/styles/index.html) shows every style (stills, palette, fonts, an example prompt) from the
+cards in [styles/cards/](styles/cards/); open it in a browser. A new style ships with a card (`<id>.md`, same fields as the others) and
+three stills: `node scripts/gallery.mjs previews --only <id>`, then `node scripts/gallery.mjs build`. `node --test scripts/gallery.test.mjs`
+fails if a card is incomplete or the page is stale. Fonts are in [fonts/fonts.json](fonts/fonts.json).
+
 ## In use
 
 | Style | Engine | Look | Plays | Motion |
@@ -20,20 +25,24 @@ in [apps/wildfocus.yml](../apps/wildfocus.yml) (`styles:`), and how many posts e
 and the 22 animals in [kit/species.py](kit/species.py), so a story written once plays in both and the animals really
 move: legs swing while they hop or walk, ears twitch, they blink, wings flap.
 
-## Planned (style library)
+## Style library (demos)
 
-IDs and decisions are in [docs/decisions/0001-style-library.md](../docs/decisions/0001-style-library.md). The engine column is the recommendation from the engine spikes: canvas 2D is the default because it matched WebGL and Blender on the test shot at the lowest cost with nothing to install. Blender is for real 3D only.
+IDs and decisions are in [docs/decisions/0001-style-library.md](../docs/decisions/0001-style-library.md). Every style below has a card
+and three stills in the [gallery](../docs/styles/index.html), rendered from one demo (a rabbit beside a 25:00 timer). `demo` means the
+look exists as a still-and-scene demo (`video/canvas/scenes/style_<id>.mjs` or `video/blender/styles/<id>.py`) but no video uses it yet.
+Canvas 2D is the default engine (nothing to install); Blender is for real 3D, run as
+`blender -b --factory-startup -P video/blender/render.py -- <id> <outdir> <frames>`.
 
-| Style | Engine | Why |
-|---|---|---|
-| `naturalist-engraving` | canvas 2D | port of `video/canvas/ink.mjs`: hatching and boiling outlines |
-| `kawaii-chibi` | canvas 2D | `video/canvas/toon.mjs` already exists |
-| `wonderland-engraving` | canvas 2D | hatching on flat shapes |
-| `cartoon-hose` | canvas 2D | bezier limbs, squash and stretch, beat loops |
-| `pixel-art` | canvas 2D | nearest-neighbour upscale of a palette-locked canvas |
-| `anime-cel` | canvas 2D | the spike showed parity; use Blender only for a 3D prop or brush-style ink |
-| `mascot-flat`, `monoline-icon` | canvas 2D | flat vector |
-| `lowpoly` (Pillow today) | Blender candidate | real faceted 3D with light; spike it if `lowpoly` stays in the mix |
+| Family | Styles |
+|---|---|
+| Ink & engraving | `ink` (Pillow), `naturalist-engraving`, `wonderland-engraving`, `sumi-ink` |
+| Kawaii & cute | `kawaii`, `kawaii-chibi`, `chibi-sparkle`, `sticker-sheet`, `mascot-flat` |
+| Pixel & retro | `pixel` (Pillow), `pixel-art`, `gameboy`, `iso-pixel`, `crt-vhs` |
+| Cartoon | `toon` (Pillow), `toon-cel`, `cartoon-hose`, `anime-cel` |
+| Paper, paint & print | `paper`, `storybook` (Pillow), `watercolor`, `risograph`, `crayon` |
+| Low poly & 3D | `lowpoly` (Pillow), `lowpoly-2d`, `lowpoly-3d`, `voxel`, `claymation`, `toon-3d`, `felt`, `diorama` (Blender) |
+
+Cartoon styles keep clear of any studio's characters (`cartoon-hose` draws a cream, lop-eared rabbit on purpose).
 
 ## Retired
 
