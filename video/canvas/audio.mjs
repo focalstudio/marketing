@@ -134,11 +134,49 @@ export function introArgv(path, dur, { voice, voiceAt = 0, close, throw: toss, b
     "-filter_complex", fg.join(";"), "-map", "[out]", "-ac", "2", path];
 }
 
+// A lofi bed for the friendly videos: a swung 74 bpm beat (soft kick on 1 and 3, snare on 2 and 4, shuffled hats), a warm electric piano
+// over Fmaj7, Em7, Dm7, Cmaj7 (restruck on beat 3) and a sine bass, tape wobble, a low-passed top and vinyl crackle. The story's own sounds
+// sit on top: a buzz for each phone, a thunk when it goes face down, a boing per hop, a sparkle, a chime as the end card arrives.
+// Full level from frame 0. No loudnorm (it left the full mix near-silent): a fixed gain and an alimiter set the level.
+export function lofiArgv(path, dur, { bpm = 74, buzz = [], thunk, hops = [], sparkle, done } = {}) {
+  const beat = 60 / bpm, bar = 4 * beat, swing = 0.62 * beat;
+  const chords = [[174.61, 220, 261.63, 329.63], [164.81, 196, 246.94, 293.66], [146.83, 174.61, 220, 261.63], [130.81, 164.81, 196, 246.94]];
+  const roots = [87.31, 82.41, 73.42, 65.41];
+  const pick = hz => `if(eq(ld(0),0),${hz[0]},if(eq(ld(0),1),${hz[1]},if(eq(ld(0),2),${hz[2]},${hz[3]})))`;
+  const keys = [0, 1, 2, 3].map(j => { const f = pick(chords.map(c => c[j])); return `(sin(2*PI*${f}*t)+0.3*sin(2*PI*2*${f}*t)*exp(-ld(1)*5))`; }).join("+");
+  const piano = `st(0,mod(floor(t/${bar}),4));st(1,mod(t,${bar / 2}));st(2,if(lt(mod(t,${bar}),${bar / 2}),1,0.6));st(3,mod(t,${2 * beat}));` +
+    `0.075*ld(2)*exp(-ld(1)*1.8)*min(1,ld(1)*70)*(${keys})+0.4*sin(2*PI*${pick(roots)}*t)*exp(-ld(3)*3)*min(1,ld(3)*50)`;
+  const drums = `st(0,mod(t,${2 * beat}));st(1,mod(t-${beat},${2 * beat}));st(2,mod(t,${beat}));st(3,mod(t+${beat - swing},${beat}));` +
+    `0.8*sin(2*PI*(52+60*exp(-ld(0)*25))*ld(0))*exp(-ld(0)*12)+gte(t,${beat})*((random(0)-0.5)*0.5*exp(-ld(1)*18)+0.25*sin(2*PI*190*ld(1))*exp(-ld(1)*25))+` +
+    `(random(1)-0.5)*(0.22*exp(-ld(2)*70)+0.14*exp(-ld(3)*70))`;
+  const crackle = `if(gt(random(2),0.9992),(random(3)-0.5)*0.35,0)+0.006*(random(4)-0.5)`;
+  const ev = [
+    ...buzz.map(at => ({ at, dur: 0.55, gain: 0.4, expr: "sin(2*PI*170*t)*(0.55+0.45*sin(2*PI*28*t))*min(1,t*60)*min(1,(0.55-t)*40)" })),
+    { at: thunk, dur: 0.4, gain: 0.8, expr: "sin(2*PI*85*t)*exp(-t*22)+0.4*(random(0)-0.5)*exp(-t*70)" },
+    ...hops.map(at => ({ at: at + 0.15, dur: 0.5, gain: 0.35, expr: boing(220, 380) })),
+    ...[2093, 2637, 3136].map((hz, i) => ({ at: sparkle + i * 0.08, dur: 0.5, gain: 0.3, expr: note(hz, 12) })),
+    { at: done, dur: 1.4, gain: 0.6, expr: note(1046.5) },
+    { at: done + 0.14, dur: 1.4, gain: 0.6, expr: note(1568) },
+  ];
+  const v = voices(ev, 3);
+  const fg = [
+    `[0]aeval='${piano}':c=mono,vibrato=f=0.7:d=0.05[pn]`,
+    `[1]aeval='${drums}':c=mono[dr]`,
+    `[2]aeval='${crackle}':c=mono,highpass=f=1200[cr]`,
+    ...v.filters,
+    `[pn][dr]amix=inputs=2:duration=first:normalize=0,lowpass=f=4200[bed]`,
+    `[bed][cr]${v.labels.join("")}amix=inputs=${v.labels.length + 2}:duration=first:normalize=0,atrim=0:${dur},` +
+      `volume=1.15,alimiter=limit=0.84,aresample=48000,afade=t=out:st=${dur - 1.2}:d=1.2[out]`,
+  ];
+  return ["ffmpeg", "-v", "error", "-y", ...[0, 1, 2].flatMap(() => ["-f", "lavfi", "-i", `anullsrc=r=48000:cl=mono:d=${dur}`]),
+    ...v.args, "-filter_complex", fg.join(";"), "-map", "[out]", "-ac", "2", path];
+}
+
 // A scene's `voice` is a repo path; it counts only once the WAV is there.
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const introSound = (path, dur, s) => introArgv(path, dur, { ...s, voice: s.voice && existsSync(resolve(ROOT, s.voice)) ? resolve(ROOT, s.voice) : undefined });
 
-const BUILDERS = { rain: rainArgv, toon: toonArgv, city: cityArgv, intro: introSound };
+const BUILDERS = { rain: rainArgv, toon: toonArgv, city: cityArgv, intro: introSound, lofi: lofiArgv };
 
 // The ffmpeg argv for a scene's SOUND: its `kind` picks the builder ("rain" when absent, as rain_outside has no kind).
 export const soundArgv = (path, dur, sound = {}) => BUILDERS[sound.kind || "rain"](path, dur, sound);

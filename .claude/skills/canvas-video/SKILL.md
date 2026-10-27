@@ -19,7 +19,7 @@ A scene `video/canvas/scenes/<name>.mjs` exports:
 - **End card:** call `endCard(ctx, t, W, H, { icon, from: END.from, tile })` from `cel.mjs`, `END = { from, title: "WildFocus", lines: CLOSING, store: STORE }`,
   held at least 3 s, after the last caption. Never draw your own.
 - **App icon:** always the real one (`icon` from `setup`), never redrawn.
-- **Sound:** `SOUND.kind` picks the builder in `audio.mjs` (`rain`, `toon`, `city`, `intro`); set `SOUND.close = END.from` where the builder takes it.
+- **Sound:** `SOUND.kind` picks the builder in `audio.mjs` (`rain`, `toon`, `city`, `intro`, `lofi`); set `SOUND.close = END.from` where the builder takes it.
   Full level from frame 0. `-silent.mp4` is the copy for adding a platform sound.
 
 ## Work loop
