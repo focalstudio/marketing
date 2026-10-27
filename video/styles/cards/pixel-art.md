@@ -9,7 +9,7 @@ source: video/canvas/scenes/style_pixel_art.mjs
 previews_from: canvas style_pixel_art 0.5,1.5,2.5
 previews: 3
 fonts: []
-used_in: []
+used_in: [picnic_for_four_pixel]
 palette:
   outline: "#2e2030"
   white: "#fff8ee"

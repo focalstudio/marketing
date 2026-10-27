@@ -9,7 +9,7 @@ source: video/canvas/scenes/style_iso_pixel.mjs
 previews_from: canvas style_iso_pixel 0.5,1.5,2.5
 previews: 3
 fonts: []
-used_in: []
+used_in: [picnic_for_four_iso]
 palette:
   night: "#3a2838"
   wall-left: "#f4cfa8"

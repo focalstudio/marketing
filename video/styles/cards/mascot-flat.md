@@ -9,7 +9,7 @@ source: video/canvas/scenes/style_mascot-flat.mjs
 previews_from: canvas style_mascot-flat 0.5,1.5,2.5
 previews: 3
 fonts: [Fredoka]
-used_in: []
+used_in: [picnic_for_four_flat]
 palette:
   sage: "#4a7c59"
   sage-shade: "#3d6a4a"

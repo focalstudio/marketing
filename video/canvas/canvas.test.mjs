@@ -9,7 +9,10 @@ import * as rain from "./scenes/rain_outside.mjs";
 import * as rabbit from "./scenes/focus_rabbit.mjs";
 import * as last25 from "./scenes/last25.mjs";
 import { snap, makeLines, CLOSING, STORE } from "./cel.mjs";
-import { cityArgv, introArgv } from "./audio.mjs";
+import { cityArgv, introArgv, lofiArgv } from "./audio.mjs";
+import * as picnicIso from "./scenes/picnic_for_four_iso.mjs";
+import * as picnicPixel from "./scenes/picnic_for_four_pixel.mjs";
+import * as picnicFlat from "./scenes/picnic_for_four_flat.mjs";
 import * as intro from "./scenes/studio_intro.mjs";
 import { mkdtempSync, symlinkSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -253,6 +256,34 @@ test("new.mjs scaffolds a scene per style that imports and follows the timing ru
   assert.throws(() => scaffold("Bad-Name", "toon", tmpdir()), /bad name/);
   assert.throws(() => scaffold("ok", "nope", tmpdir()), /unknown style/);
 });
+
+for (const [look, p] of [["iso", picnicIso], ["pixel", picnicPixel], ["flat", picnicFlat]]) {
+  test(`picnic_for_four_${look}: hook from frame 0, captions inside the video and apart, 18 s, end card held for 3 s`, () => {
+    assert.equal(p.DURATION, 18);
+    assert.equal(p.CAPTIONS[0].from, 0);
+    const cs = [...p.CAPTIONS].sort((a, b) => a.from - b.from);
+    cs.forEach((c, i) => {
+      assert.ok(c.from < c.to && c.to <= p.DURATION);
+      if (i) assert.ok(cs[i - 1].to <= c.from);
+    });
+    assert.ok(cs.at(-1).to <= p.END.from && p.DURATION - p.END.from >= 3);
+    assert.deepEqual(p.END.lines, CLOSING);
+    assert.equal(p.END.store, STORE);
+    for (let i = 1; i < p.SCENES.length; i++) assert.ok(p.SCENES[i].from <= p.SCENES[i - 1].to, p.SCENES[i].name);
+    assert.equal(p.SCENES.at(-1).to, p.DURATION);
+    for (const b of p.BEATS) assert.ok(b.t > 0 && b.t < p.DURATION, b.word);
+  });
+
+  test(`picnic_for_four_${look}: lofi sound at full level from frame 0 with a sound on every story beat`, () => {
+    const S = p.SOUND, argv = soundArgv("/o.wav", p.DURATION, S), fg = argv[argv.indexOf("-filter_complex") + 1];
+    assert.equal(S.kind, "lofi");
+    assert.ok(!fg.includes("afade=t=in"));
+    for (const t of [...S.buzz, S.thunk, S.sparkle, S.done, S.done + 0.14]) assert.ok(fg.includes(`adelay=${Math.round(t * 1000)}|`), `beat ${t}`);
+    for (const h of S.hops) assert.ok(fg.includes(`adelay=${Math.round((h + 0.15) * 1000)}|`), `hop ${h}`);
+    assert.equal(S.done, p.END.from);
+    assert.deepEqual(argv, lofiArgv("/o.wav", p.DURATION, S));
+  });
+}
 
 test("canvas code is deterministic: no Math.random, Date.now, performance.now or fetch in kits or scenes", () => {
   const files = [...readdirSync(HERE).filter(f => f.endsWith(".mjs") && !f.endsWith(".test.mjs") && f !== "render.mjs" && f !== "new.mjs").map(f => join(HERE, f)),
