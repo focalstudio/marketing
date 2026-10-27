@@ -2,6 +2,7 @@
 id: lowpoly
 name: Low poly
 status: in-use
+family: "Low poly & 3D"
 engine: pillow
 summary: "Faceted 3D-ish animals lit like folded paper, the look of the app itself."
 source: video/styles/lowpoly.py

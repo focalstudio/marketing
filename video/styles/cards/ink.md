@@ -2,6 +2,7 @@
 id: ink
 name: Ink
 status: in-use
+family: "Ink & engraving"
 engine: pillow
 summary: "Cream paper, pencil hatching and wobbly outlines that boil like hand-drawn animation."
 source: video/styles/ink.py

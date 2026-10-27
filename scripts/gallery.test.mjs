@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
-import { CARDS, PAGE, ROOT, brandPalette, cardProblems, loadCards, loadFonts, parseCard, previewCommand, previewNames, render } from "./gallery.mjs";
+import { CARDS, PAGE, ROOT, brandPalette, cardProblems, loadCards, loadFonts, pageFontUrl, parseCard, previewCommand, previewNames, render } from "./gallery.mjs";
 import { parseYaml } from "./publish.mjs";
 
 const cards = loadCards();
@@ -42,14 +42,14 @@ test("every installed font has its file and licence, and every font names a goog
 });
 
 test("the committed page is what build writes", () => {
-  const html = render(cards, fonts, brandPalette(), { src: (p) => `../../${p}`, fontUrl: "../../video/fonts/Nunito%5Bwght%5D.ttf" });
+  const html = render(cards, fonts, brandPalette(), { src: (p) => `../../${p}`, fontUrl: pageFontUrl });
   assert.equal(readFileSync(PAGE, "utf8"), html, "docs/styles/index.html is stale: run node scripts/gallery.mjs build");
 });
 
 test("cardProblems names what is wrong", () => {
-  const card = parseCard('---\nid: x\nname: X\nstatus: shiny\nengine: gpu\nsummary: s\nprompt: p\nfonts: [Comic Sans]\npalette:\n  a: red\n---\n## Look\nl\n', "y.md");
+  const card = parseCard('---\nid: x\nname: X\nstatus: shiny\nfamily: Nope\nengine: gpu\nsummary: s\nprompt: p\nfonts: [Comic Sans]\npalette:\n  a: red\n---\n## Look\nl\n', "y.md");
   const bad = cardProblems({ ...card, file: "y.md" }, fonts).join("\n");
-  for (const re of [/does not match the file name/, /status "shiny"/, /engine "gpu"/, /missing source/, /palette a "red"/, /font "Comic Sans"/, /missing ## Do/, /needs previews/]) assert.match(bad, re);
+  for (const re of [/does not match the file name/, /status "shiny"/, /engine "gpu"/, /family "Nope"/, /missing source/, /palette a "red"/, /font "Comic Sans"/, /missing ## Do/, /needs previews/]) assert.match(bad, re);
 });
 
 test("parseCard splits the body into sections and rejects a missing block", () => {
@@ -62,12 +62,13 @@ test("parseCard splits the body into sections and rejects a missing block", () =
 test("previewCommand builds the right render for each engine", () => {
   assert.deepEqual(previewCommand({ id: "toon", previews_from: "pillow meditate 1,4,8" }, "/d"), ["python3", ["-m", "video.render", "meditate", "--style", "toon", "--preview", "/d", "1,4,8"]]);
   assert.deepEqual(previewCommand({ id: "k", previews_from: "canvas last25 1.5,6" }, "/d"), ["node", ["video/canvas/render.mjs", "last25", "--preview", "/d", "1.5,6"]]);
-  assert.throws(() => previewCommand({ file: "z.md", previews_from: "gpu x 1" }, "/d"), /pillow or canvas/);
+  assert.deepEqual(previewCommand({ id: "b", previews_from: "blender voxel 1,12" }, "/d"), ["blender", ["-b", "--factory-startup", "-P", "video/blender/render.py", "--", "voxel", "/d", "1,12"]]);
+  assert.throws(() => previewCommand({ file: "z.md", previews_from: "gpu x 1" }, "/d"), /pillow, canvas or blender/);
 });
 
 test("the page escapes card text", () => {
   const evil = { ...cards[0], name: "<script>alert(1)</script>", prompt: 'a "quoted" <b>' };
-  const html = render([evil], fonts, null, { fontUrl: "f.ttf" });
+  const html = render([evil], fonts, null, { fontUrl: (f) => f });
   assert.ok(!html.includes("<script>alert(1)"));
   assert.ok(html.includes("&lt;script&gt;alert(1)&lt;/script&gt;"));
 });

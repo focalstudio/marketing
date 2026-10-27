@@ -2,6 +2,7 @@
 id: storybook
 name: Storybook
 status: in-use
+family: "Paper, paint & print"
 engine: pillow
 summary: "A flat vector picture book in warm limited colours with paper grain over every frame."
 source: video/styles/storybook.py

@@ -2,6 +2,7 @@
 id: appart
 name: App art
 status: retired
+family: "Low poly & 3D"
 engine: pillow
 summary: "The app's own static PNGs pasted onto storyboards. Retired 2026-10-23."
 source: video/styles/appart.py

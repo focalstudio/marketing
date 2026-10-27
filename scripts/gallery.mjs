@@ -18,8 +18,10 @@ import { parseYaml } from "./publish.mjs";
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 export const CARDS = join(ROOT, "video", "styles", "cards");
 export const PAGE = join(ROOT, "docs", "styles", "index.html");
-export const STATUSES = ["in-use", "built", "planned", "retired"];
-const LABEL = { "in-use": "In use", built: "Built", planned: "Planned", retired: "Retired" };
+export const STATUSES = ["in-use", "built", "demo", "retired"];
+export const ENGINES = ["pillow", "canvas", "blender"];
+export const FAMILIES = ["Ink & engraving", "Kawaii & cute", "Pixel & retro", "Cartoon", "Paper, paint & print", "Low poly & 3D"];
+const LABEL = { "in-use": "In use", built: "Built", demo: "Demo", retired: "Retired", pillow: "Pillow", canvas: "Canvas", blender: "Blender" };
 const SECTIONS = ["Look", "Do", "Don't", "Prompt recipe"];
 const HEX = /^#[0-9a-f]{6}$/;
 
@@ -59,17 +61,18 @@ export function previewNames(card) {
 // Problems with a card, as strings; empty when it is fine.
 export function cardProblems(card, fonts) {
   const bad = [];
-  for (const k of ["id", "name", "status", "engine", "summary", "prompt", "palette", "fonts"]) {
+  for (const k of ["id", "name", "family", "status", "engine", "summary", "prompt", "palette", "fonts"]) {
     if (card[k] === undefined || card[k] === null || card[k] === "") bad.push(`${card.file}: missing ${k}`);
   }
   if (card.id && `${card.id}.md` !== card.file) bad.push(`${card.file}: id "${card.id}" does not match the file name`);
   if (card.status && !STATUSES.includes(card.status)) bad.push(`${card.file}: status "${card.status}" is not one of ${STATUSES.join(", ")}`);
-  if (card.engine && !["pillow", "canvas"].includes(card.engine)) bad.push(`${card.file}: engine "${card.engine}" is not pillow or canvas`);
-  if (card.status !== "planned" && !card.source) bad.push(`${card.file}: missing source`);
+  if (card.engine && !ENGINES.includes(card.engine)) bad.push(`${card.file}: engine "${card.engine}" is not one of ${ENGINES.join(", ")}`);
+  if (card.family && !FAMILIES.includes(card.family)) bad.push(`${card.file}: family "${card.family}" is not one of ${FAMILIES.join(", ")}`);
+  if (!card.source) bad.push(`${card.file}: missing source`);
   for (const [role, hex] of Object.entries(card.palette ?? {})) if (!HEX.test(hex)) bad.push(`${card.file}: palette ${role} "${hex}" is not #rrggbb`);
   for (const f of card.fonts ?? []) if (!fonts.some((x) => x.family === f)) bad.push(`${card.file}: font "${f}" is not in fonts.json`);
   for (const s of SECTIONS) if (!card.body?.[s]) bad.push(`${card.file}: missing ## ${s}`);
-  if (card.status !== "planned" && !card.previews) bad.push(`${card.file}: a ${card.status} style needs previews`);
+  if (!card.previews) bad.push(`${card.file}: a style needs previews (a real still of the style)`);
   if (card.previews && !card.previews_from) bad.push(`${card.file}: previews needs previews_from`);
   return bad;
 }
@@ -93,23 +96,22 @@ const swatch = ([role, hex]) =>
   `<button class="sw" type="button" data-copy="${hex}" title="Copy ${hex}"><i style="background:${hex}"></i><b>${esc(role)}</b><span>${hex}</span></button>`;
 const chips = (pal) => Object.values(pal).map((h) => `<i style="background:${h}"></i>`).join("");
 
-export function render(cards, fonts, brand, { src = (p) => p, fontUrl } = {}) {
+export function render(cards, fonts, brand, { src = (p) => p, fontUrl = (f) => f, reuse = false } = {}) {
   const tag = (c) => `<span class="tag ${c.status}">${LABEL[c.status]}</span><span class="tag eng">${c.engine}</span>`;
-  const thumb = (c) => {
+  // With `reuse` (the inline copy) the dialog's stills take their src from the grid's, so each image is embedded once.
+  const thumb = (c, inDialog = false) => {
     const names = previewNames(c);
     return names.length
-      ? names.map((n, i) => `<img src="${src(`video/styles/cards/previews/${n}`)}" alt="${esc(c.name)} still ${i + 1}" loading="lazy"${i ? "" : ' class="on"'}>`).join("")
-      : `<div class="ph">${chips(c.palette)}<span>planned</span></div>`;
+      ? names.map((n, i) => `<img ${inDialog && reuse ? `data-ref="${c.id}-${i + 1}"` : `src="${src(`video/styles/cards/previews/${n}`)}" data-id="${c.id}-${i + 1}"`} alt="${esc(c.name)} still ${i + 1}" loading="lazy"${i ? "" : ' class="on"'}>`).join("")
+      : `<div class="ph">${chips(c.palette)}</div>`;
   };
-  const cardHtml = cards
-    .map(
-      (c) => `<article class="card" data-id="${c.id}" data-status="${c.status}" data-engine="${c.engine}" data-q="${esc(`${c.name} ${c.summary} ${c.id}`.toLowerCase())}" tabindex="0">
+  const article = (c) => `<article class="card" data-id="${c.id}" data-family="${esc(c.family)}" data-status="${c.status}" data-engine="${c.engine}" data-q="${esc(`${c.name} ${c.summary} ${c.id} ${c.family}`.toLowerCase())}" tabindex="0">
   <div class="thumb">${thumb(c)}</div>
   <div class="meta"><h3>${esc(c.name)}</h3><p>${esc(c.summary)}</p><div class="row">${tag(c)}</div><div class="chips">${chips(c.palette)}</div></div>
-</article>
-<template id="d-${c.id}">
-  <div class="dhead"><div><h2>${esc(c.name)}</h2><div class="row">${tag(c)}<code>${c.id}</code></div></div></div>
-  <div class="dshots">${thumb(c)}</div>
+</article>`;
+  const template = (c) => `<template id="d-${c.id}">
+  <div class="dhead"><div><h2>${esc(c.name)}</h2><div class="row">${tag(c)}<span class="tag">${esc(c.family)}</span><code>${c.id}</code></div></div></div>
+  <div class="dshots">${thumb(c, true)}</div>
   <p class="lead">${esc(c.summary)}</p>
   <h4>Look</h4>${md(c.body.Look)}
   <div class="two"><div><h4>Do</h4>${md(c.body.Do)}</div><div><h4>Don't</h4>${md(c.body["Don't"])}</div></div>
@@ -117,16 +119,20 @@ export function render(cards, fonts, brand, { src = (p) => p, fontUrl } = {}) {
   <h4>Fonts</h4><p>${c.fonts.map(esc).join(", ")}</p>
   <h4>Example prompt</h4><pre>${esc(c.prompt)}</pre><button class="btn" type="button" data-copy="${esc(c.prompt)}">Copy prompt</button>
   <h4>Prompt recipe</h4><pre>${esc(c.body["Prompt recipe"])}</pre><button class="btn" type="button" data-copy="${esc(c.body["Prompt recipe"])}">Copy recipe</button>
-  <h4>Used in</h4><p>${c.used_in.length ? c.used_in.map((u) => `<code>${esc(u)}</code>`).join(" ") : "Nothing yet."}${c.source ? ` Source: <code>${esc(c.source)}</code>` : ""}</p>
-</template>`,
-    )
+  <h4>Used in</h4><p>${c.used_in.length ? c.used_in.map((u) => `<code>${esc(u)}</code>`).join(" ") : "Nothing yet."} Source: <code>${esc(c.source)}</code></p>
+</template>`;
+  const groupHtml = FAMILIES.map((f) => [f, cards.filter((c) => c.family === f)])
+    .filter(([, list]) => list.length)
+    .map(([f, list]) => `<section class="group"><h2>${esc(f)} <small>${list.length}</small></h2><div class="grid">\n${list.map(article).join("\n")}\n</div></section>`)
     .join("\n");
+  const templates = cards.map(template).join("\n");
+  const faces = fonts.filter((f) => f.status === "installed").map((f) => `@font-face{font-family:'${f.family}';src:url("${fontUrl(f.file)}");font-weight:${f.weight || "400"}}`).join("\n");
 
   const fontRows = fonts
     .map(
       (f) => `<div class="frow ${f.status}">
   <div class="sample" style="${f.status === "installed" ? `font-family:'${f.family}'` : ""}">Just focus on what matters.</div>
-  <div class="finfo"><b>${esc(f.family)}</b> <span class="tag ${f.status === "installed" ? "in-use" : "planned"}">${f.status}</span>
+  <div class="finfo"><b>${esc(f.family)}</b> <span class="tag ${f.status === "installed" ? "in-use" : "demo"}">${f.status}</span>
   <span>${esc(f.role)} · ${esc(f.license)}</span><span>google/fonts <code>${esc(f.source)}</code></span>
   <span>${f.styles.length ? f.styles.map((s) => `<a href="#styles/${s}">${esc(s)}</a>`).join(", ") : "no style yet"}</span></div>
 </div>`,
@@ -138,7 +144,7 @@ export function render(cards, fonts, brand, { src = (p) => p, fontUrl } = {}) {
     ...cards.map((c) => ({ id: c.id, name: c.name, pal: c.palette, status: c.status })),
   ]
     .map(
-      (s) => `<section class="strip"><h3>${s.id ? `<a href="#styles/${s.id}">${esc(s.name)}</a>` : esc(s.name)}${s.status === "planned" ? ' <span class="tag planned">proposed</span>' : ""}</h3><div class="sws">${Object.entries(s.pal).map(swatch).join("")}</div></section>`,
+      (s) => `<section class="strip"><h3>${s.id ? `<a href="#styles/${s.id}">${esc(s.name)}</a>` : esc(s.name)}${""}</h3><div class="sws">${Object.entries(s.pal).map(swatch).join("")}</div></section>`,
     )
     .join("\n");
 
@@ -152,7 +158,7 @@ export function render(cards, fonts, brand, { src = (p) => p, fontUrl } = {}) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Focal Studio styles</title>
 <style>
-@font-face{font-family:Nunito;src:url("${fontUrl}");font-weight:200 1000}
+${faces}
 :root{--bg:#faf7f0;--card:#fff;--ink:#2b2622;--mute:#6f675f;--line:#e6dfd2;--accent:#4a7c59;--accent-ink:#fff;--shadow:0 1px 2px rgba(0,0,0,.06),0 6px 20px rgba(60,40,20,.07)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171513;--card:#211e1b;--ink:#f1ece4;--mute:#a49b90;--line:#352f29;--accent:#7fb48d;--accent-ink:#10200f;--shadow:0 1px 2px rgba(0,0,0,.4)}}
 :root[data-theme="dark"]{--bg:#171513;--card:#211e1b;--ink:#f1ece4;--mute:#a49b90;--line:#352f29;--accent:#7fb48d;--accent-ink:#10200f;--shadow:0 1px 2px rgba(0,0,0,.4)}
@@ -172,6 +178,7 @@ nav button[aria-selected="true"]{color:var(--ink);border-color:var(--accent)}
 .chipset button{font:inherit;font-size:.85rem;font-weight:700;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:4px 12px;cursor:pointer}
 .chipset button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 input[type=search]{font:inherit;padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:var(--card);color:var(--ink);min-width:0;flex:1 1 180px;max-width:280px}
+.group h2{margin:26px 0 12px;font-size:1.2rem}.group h2 small{color:var(--mute);font-weight:600}.lab{font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--mute);align-self:center;margin-right:2px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(210px,100%),1fr));gap:16px;padding-bottom:48px}
 @media (max-width:480px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.meta p{display:none}}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);cursor:pointer;display:flex;flex-direction:column}
@@ -188,7 +195,7 @@ input[type=search]{font:inherit;padding:6px 12px;border:1px solid var(--line);bo
 .tag{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;border-radius:6px;padding:2px 7px;background:var(--line);color:var(--mute)}
 .tag.in-use{background:var(--accent);color:var(--accent-ink)}
 .tag.built{background:#3a79b8;color:#fff}
-.tag.planned{background:#d98a1f;color:#fff}
+.tag.demo{background:#d98a1f;color:#fff}
 .chips{display:flex;height:10px;border-radius:5px;overflow:hidden;margin-top:10px}.chips i{flex:1}
 .sws{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
 .sw{font:inherit;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:0 0 8px;cursor:pointer;color:var(--ink);overflow:hidden;display:flex;flex-direction:column}
@@ -221,15 +228,16 @@ pre{white-space:pre-wrap;background:var(--card);border:1px solid var(--line);bor
 <body>
 <header>
   <h1>Focal Studio styles</h1>
-  <p>${cards.length} looks: ${count("in-use")} in the weekly mix, ${count("built")} built, ${count("planned")} planned, ${count("retired")} retired. Click a style for its stills, palette, fonts and a prompt that makes the same image. Add one with a card in <code>video/styles/cards/</code>.</p>
+  <p>${cards.length} looks: ${count("in-use")} in the weekly mix, ${count("built")} built, ${count("demo")} demos, ${count("retired")} retired. Click a style for its stills, palette, fonts and a prompt that makes the same image. Add one with a card in <code>video/styles/cards/</code>.</p>
   <nav role="tablist"><button role="tab" data-tab="styles" aria-selected="true">Styles</button><button role="tab" data-tab="fonts" aria-selected="false">Fonts</button><button role="tab" data-tab="palettes" aria-selected="false">Palettes</button></nav>
 </header>
 <main>
 <section id="tab-styles">
-  <div class="bar"><input type="search" placeholder="Search styles" aria-label="Search styles">${filter("status", STATUSES)}${filter("engine", ["pillow", "canvas"])}</div>
-  <div class="grid">
-${cardHtml}
+  <div class="bar"><input type="search" placeholder="Search styles" aria-label="Search styles">${filter("status", STATUSES)}${filter("engine", ENGINES)}<div class="chipset by" id="groupby" aria-label="Group by"><span class="lab">Group by</span><button type="button" class="on" data-by="family">Family</button><button type="button" data-by="engine">Engine</button><button type="button" data-by="status">Status</button></div></div>
+  <div id="groups">
+${groupHtml}
   </div>
+${templates}
 </section>
 <section id="tab-fonts" hidden>
 ${fontRows}
@@ -243,19 +251,32 @@ ${strips}
 <script>
 (() => {
   const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
-  const dlg = $("#dlg"), body = $("#body"), toast = $("#toast"), filters = { status: "", engine: "", q: "" };
+  const dlg = $("#dlg"), body = $("#body"), toast = $("#toast"), groups = $("#groups"), filters = { status: "", engine: "", q: "" }, ORDER = ${JSON.stringify({ family: FAMILIES, engine: ENGINES, status: STATUSES })}, NAME = ${JSON.stringify(LABEL)};
   const show = tab => { $$("main > section").forEach(s => s.hidden = s.id !== "tab-" + tab); $$("nav button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab)); };
   const route = () => {
     const [tab, id] = location.hash.slice(1).split("/");
     show(["styles", "fonts", "palettes"].includes(tab) ? tab : "styles");
     if (tab === "styles" && id && $("#d-" + id)) open(id); else if (dlg.open) dlg.close();
   };
-  const open = id => { body.replaceChildren($("#d-" + id).content.cloneNode(true)); if (!dlg.open) dlg.showModal(); };
+  const open = id => { body.replaceChildren($("#d-" + id).content.cloneNode(true)); $$("img[data-ref]", body).forEach(i => { i.src = $('img[data-id="' + i.dataset.ref + '"]').src; }); if (!dlg.open) dlg.showModal(); };
   const apply = () => $$(".card").forEach(c => c.hidden = (filters.status && c.dataset.status !== filters.status) || (filters.engine && c.dataset.engine !== filters.engine) || (filters.q && !c.dataset.q.includes(filters.q)));
+  const fit = () => $$(".group").forEach(g => g.hidden = !$$(".card", g).some(c => !c.hidden));
+  const regroup = by => {
+    const all = $$(".card"), keys = [...new Set(all.map(c => c.dataset[by]))].sort((a, b) => ORDER[by].indexOf(a) - ORDER[by].indexOf(b));
+    groups.replaceChildren(...keys.map(k => {
+      const sec = document.createElement("section"), h = document.createElement("h2"), n = document.createElement("small"), grid = document.createElement("div");
+      sec.className = "group"; grid.className = "grid";
+      const mine = all.filter(c => c.dataset[by] === k);
+      h.textContent = (NAME[k] || k) + " "; n.textContent = mine.length; h.append(n);
+      grid.append(...mine); sec.append(h, grid); return sec;
+    }));
+    fit();
+  };
   const copy = async text => { try { await navigator.clipboard.writeText(text); toast.textContent = "Copied"; } catch { toast.textContent = "Copy failed"; } toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 1200); };
   $$("nav button").forEach(b => b.onclick = () => { location.hash = b.dataset.tab; });
-  $$(".chipset").forEach(set => set.onclick = e => { const b = e.target.closest("button"); if (!b) return; $$("button", set).forEach(x => x.classList.toggle("on", x === b)); filters[set.dataset.key] = b.dataset.v; apply(); });
-  $("input[type=search]").oninput = e => { filters.q = e.target.value.trim().toLowerCase(); apply(); };
+  $$(".chipset[data-key]").forEach(set => set.onclick = e => { const b = e.target.closest("button"); if (!b) return; $$("button", set).forEach(x => x.classList.toggle("on", x === b)); filters[set.dataset.key] = b.dataset.v; apply(); fit(); });
+  $("input[type=search]").oninput = e => { filters.q = e.target.value.trim().toLowerCase(); apply(); fit(); };
+  $$("#groupby button").forEach(b => b.onclick = () => { $$("#groupby button").forEach(x => x.classList.toggle("on", x === b)); regroup(b.dataset.by); });
   $$(".card").forEach(c => {
     const go = () => { location.hash = "styles/" + c.dataset.id; };
     c.onclick = go; c.onkeydown = e => { if (e.key === "Enter") go(); };
@@ -286,16 +307,18 @@ export function brandPalette() {
 const mime = { ".jpg": "image/jpeg", ".ttf": "font/ttf" };
 const dataUri = (rel) => `data:${mime[rel.slice(rel.lastIndexOf("."))]};base64,${readFileSync(join(ROOT, rel)).toString("base64")}`;
 
+export const pageFontUrl = (f) => `../../video/fonts/${encodeURI(f)}`;
+
 export function build({ inlineOut } = {}) {
   const cards = loadCards(), fonts = loadFonts(), brand = brandPalette();
   const bad = cards.flatMap((c) => cardProblems(c, fonts));
   if (bad.length) throw new Error(bad.join("\n"));
   if (inlineOut) {
-    writeFileSync(inlineOut, render(cards, fonts, brand, { src: dataUri, fontUrl: dataUri("video/fonts/Nunito[wght].ttf") }));
+    writeFileSync(inlineOut, render(cards, fonts, brand, { src: dataUri, fontUrl: (f) => dataUri(`video/fonts/${f}`), reuse: true }));
     return inlineOut;
   }
   mkdirSync(dirname(PAGE), { recursive: true });
-  writeFileSync(PAGE, render(cards, fonts, brand, { src: (p) => `../../${p}`, fontUrl: "../../video/fonts/Nunito%5Bwght%5D.ttf" }));
+  writeFileSync(PAGE, render(cards, fonts, brand, { src: (p) => `../../${p}`, fontUrl: pageFontUrl }));
   return PAGE;
 }
 
@@ -306,12 +329,13 @@ function run(cmd, args) {
   return r;
 }
 
-// previews_from is "pillow <clip> <times>" or "canvas <scene> <times>"; times are comma-separated seconds, ascending.
+// previews_from is "pillow <clip> <times>", "canvas <scene> <times>" (seconds) or "blender <style> <frames>"; comma-separated, ascending.
 export function previewCommand(card, dir) {
   const [engine, name, times] = String(card.previews_from).split(/\s+/);
   if (engine === "pillow") return ["python3", ["-m", "video.render", name, "--style", card.id, "--preview", dir, times]];
   if (engine === "canvas") return ["node", ["video/canvas/render.mjs", name, "--preview", dir, times]];
-  throw new Error(`${card.file}: previews_from must start with pillow or canvas`);
+  if (engine === "blender") return ["blender", ["-b", "--factory-startup", "-P", "video/blender/render.py", "--", name, dir, times]];
+  throw new Error(`${card.file}: previews_from must start with pillow, canvas or blender`);
 }
 
 export function makePreviews(only) {

@@ -2,6 +2,7 @@
 id: anime-cel
 name: Anime cel
 status: built
+family: "Cartoon"
 engine: canvas
 summary: "Flat cel bands, one hard shadow, tapered ink, grain and an inverted impact frame."
 source: video/canvas/cel.mjs

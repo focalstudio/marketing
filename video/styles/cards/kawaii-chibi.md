@@ -2,6 +2,7 @@
 id: kawaii-chibi
 name: Kawaii chibi
 status: built
+family: "Kawaii & cute"
 engine: canvas
 summary: "Chunky sticker characters with bold outlines and a lesson-app UI: squash, stretch, bounce."
 source: video/canvas/toon.mjs

@@ -11,8 +11,12 @@ cv.width = W;
 cv.height = H;
 const ctx = cv.getContext("2d");
 window.ready = (async () => {
-  const font = new FontFace("Nunito", "url(/video/fonts/Nunito%5Bwght%5D.ttf)", { weight: "200 1000" });
-  document.fonts.add(await font.load());
+  // Every installed font in video/fonts/fonts.json, so a scene can use any of them by family name.
+  const fonts = await (await fetch("/video/fonts/fonts.json")).json();
+  await Promise.all(fonts.filter(f => f.status === "installed").map(async f => {
+    const face = new FontFace(f.family, `url(/video/fonts/${encodeURI(f.file).replace(/\[/g, "%5B").replace(/\]/g, "%5D")})`, { weight: f.weight || "400" });
+    document.fonts.add(await face.load());
+  }));
   const icon = new Image();
   icon.src = "/__icon";
   await icon.decode().catch(() => null);

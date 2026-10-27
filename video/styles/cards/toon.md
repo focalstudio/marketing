@@ -2,6 +2,7 @@
 id: toon
 name: Toon
 status: in-use
+family: "Cartoon"
 engine: pillow
 summary: "Flat cartoon with thick dark outlines and big round shapes, after Gumball."
 source: video/styles/toon.py
