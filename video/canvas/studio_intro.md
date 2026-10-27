@@ -33,7 +33,7 @@ Music is synthesised: a soft piano arpeggio (C, G, Am, F) over a low pad at 70 b
 (`music:`), and a chime as the end card arrives. The voice is [voice/studio_intro.wav](voice/studio_intro.wav), Kokoro (`bf_emma`,
 British, speed 0.95, Apache-2.0, run locally with `kokoro-onnx` and espeak-ng). Each line is synthesised on its own and placed at a
 fixed time (0.3, 5.2, 11.2, 14.6, 17.3, 22.5, 31.3, 36, 38 and 42 s; each ends at least 0.3 s before the next), so the WAV is 45 s long and `voiceAt` is 0; the music ducks
-under it. It is synthetic: keep `ai_label: true` in `apps/wildfocus.yml`. With no WAV the video renders music only. To change a
+under it. It is a synthesised voice reading a written script, and the video is drawn in code, so `ai_label` stays false in `apps/wildfocus.yml`. With no WAV the video renders music only. To change a
 line, redo that line and its keyword together; keywords start a beat after the voice and end before the next line.
 
 ## Review

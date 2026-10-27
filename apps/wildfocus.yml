@@ -122,4 +122,4 @@ caption_cta: Free on iOS and Android.
 links:
   app_store: https://apps.apple.com/us/app/pomodoro-timer-wild-focus/id6768295599
   play_store: TODO     # paste the Google Play URL
-ai_label: true         # set the platform's "AI-generated" flag where it exists
+ai_label: false        # videos are drawn in code and rendered, and the voice reads a script: not AI-generated
