@@ -96,12 +96,13 @@ const swatch = ([role, hex]) =>
   `<button class="sw" type="button" data-copy="${hex}" title="Copy ${hex}"><i style="background:${hex}"></i><b>${esc(role)}</b><span>${hex}</span></button>`;
 const chips = (pal) => Object.values(pal).map((h) => `<i style="background:${h}"></i>`).join("");
 
-export function render(cards, fonts, brand, { src = (p) => p, fontUrl = (f) => f } = {}) {
+export function render(cards, fonts, brand, { src = (p) => p, fontUrl = (f) => f, reuse = false } = {}) {
   const tag = (c) => `<span class="tag ${c.status}">${LABEL[c.status]}</span><span class="tag eng">${c.engine}</span>`;
-  const thumb = (c) => {
+  // With `reuse` (the inline copy) the dialog's stills take their src from the grid's, so each image is embedded once.
+  const thumb = (c, inDialog = false) => {
     const names = previewNames(c);
     return names.length
-      ? names.map((n, i) => `<img src="${src(`video/styles/cards/previews/${n}`)}" alt="${esc(c.name)} still ${i + 1}" loading="lazy"${i ? "" : ' class="on"'}>`).join("")
+      ? names.map((n, i) => `<img ${inDialog && reuse ? `data-ref="${c.id}-${i + 1}"` : `src="${src(`video/styles/cards/previews/${n}`)}" data-id="${c.id}-${i + 1}"`} alt="${esc(c.name)} still ${i + 1}" loading="lazy"${i ? "" : ' class="on"'}>`).join("")
       : `<div class="ph">${chips(c.palette)}</div>`;
   };
   const article = (c) => `<article class="card" data-id="${c.id}" data-family="${esc(c.family)}" data-status="${c.status}" data-engine="${c.engine}" data-q="${esc(`${c.name} ${c.summary} ${c.id} ${c.family}`.toLowerCase())}" tabindex="0">
@@ -110,7 +111,7 @@ export function render(cards, fonts, brand, { src = (p) => p, fontUrl = (f) => f
 </article>`;
   const template = (c) => `<template id="d-${c.id}">
   <div class="dhead"><div><h2>${esc(c.name)}</h2><div class="row">${tag(c)}<span class="tag">${esc(c.family)}</span><code>${c.id}</code></div></div></div>
-  <div class="dshots">${thumb(c)}</div>
+  <div class="dshots">${thumb(c, true)}</div>
   <p class="lead">${esc(c.summary)}</p>
   <h4>Look</h4>${md(c.body.Look)}
   <div class="two"><div><h4>Do</h4>${md(c.body.Do)}</div><div><h4>Don't</h4>${md(c.body["Don't"])}</div></div>
@@ -257,7 +258,7 @@ ${strips}
     show(["styles", "fonts", "palettes"].includes(tab) ? tab : "styles");
     if (tab === "styles" && id && $("#d-" + id)) open(id); else if (dlg.open) dlg.close();
   };
-  const open = id => { body.replaceChildren($("#d-" + id).content.cloneNode(true)); if (!dlg.open) dlg.showModal(); };
+  const open = id => { body.replaceChildren($("#d-" + id).content.cloneNode(true)); $$("img[data-ref]", body).forEach(i => { i.src = $('img[data-id="' + i.dataset.ref + '"]').src; }); if (!dlg.open) dlg.showModal(); };
   const apply = () => $$(".card").forEach(c => c.hidden = (filters.status && c.dataset.status !== filters.status) || (filters.engine && c.dataset.engine !== filters.engine) || (filters.q && !c.dataset.q.includes(filters.q)));
   const fit = () => $$(".group").forEach(g => g.hidden = !$$(".card", g).some(c => !c.hidden));
   const regroup = by => {
@@ -313,7 +314,7 @@ export function build({ inlineOut } = {}) {
   const bad = cards.flatMap((c) => cardProblems(c, fonts));
   if (bad.length) throw new Error(bad.join("\n"));
   if (inlineOut) {
-    writeFileSync(inlineOut, render(cards, fonts, brand, { src: dataUri, fontUrl: (f) => dataUri(`video/fonts/${f}`) }));
+    writeFileSync(inlineOut, render(cards, fonts, brand, { src: dataUri, fontUrl: (f) => dataUri(`video/fonts/${f}`), reuse: true }));
     return inlineOut;
   }
   mkdirSync(dirname(PAGE), { recursive: true });
