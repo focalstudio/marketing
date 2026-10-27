@@ -8,7 +8,7 @@ import { lowres, blit, snapper, rect, px, ell, poly, outline, bitText, bitWidth,
 
 export const DURATION = 18, COVER = 12.8;
 // The lofi bed (lofiArgv in audio.mjs): a buzz as the phone shakes, a thunk as it goes face down, a hop sound per bounce, a sparkle.
-export const SOUND = { kind: "lofi", bpm: 74, buzz: [1.2, 3], thunk: 9, hops: [9.6, 10.4, 11.2], sparkle: 12.6, done: 14.8 };
+export const SOUND = { kind: "lofi", bpm: 74, buzz: [1.2, 3], thunk: 9, hops: [9.6, 10.4, 11.2] };
 export const SCENES = [{ name: "picnic", from: 0, to: 15.4 }, { name: "end", from: 14.6, to: DURATION }];
 export const CAPTIONS = [
   { from: 0, to: 3.8, lines: [["Put the phone down."], ["Your friends are here."]] },
@@ -342,7 +342,7 @@ function layer(st, fn) {
   st.lo.drawImage(st.spr.canvas, 0, 0);
 }
 
-// The caption, in the bitmap font blown up straight onto the 1080 canvas (2 low-res pixels per font pixel), wrapped, with a shadow.
+// The caption, in the bitmap font blown up straight onto the 1080 canvas (2 low-res pixels per font pixel), wrapped, dark on the sky with a cream shadow.
 function caption(ctx, W, c, t) {
   const k = W / 1080, s = Math.max(1, Math.round(16 * k)), off = Math.max(1, Math.round(8 * k)), maxW = W * 0.9;
   ctx.save();
@@ -357,8 +357,8 @@ function caption(ctx, W, c, t) {
     }
     for (const row of rows) {
       const x = Math.round((W - typeW(row, s)) / 2);
-      type(ctx, row, x + off, y + off, s, P.out);
-      type(ctx, row, x, y, s, n && c.lines.length > 1 ? P.sun : P.white);
+      type(ctx, row, x + off, y + off, s, P.cream);
+      type(ctx, row, x, y, s, n && c.lines.length > 1 ? P.pantd : P.out);
       y += 6 * s;
     }
   });

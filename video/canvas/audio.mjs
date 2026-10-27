@@ -136,9 +136,9 @@ export function introArgv(path, dur, { voice, voiceAt = 0, close, throw: toss, b
 
 // A lofi bed for the friendly videos: a swung 74 bpm beat (soft kick on 1 and 3, snare on 2 and 4, shuffled hats), a warm electric piano
 // over Fmaj7, Em7, Dm7, Cmaj7 (restruck on beat 3) and a sine bass, tape wobble, a low-passed top and vinyl crackle. The story's own sounds
-// sit on top: a buzz for each phone, a thunk when it goes face down, a boing per hop, a sparkle, a chime as the end card arrives.
-// Full level from frame 0. No loudnorm (it left the full mix near-silent): a fixed gain and an alimiter set the level.
-export function lofiArgv(path, dur, { bpm = 74, buzz = [], thunk, hops = [], sparkle, done } = {}) {
+// sit on top and stay soft: a buzz for each phone, a low thunk when it goes face down and a quiet boing per hop (no sparkle or chime:
+// they were too sharp over the lofi). Full level from frame 0. No loudnorm (it left the full mix near-silent): a fixed gain and an alimiter set the level.
+export function lofiArgv(path, dur, { bpm = 74, buzz = [], thunk, hops = [] } = {}) {
   const beat = 60 / bpm, bar = 4 * beat, swing = 0.62 * beat;
   const chords = [[174.61, 220, 261.63, 329.63], [164.81, 196, 246.94, 293.66], [146.83, 174.61, 220, 261.63], [130.81, 164.81, 196, 246.94]];
   const roots = [87.31, 82.41, 73.42, 65.41];
@@ -152,11 +152,8 @@ export function lofiArgv(path, dur, { bpm = 74, buzz = [], thunk, hops = [], spa
   const crackle = `if(gt(random(2),0.9992),(random(3)-0.5)*0.35,0)+0.006*(random(4)-0.5)`;
   const ev = [
     ...buzz.map(at => ({ at, dur: 0.55, gain: 0.4, expr: "sin(2*PI*170*t)*(0.55+0.45*sin(2*PI*28*t))*min(1,t*60)*min(1,(0.55-t)*40)" })),
-    { at: thunk, dur: 0.4, gain: 0.8, expr: "sin(2*PI*85*t)*exp(-t*22)+0.4*(random(0)-0.5)*exp(-t*70)" },
-    ...hops.map(at => ({ at: at + 0.15, dur: 0.5, gain: 0.35, expr: boing(220, 380) })),
-    ...[2093, 2637, 3136].map((hz, i) => ({ at: sparkle + i * 0.08, dur: 0.5, gain: 0.3, expr: note(hz, 12) })),
-    { at: done, dur: 1.4, gain: 0.6, expr: note(1046.5) },
-    { at: done + 0.14, dur: 1.4, gain: 0.6, expr: note(1568) },
+    { at: thunk, dur: 0.4, gain: 0.35, expr: "sin(2*PI*85*t)*exp(-t*22)+0.4*(random(0)-0.5)*exp(-t*70)" },
+    ...hops.map(at => ({ at: at + 0.15, dur: 0.5, gain: 0.15, expr: boing(220, 380) })),
   ];
   const v = voices(ev, 3);
   const fg = [

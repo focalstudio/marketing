@@ -8,7 +8,7 @@ import { squash, hop, easeBack, blinkTimes, blink } from "../toon.mjs";
 
 export const DURATION = 18, COVER = 12.8;
 // SOUND.kind picks the ffmpeg builder in audio.mjs: a lofi bed with a buzz, a thunk, hops, a sparkle and the end-card chime on the story's own times.
-export const SOUND = { kind: "lofi", bpm: 74, buzz: [1.2, 3], thunk: 9, hops: [9.6, 10.4, 11.2], sparkle: 12.6, done: 14.8 };
+export const SOUND = { kind: "lofi", bpm: 74, buzz: [1.2, 3], thunk: 9, hops: [9.6, 10.4, 11.2] };
 export const SCENES = [
   { name: "rug", from: 0, to: 3.8 }, { name: "waiting", from: 3.8, to: 8.4 }, { name: "picnic", from: 8.4, to: 12.2 },
   { name: "golden", from: 12.2, to: 14.8 }, { name: "card", from: 14.8, to: DURATION },

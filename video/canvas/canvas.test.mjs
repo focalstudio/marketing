@@ -278,9 +278,9 @@ for (const [look, p] of [["iso", picnicIso], ["pixel", picnicPixel], ["flat", pi
     const S = p.SOUND, argv = soundArgv("/o.wav", p.DURATION, S), fg = argv[argv.indexOf("-filter_complex") + 1];
     assert.equal(S.kind, "lofi");
     assert.ok(!fg.includes("afade=t=in"));
-    for (const t of [...S.buzz, S.thunk, S.sparkle, S.done, S.done + 0.14]) assert.ok(fg.includes(`adelay=${Math.round(t * 1000)}|`), `beat ${t}`);
+    for (const t of [...S.buzz, S.thunk]) assert.ok(fg.includes(`adelay=${Math.round(t * 1000)}|`), `beat ${t}`);
+    assert.equal(fg.match(/adelay=/g).length, S.buzz.length + 1 + S.hops.length, "no sparkle or chime");
     for (const h of S.hops) assert.ok(fg.includes(`adelay=${Math.round((h + 0.15) * 1000)}|`), `hop ${h}`);
-    assert.equal(S.done, p.END.from);
     assert.deepEqual(argv, lofiArgv("/o.wav", p.DURATION, S));
   });
 }

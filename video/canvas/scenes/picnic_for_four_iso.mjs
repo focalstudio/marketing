@@ -10,7 +10,7 @@ import { lowres, blit, rect, px, ell, poly, outline, bitText, bitWidth, rabbit }
 export const DURATION = 18, COVER = 12.8;
 export const END = { from: 14.8, title: "WildFocus", lines: CLOSING, store: STORE };
 // The sounds that land on the picture: a buzz as the phone vibrates, a thunk as it goes face down, a boing per hop, a sparkle.
-export const SOUND = { kind: "lofi", bpm: 74, buzz: [1.2, 3], thunk: 9, hops: [9.6, 10.4, 11.2], sparkle: 12.6, done: END.from };
+export const SOUND = { kind: "lofi", bpm: 74, buzz: [1.2, 3], thunk: 9, hops: [9.6, 10.4, 11.2] };
 export const SCENES = [
   { name: "arrive", from: 0, to: 4 },
   { name: "waiting", from: 3.8, to: 8.6 },
@@ -113,20 +113,17 @@ function mirror(g, x, on, fn) {
 
 const rabbitSit = (g, { x, y, k, blink = 0 }) => rabbit(g, { x, y, k, fur: C.cream, shade: C.fur2, belly: C.cream, inner: C.pink, eye: C.ink, nose: C.red, blink });
 
-// A phone seen from the front: plum body, a bright amber screen scrolling a feed (rows of dusk bars), pink when it buzzes.
-function phoneFront(g, x, y, scroll, flash) {
+// A phone seen from behind, as the camera sees it when the screen faces the rabbit: a plain plum slab with a lens in the corner.
+function phoneBack(g, x, y) {
   rect(g, x, y, 11, 14, C.plum);
-  rect(g, x + 1, y + 1, 9, 11, flash ? C.pink : C.sun);
-  for (let j = 0; j < 11; j++) {
-    const m = (j + scroll) % 4;
-    if (m === 0) rect(g, x + 2, y + 1 + j, 7, 1, C.dusk);
-    else if (m === 1) rect(g, x + 2, y + 1 + j, 4, 1, C.dusk);
-  }
+  rect(g, x + 1, y + 1, 3, 3, C.dusk);
+  px(g, x + 2, y + 2, C.ink);
+  rect(g, x + 1, y + 12, 9, 1, C.dusk);
 }
 
-// The rabbit hunched over its phone: head low and forward, ears flopped, both paws round a bright phone held up in front of its belly.
-// `buzz` shakes the phone and flashes the screen, `jolt` lifts the whole rabbit a pixel.
-function rabbitHunch(g, { x, y, k, scroll = 0, buzz = 0, thumb = 0 }) {
+// The rabbit hunched over its phone, front-on: head low, eyes looking down, both paws round a phone held in front of its chest, its back to
+// us. The screen faces the rabbit, so we see its warm glow on the fur above the phone instead. `buzz` shakes the phone and flashes the glow pink.
+function rabbitHunch(g, { x, y, k, scroll = 0, buzz = 0 }) {
   const K = v => v * k, side = rx => p => (p + 0.5 - x > K(rx) ? C.fur2 : C.cream);
   for (const sx of [-1, 1]) {  // long ears standing up, the tips folded outward
     poly(g, [[x + sx * K(3), y - K(19)], [x + sx * K(7), y - K(19)], [x + sx * K(7.5), y - K(29)], [x + sx * K(11), y - K(33)], [x + sx * K(8.5), y - K(35)], [x + sx * K(4), y - K(29)]], sx < 0 ? C.cream : C.fur2);
@@ -139,10 +136,12 @@ function rabbitHunch(g, { x, y, k, scroll = 0, buzz = 0, thumb = 0 }) {
   const ew = Math.max(1, Math.round(K(1.4))), ey = Math.round(y - K(14.5));
   for (const sx of [-1, 1]) rect(g, Math.round(x + sx * K(3.6) - ew / 2), ey, ew + 1, 1, C.ink);  // eyes looking down at the phone
   const dx = buzz ? (Math.floor(buzz * 40) & 1 ? 1 : -1) : 0, px0 = Math.round(x - 5) + dx, py0 = Math.round(y - 14);
-  phoneFront(g, px0, py0, scroll, buzz && (Math.floor(buzz * 30) & 1));
+  phoneBack(g, px0, py0);
+  const glow = buzz && (Math.floor(buzz * 30) & 1) ? C.pink : C.sun;  // the screen's light on the chest and chin, flickering as the feed scrolls
+  for (let i = -5; i <= 5; i++) if ((i + 5 + scroll) % 3 !== 0) px(g, x + i + dx, py0 - 1, glow);
+  for (let i = -3; i <= 3; i++) if ((i + 3 + scroll) % 2 === 0) px(g, x + i + dx, py0 - 2, glow);
   ell(g, x - 7 + dx, y - 3, 2.2, 2.6, C.cream);  // paws
   ell(g, x + 7 + dx, y - 3, 2.2, 2.6, C.fur2);
-  ell(g, x + 2 + dx, y - 3 - thumb, 1.6, 1.8, C.cream);  // the scrolling thumb
   if (buzz) for (const sx of [-1, 1]) for (const [a, b] of [[7, -9], [8.5, -8], [9, -6.5], [8.5, -5], [7, -4]]) px(g, x + sx * a + (sx > 0 ? 0 : -1) + dx, y + b, C.red);  // buzz marks
 }
 
@@ -408,10 +407,10 @@ export function draw(ctx, t, W, H, st) {
   const buzzing = [1.2, 3].map(b => (t >= b && t < b + 0.35 ? t - b : 0)).find(v => v > 0) || 0;
   ell(lo, rp.x, rp.y + 1, 10, 2.5, C.leaf);
   add(rp.y, g2 => {
-    if (!rabbitUp) rabbitHunch(g2, { x: rp.x, y: rp.y - rLift, k: 0.95, scroll: Math.floor(t * 7) % 4, buzz: buzzing, thumb: Math.floor(t * 7) % 2 });
+    if (!rabbitUp) rabbitHunch(g2, { x: rp.x, y: rp.y - rLift, k: 0.95, scroll: Math.floor(t * 7) % 3, buzz: buzzing });
     else {
       rabbitSit(g2, { x: rp.x, y: rp.y - rLift, k: 0.95, blink: lids });
-      if (t < 8.7) phoneFront(g2, rp.x + 5, rp.y - rLift - 18, 0, 0);
+      if (t < 8.7) phoneBack(g2, rp.x + 5, rp.y - rLift - 18);
     }
   });
 
