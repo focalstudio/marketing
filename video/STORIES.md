@@ -56,6 +56,9 @@ stills, `--size 1080x1080` for square). These videos sell the feeling (switching
 | `focus_rabbit` | One rabbit's 25-minute focus session, with a fox moving in at the end (Kawaii Chibi: `canvas/toon.mjs`) | 30 s |
 | `studio_intro` | Who Focal Studio is, what it values and its first app, narrated over synthesised music; the video we pin on every profile. A kawaii bunny animation (`canvas/kawaii.mjs`) with the app's low-poly animals on rarity cards; voice WAV in `canvas/voice/` | 45 s |
 | `last25` | The last 25 minutes of an evening: a rooftop at dusk, a pocket watch, an impact frame and a time-lapse into night (anime-cel: `canvas/cel.mjs`; city sound that gives way to a focus sound) | 18.5 s |
+| `picnic_for_four_pixel` | Put the phone down and your friends (fox, deer, hedgehog) join the rabbit's picnic; one story in three looks, with a lofi bed (`audio.mjs` `lofi`). Pixel art, side-on (`canvas/pixel.mjs`) | 18 s |
+| `picnic_for_four_iso` | The same story as an isometric pixel meadow (`canvas/pixel.mjs`) | 18 s |
+| `picnic_for_four_flat` | The same story as flat two-tone mascot art (Fredoka) | 18 s |
 
 ## Review gates
 
