@@ -1,0 +1,14 @@
+[
+  { "family": "Nunito", "status": "installed", "file": "Nunito[wght].ttf", "license": "OFL-1.1", "licenseFile": "OFL.txt", "source": "ofl/nunito/Nunito[wght].ttf", "role": "brand and every canvas and Pillow caption", "styles": ["toon", "lowpoly", "pixel", "ink", "paper", "storybook", "appart", "naturalist-engraving", "kawaii-chibi", "kawaii", "anime-cel", "pixel-art", "sumi-ink", "toon-cel"] },
+  { "family": "Fredoka", "status": "planned", "license": "OFL-1.1", "source": "ofl/fredoka", "role": "rounded mascot type", "styles": ["mascot-flat"] },
+  { "family": "Manrope", "status": "planned", "license": "OFL-1.1", "source": "ofl/manrope", "role": "monoline icon labels", "styles": [] },
+  { "family": "IM Fell English", "status": "planned", "license": "OFL-1.1", "source": "ofl/imfellenglish", "role": "engraving captions", "styles": [] },
+  { "family": "EB Garamond", "status": "planned", "license": "OFL-1.1", "source": "ofl/ebgaramond", "role": "engraving body text", "styles": [] },
+  { "family": "IM Fell DW Pica", "status": "planned", "license": "OFL-1.1", "source": "ofl/imfelldwpica", "role": "Victorian captions", "styles": ["wonderland-engraving"] },
+  { "family": "Titan One", "status": "planned", "license": "OFL-1.1", "source": "ofl/titanone", "role": "rubber-hose titles", "styles": ["cartoon-hose"] },
+  { "family": "Lilita One", "status": "planned", "license": "OFL-1.1", "source": "ofl/lilitaone", "role": "rubber-hose titles", "styles": ["cartoon-hose"] },
+  { "family": "Luckiest Guy", "status": "planned", "license": "Apache-2.0", "source": "apache/luckiestguy", "role": "comic titles", "styles": [] },
+  { "family": "Anton", "status": "planned", "license": "OFL-1.1", "source": "ofl/anton", "role": "cel impact type", "styles": [] },
+  { "family": "M PLUS 1", "status": "planned", "license": "OFL-1.1", "source": "ofl/mplus1", "role": "cel body type", "styles": [] },
+  { "family": "Dela Gothic One", "status": "planned", "license": "OFL-1.1", "source": "ofl/delagothicone", "role": "cel impact type", "styles": [] }
+]
