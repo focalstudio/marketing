@@ -118,6 +118,16 @@ clips:
       - "Pomodoro break timer: five minutes off, with company | WildFocus"
       - "Take a 5 minute break: someone is already here | WildFocus"
       - "5 minute break: five minutes is enough | WildFocus"
+  leaf_fall:
+    styles: [paper, storybook]
+    hooks:
+      - Leaves fall. The timer runs. Nobody minds.
+      - A windy afternoon, a quiet timer and some company.
+      - Let the leaves fall. You keep going.
+    titles:
+      - "Cozy autumn focus timer: let the leaves fall, keep going | WildFocus"
+      - "Study with me in autumn: a quiet 25 minute timer | WildFocus"
+      - "Pomodoro timer, autumn meadow: leaves fall and you keep going | WildFocus"
 caption_cta: Free on iOS and Android.
 links:
   app_store: https://apps.apple.com/us/app/pomodoro-timer-wild-focus/id6768295599
