@@ -984,5 +984,29 @@
     "url": "https://www.instagram.com/reel/DfN66ZyDpZa/",
     "at": "2026-11-01T20:00:00Z",
     "postedAt": "2026-11-01T23:33:17.706Z"
+  },
+  {
+    "file": "queue/2026-W45/wildfocus-rain-outside-canvas.md",
+    "platform": "bluesky",
+    "id": "at://did:plc:ailhup22grj7er6ulopnhszj/app.bsky.feed.post/3mzerbiqwpl2n",
+    "url": "https://bsky.app/profile/focalstudiohq.bsky.social/post/3mzerbiqwpl2n",
+    "at": "2026-11-02T20:00:00Z",
+    "postedAt": "2026-11-03T02:13:29.791Z"
+  },
+  {
+    "file": "queue/2026-W45/wildfocus-rain-outside-canvas.md",
+    "platform": "threads",
+    "id": "18640432477021463",
+    "url": "https://www.threads.com/@focalstudiohq/post/DfQyGnoRPYc",
+    "at": "2026-11-02T20:00:00Z",
+    "postedAt": "2026-11-03T02:14:04.289Z"
+  },
+  {
+    "file": "queue/2026-W45/wildfocus-rain-outside-canvas.md",
+    "platform": "instagram",
+    "id": "18118785161009790",
+    "url": "https://www.instagram.com/reel/DfQyK4aEe73/",
+    "at": "2026-11-02T20:00:00Z",
+    "postedAt": "2026-11-03T02:14:41.822Z"
   }
 ]
