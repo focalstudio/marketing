@@ -14,7 +14,6 @@ WildFocus. Free on iOS.
 Share the snack, not the screen.
 
 WildFocus, free on iOS. Built with Claude Code.
-https://apps.apple.com/us/app/pomodoro-timer-wild-focus/id6768295599
 
 <!-- bluesky -->
 Share the snack, not the screen.

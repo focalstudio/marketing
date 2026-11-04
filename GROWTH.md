@@ -24,6 +24,7 @@ treat the numbers as rough). Re-check every quarter, like [PLATFORMS.md](PLATFOR
 
 **X**
 - Posts with an external link get much less reach; the usual workaround is to put the link in a reply to your own post.
+  Our X posts carry no link (the drafter drops it); put the App Store link in the X bio by hand.
   [reported; figures vary a lot]
 - Free accounts get little reach (median under ~100 impressions per post). [reported]
 - A per-creator cap limits how many of your posts show in one follower's feed, so posting more doesn't add reach. [reported]

@@ -149,8 +149,10 @@ export function postFile({ at, mediaPath, thumbPath, title, text, dev }) {
     `thumb: ${thumbPath}`,
     `title: ${JSON.stringify(title)}`,
   ].join("\n");
-  const links = (id) => `<!-- ${id} -->\n${dev}\n`;
-  return `---\n${front}\n---\n${text}\n\n${links("x")}\n${links("bluesky")}\n<!-- threads -->\n${text}\n${dev.split("\n").at(-1)}\n`;
+  // `dev` ends with the store URL. X gets reach only without a link in the post, so it drops that line
+  // (the link lives in the X bio); Bluesky keeps it.
+  const noLink = dev.split("\n").slice(0, -1).join("\n");
+  return `---\n${front}\n---\n${text}\n\n<!-- x -->\n${noLink}\n\n<!-- bluesky -->\n${dev}\n\n<!-- threads -->\n${text}\n${dev.split("\n").at(-1)}\n`;
 }
 
 // ---------- Rendering and publishing ----------
