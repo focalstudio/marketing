@@ -1008,5 +1008,59 @@
     "url": "https://www.instagram.com/reel/DfQyK4aEe73/",
     "at": "2026-11-02T20:00:00Z",
     "postedAt": "2026-11-03T02:14:41.822Z"
+  },
+  {
+    "file": "queue/2026-W46/wildfocus-last25-canvas.md",
+    "platform": "x",
+    "id": "6aea7d8eb8d162e0d8f4d5cd",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-11-10T20:00:00.000Z",
+    "at": "2026-11-10T20:00:00Z",
+    "postedAt": "2026-11-04T00:34:22.349Z"
+  },
+  {
+    "file": "queue/2026-W46/wildfocus-last25-canvas.md",
+    "platform": "youtube",
+    "id": "6aea7d8e87b7c6d24c7fce48",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-11-10T20:00:00.000Z",
+    "at": "2026-11-10T20:00:00Z",
+    "postedAt": "2026-11-04T00:34:22.979Z"
+  },
+  {
+    "file": "queue/2026-W45/wildfocus-focus-rabbit-canvas.md",
+    "platform": "bluesky",
+    "id": "at://did:plc:ailhup22grj7er6ulopnhszj/app.bsky.feed.post/3mzh47byw4t2d",
+    "url": "https://bsky.app/profile/focalstudiohq.bsky.social/post/3mzh47byw4t2d",
+    "at": "2026-11-03T20:00:00Z",
+    "postedAt": "2026-11-04T00:34:25.922Z"
+  },
+  {
+    "file": "queue/2026-W46/wildfocus-last25-canvas.md",
+    "platform": "tiktok",
+    "id": "6aea7d924c41ba80aa4abd2c",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-11-10T20:00:00.000Z",
+    "at": "2026-11-10T20:00:00Z",
+    "postedAt": "2026-11-04T00:34:26.558Z"
+  },
+  {
+    "file": "queue/2026-W45/wildfocus-focus-rabbit-canvas.md",
+    "platform": "threads",
+    "id": "17913747009558856",
+    "url": "https://www.threads.com/@focalstudiohq/post/DfTLj7-vq4h",
+    "at": "2026-11-03T20:00:00Z",
+    "postedAt": "2026-11-04T00:34:57.865Z"
+  },
+  {
+    "file": "queue/2026-W45/wildfocus-focus-rabbit-canvas.md",
+    "platform": "instagram",
+    "id": "18141496654532008",
+    "url": "https://www.instagram.com/reel/DfTLnqUifuv/",
+    "at": "2026-11-03T20:00:00Z",
+    "postedAt": "2026-11-04T00:35:32.308Z"
   }
 ]
