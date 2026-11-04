@@ -119,12 +119,12 @@ test("Buffer input: customScheduled, AI flag always false, video asset without t
   assert.equal(input.schedulingType, "automatic");
 });
 
-test("Buffer input: TikTok is scheduled as a notification, YouTube stays automatic", () => {
+test("Buffer input: TikTok and YouTube are both scheduled automatically", () => {
   const now = Date.parse("2026-10-09T12:00:00Z");
   const { p } = post("stream: app\nplatforms: [tiktok, youtube]\nat: 2026-10-09T13:00:00Z\nmedia: wf/a.mp4\ntitle: T", "Hi");
   p.atMs = Date.parse(p.meta.at);
-  assert.equal(byId.tiktok.notify, true);
-  assert.equal(bufferInput({ cfg: byId.tiktok, post: p }, "ch1", now).schedulingType, "notification");
+  assert.notEqual(byId.tiktok.notify, true);
+  assert.equal(bufferInput({ cfg: byId.tiktok, post: p }, "ch1", now).schedulingType, "automatic");
   assert.equal(bufferInput({ cfg: byId.youtube, post: p }, "ch1", now).schedulingType, "automatic");
 });
 

@@ -46,8 +46,7 @@ treat the numbers as rough). Re-check every quarter, like [PLATFORMS.md](PLATFOR
   viewers and cut the worst two from `apps/wildfocus.yml`.
 
 **Daily (~2 min)**
-- TikTok sends a Buffer alert at 20:00 UTC: open it, add a trending sound in TikTok, post. Skip it if the clip isn't
-  worth posting.
+- TikTok posts automatically at 20:00 UTC through Buffer. Nothing to finish by hand; the clip carries its own sound.
 - Reply to comments on our own posts within a few hours. Early replies help; on TikTok, one good comment a week can
   become a video reply.
 
