@@ -570,8 +570,7 @@ export function validate(post, byId) {
       if (n > max) errors.push(`${id}: ${n}/${max} ${unit}`);
     }
     if (id === "bluesky") {
-      if (video) warnings.push("bluesky: the video isn't uploaded, the post is text only");
-      if (meta.thumb && !image && !text.match(URL_RE)) errors.push("bluesky: thumb needs a link in the text");
+      if (meta.thumb && !image && !video && !text.match(URL_RE)) errors.push("bluesky: thumb needs a link in the text");
     }
   }
   return { errors, warnings };
@@ -836,7 +835,7 @@ async function postBuffer(http, job, now) {
 
 // ---------- Bluesky ----------
 
-async function uploadBlob(http, auth, url) {
+async function uploadBlob(http, auth, url, { optional = false } = {}) {
   if (http.dryRun) {
     say(`→ POST ${BSKY}/com.atproto.repo.uploadBlob\n  body <the bytes of ${url}>`);
     return { $type: "blob", ref: { $link: "<dry-run>" }, mimeType: "image/*", size: 0 };
@@ -844,10 +843,57 @@ async function uploadBlob(http, auth, url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
   const bytes = new Uint8Array(await res.arrayBuffer());
-  if (bytes.length > 1_000_000) throw new Error(`${url} is ${bytes.length} bytes; Bluesky images max out at 1 MB`);
+  if (bytes.length > 1_000_000) {
+    const msg = `${url} is ${bytes.length} bytes; Bluesky images max out at 1 MB`;
+    if (!optional) throw new Error(msg);
+    say(`⚠️  ${msg}; posting without it`);
+    return null;
+  }
   const ext = url.split("?")[0].split(".").pop().toLowerCase();
   const type = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", gif: "image/gif" }[ext];
   return (await http.write(`${BSKY}/com.atproto.repo.uploadBlob`, { method: "POST", headers: { ...auth, "Content-Type": type }, body: bytes })).blob;
+}
+
+const BSKY_VIDEO = "https://video.bsky.app/xrpc";
+const BSKY_VIDEO_MAX = 100_000_000;
+
+// Our renders are all 1080x1920 (9:16); the embed needs an aspect ratio and there is no probe without dependencies.
+export const blueskyVideoEmbed = (blob, alt) => ({
+  $type: "app.bsky.embed.video",
+  video: blob,
+  alt: alt ?? "",
+  aspectRatio: { width: 9, height: 16 },
+});
+
+// Bluesky's video service: a service-auth token from the user's PDS, the upload, then poll the job for the blob.
+async function uploadVideo(http, auth, session, url) {
+  const name = url.split("?")[0].split("/").pop();
+  if (http.dryRun) {
+    say(`→ GET ${BSKY}/com.atproto.server.getServiceAuth?aud=did:web:<pds>&lxm=com.atproto.repo.uploadBlob\n→ POST ${BSKY_VIDEO}/app.bsky.video.uploadVideo?did=${session.did}&name=${name}\n  body <the bytes of ${url}>\n  (then poll app.bsky.video.getJobStatus until JOB_STATE_COMPLETED)`);
+    return { $type: "blob", ref: { $link: "<dry-run>" }, mimeType: "video/mp4", size: 0 };
+  }
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  if (bytes.length > BSKY_VIDEO_MAX) throw new Error(`${url} is ${bytes.length} bytes; Bluesky videos max out at 100 MB`);
+  const pds = session.didDoc?.service?.find((x) => x.id === "#atproto_pds")?.serviceEndpoint;
+  const aud = `did:web:${pds ? new URL(pds).hostname : "bsky.social"}`;
+  const exp = Math.floor(Date.now() / 1000) + 30 * 60;
+  const { token } = await http.read(getUrl(`${BSKY}/com.atproto.server.getServiceAuth`, { aud, lxm: "com.atproto.repo.uploadBlob", exp }), { headers: auth });
+  const up = await http.write(getUrl(`${BSKY_VIDEO}/app.bsky.video.uploadVideo`, { did: session.did, name }), {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "video/mp4" },
+    body: bytes,
+  });
+  const jobId = (up.jobStatus ?? up).jobId;
+  const end = Date.now() + 5 * 60e3;
+  for (;;) {
+    const st = (await http.read(getUrl(`${BSKY_VIDEO}/app.bsky.video.getJobStatus`, { jobId }))).jobStatus;
+    if (st?.state === "JOB_STATE_COMPLETED" && st.blob) return st.blob;
+    if (st?.state === "JOB_STATE_FAILED") throw new Error(`Bluesky video job failed: ${st.error ?? st.message ?? "no detail"}`);
+    if (Date.now() > end) throw new Error(`Bluesky video job still ${st?.state} after 5 min`);
+    await new Promise((r) => setTimeout(r, 5000));
+  }
 }
 
 async function postBluesky(http, { post }) {
@@ -864,14 +910,16 @@ async function postBluesky(http, { post }) {
   const facets = blueskyFacets(text, post.campaign);
   if (facets.length) record.facets = facets;
   const link = text.match(URL_RE)?.[0];
-  if (meta.media && isImage(meta.media)) {
+  if (meta.media && isVideo(meta.media)) {
+    record.embed = blueskyVideoEmbed(await uploadVideo(http, auth, s, mediaUrl(meta.media)), meta.title);
+  } else if (meta.media && isImage(meta.media)) {
     const blob = await uploadBlob(http, auth, mediaUrl(meta.media));
     record.embed = { $type: "app.bsky.embed.images", images: [{ image: blob, alt: meta.title ?? "" }] };
   } else if (meta.thumb && link) {
-    const blob = await uploadBlob(http, auth, mediaUrl(meta.thumb));
+    const blob = await uploadBlob(http, auth, mediaUrl(meta.thumb), { optional: true });
     record.embed = {
       $type: "app.bsky.embed.external",
-      external: { uri: utm(link, "bluesky", post.campaign), title: meta.title ?? new URL(link).hostname, description: "", thumb: blob },
+      external: { uri: utm(link, "bluesky", post.campaign), title: meta.title ?? new URL(link).hostname, description: "", ...(blob && { thumb: blob }) },
     };
   }
   const r = await http.write(

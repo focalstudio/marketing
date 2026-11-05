@@ -14,7 +14,6 @@ WildFocus. Free on iOS.
 Put the phone down. Your friends are here.
 
 WildFocus, free on iOS. Built with Claude Code.
-https://apps.apple.com/us/app/pomodoro-timer-wild-focus/id6768295599
 
 <!-- bluesky -->
 Put the phone down. Your friends are here.

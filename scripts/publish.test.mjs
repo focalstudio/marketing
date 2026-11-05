@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   blueskyFacets,
+  blueskyVideoEmbed,
   bufferInput,
   dueState,
   formatReport,
@@ -119,12 +120,12 @@ test("Buffer input: customScheduled, AI flag always false, video asset without t
   assert.equal(input.schedulingType, "automatic");
 });
 
-test("Buffer input: TikTok is scheduled as a notification, YouTube stays automatic", () => {
+test("Buffer input: TikTok and YouTube are both scheduled automatically", () => {
   const now = Date.parse("2026-10-09T12:00:00Z");
   const { p } = post("stream: app\nplatforms: [tiktok, youtube]\nat: 2026-10-09T13:00:00Z\nmedia: wf/a.mp4\ntitle: T", "Hi");
   p.atMs = Date.parse(p.meta.at);
-  assert.equal(byId.tiktok.notify, true);
-  assert.equal(bufferInput({ cfg: byId.tiktok, post: p }, "ch1", now).schedulingType, "notification");
+  assert.notEqual(byId.tiktok.notify, true);
+  assert.equal(bufferInput({ cfg: byId.tiktok, post: p }, "ch1", now).schedulingType, "automatic");
   assert.equal(bufferInput({ cfg: byId.youtube, post: p }, "ch1", now).schedulingType, "automatic");
 });
 
@@ -155,4 +156,12 @@ test("styleReport: sent posts grouped by style and clip, means over the posts th
   ]);
   assert.deepEqual(rep.clip.find((r) => r.name === "meditate"), { name: "meditate", posts: 2, ytViews: 700, ttViews: 200, ttWatch: 1.6, reactions: 12 });
   assert.match(formatReport(rep), /pixel\s+1\s+1000\s+200\s+1\.6\s+12\.0/);
+});
+
+test("Bluesky: a video post validates without a text-only warning, and embeds as video", () => {
+  const { errors, warnings } = post("stream: app\nplatforms: [bluesky]\nat: 2026-10-12T09:00:00Z\nmedia: wf/a.mp4\nthumb: wf/a.png\ntitle: T", "Hi https://a.dev");
+  assert.deepEqual(errors, []);
+  assert.deepEqual(warnings, []);
+  const blob = { $type: "blob", ref: { $link: "x" }, mimeType: "video/mp4", size: 1 };
+  assert.deepEqual(blueskyVideoEmbed(blob, "T"), { $type: "app.bsky.embed.video", video: blob, alt: "T", aspectRatio: { width: 9, height: 16 } });
 });

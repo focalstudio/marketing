@@ -14,7 +14,6 @@ WildFocus. Free on iOS.
 Phone down. Picnic on.
 
 WildFocus, free on iOS. Built with Claude Code.
-https://apps.apple.com/us/app/pomodoro-timer-wild-focus/id6768295599
 
 <!-- bluesky -->
 Phone down. Picnic on.

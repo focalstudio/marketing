@@ -73,6 +73,9 @@ test("a drafted post passes the publisher's validation", () => {
   const src = postFile({ at: "2026-10-26T20:00:00Z", mediaPath: "wildfocus/a.mp4", thumbPath: "wildfocus/a.png", ...c });
   const { errors } = validate(parsePost(src, "queue/2026-W44/wildfocus-meditate-toon.md"), loadPlatforms().byId);
   assert.deepEqual(errors, []);
+  const section = (id) => src.split(`<!-- ${id} -->\n`)[1].split("<!--")[0];
+  assert.doesNotMatch(section("x"), /https?:\/\//);
+  assert.match(section("bluesky"), /https:\/\/apps\.apple\.com/);
 });
 
 test("pick: rest_weeks shortens the wait before a unit is reused", () => {

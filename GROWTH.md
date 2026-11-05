@@ -24,6 +24,7 @@ treat the numbers as rough). Re-check every quarter, like [PLATFORMS.md](PLATFOR
 
 **X**
 - Posts with an external link get much less reach; the usual workaround is to put the link in a reply to your own post.
+  Our X posts carry no link (the drafter drops it); put the App Store link in the X bio by hand.
   [reported; figures vary a lot]
 - Free accounts get little reach (median under ~100 impressions per post). [reported]
 - A per-creator cap limits how many of your posts show in one follower's feed, so posting more doesn't add reach. [reported]
@@ -46,8 +47,7 @@ treat the numbers as rough). Re-check every quarter, like [PLATFORMS.md](PLATFOR
   viewers and cut the worst two from `apps/wildfocus.yml`.
 
 **Daily (~2 min)**
-- TikTok sends a Buffer alert at 20:00 UTC: open it, add a trending sound in TikTok, post. Skip it if the clip isn't
-  worth posting.
+- TikTok posts automatically at 20:00 UTC through Buffer. Nothing to finish by hand; the clip carries its own sound.
 - Reply to comments on our own posts within a few hours. Early replies help; on TikTok, one good comment a week can
   become a video reply.
 
