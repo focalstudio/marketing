@@ -17,13 +17,13 @@ music: ambient, soft piano or lo-fi, no vocals, 60–80 bpm
 video:
   aspect: "9:16"
   seconds: [15, 30]
-cadence: 7 per week
+cadence: 4 per week   # was 7: daily Shorts got 0-2 views each from 2026-10-23; compare views after two weeks
 rest_weeks: 4   # a unit may be reused this many weeks after it last posted (default 8)
 # No `trust_from`: the weekly PR waits for a manual merge (delete a post's file to reject it).
 # Add `trust_from: YYYY-MM-DD` to let it auto-merge from that date once tests and `publish.mjs plan` pass.
 # `paused: true` is the kill switch: nothing is drafted and nothing auto-merges.
 paused: false
-days: [mon, tue, wed, thu, fri, sat, sun]    # posting days, UTC
+days: [mon, wed, fri, sun]    # posting days, UTC (the first `cadence` of them are used)
 time: "20:00"
 # Video styles (video/STYLES.md). `appart`, which pastes the app's static animal PNGs, is retired since 2026-10-23: the
 # renderer keeps it for posts already queued, and the clips below that need a timer, phone, sky or extra animals play in
@@ -32,9 +32,10 @@ styles: [pixel, toon, lowpoly, ink, paper, storybook]
 # Minimum posts per style each week, filled first by draft-week; what's left follows the usual rule. A style whose pool
 # can't meet its minimum is reported by the drafter and the week still fills. Review with `publish.mjs styles`.
 mix:
-  pixel: 2
-  paper: 2
-  storybook: 2
+  pixel: 1
+  toon: 1
+  paper: 1
+  storybook: 1
 # Copy per storyboard in video/clips/. hooks[i] pairs with titles[i]; a clip's hook rotates as it is reused. Hooks are the
 # first line on screen (readable within a second); titles lead with what people search for and stay under 100 characters.
 # `styles` limits a clip to the styles it renders in (default: the app's styles above).

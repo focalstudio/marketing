@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Changed WildFocus cadence from 7 to 4 posts a week (Mon, Wed, Fri, Sun, 20:00 UTC) and the weekly style mix to one each of pixel, toon, paper and storybook. Daily Shorts got 0-2 views each after 2026-10-23, against 158-1012 at about one every three days. Only the `meditate` clip renders in pixel and toon, so those two styles fill from it and the rest of the week follows the usual rule. Compare `publish.mjs styles` after two weeks.
 - Fixed: TikTok posts now go out automatically. `platforms.yml` no longer sets `notify: true`, so Buffer schedules them as `automatic` instead of waiting for a human to finish each one in the app (15 posts had never gone out). `PLATFORMS.md` and `GROWTH.md` no longer ask for the daily alert step.
 - Fixed: X posts no longer carry the App Store link (posts with a link get little reach; X impressions were 0-2 per post). The drafter drops the store URL from the `<!-- x -->` section, Bluesky and Threads keep it, and the unsent `picnic_for_four` posts were edited to match. Put the link in the X bio by hand.
 - Added: Bluesky posts now upload the video (`app.bsky.embed.video` through Bluesky's video service) instead of going out as text with a link card, and the "text only" warning is gone. A link-card thumbnail over 1 MB is now skipped with a warning instead of failing the post (`meditate-ink` failed three runs and went stale on its 1.5 MB cover).

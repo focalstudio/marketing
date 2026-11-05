@@ -57,7 +57,7 @@ treat the numbers as rough). Re-check every quarter, like [PLATFORMS.md](PLATFOR
   hashtags (#studytok, #focus, #productivity, #adhd) plus keywords in the caption. Add a trending sound while finishing
   the post in the app; the API can't.
 - **YouTube Shorts.** Same render, a title written for search (100 chars max, set in `apps/wildfocus.yml`). 3-5 a
-  week is enough; ours post daily. Group the Shorts into a playlist.
+  week is enough; ours post four a week (Mon, Wed, Fri, Sun). Group the Shorts into a playlist.
 - **X.** Short caption, the video, and no link in the post. Today `draft-week` puts the app link in the X text itself; moving it to
   a reply to our own post is parked (PARKING.md). Don't spend effort here beyond the pipeline: the platform rewards accounts that engage, and we have
   chosen not to.
@@ -83,7 +83,7 @@ YouTube Studio shows most Shorts viewers arrive through the feed, a smaller shar
 ## Questions we get asked
 
 **Should we post a batch of warm-up videos to build a history? No.** Filler teaches TikTok the wrong audience and drags
-down average completion. The history that counts is the real format, posted daily, and the pipeline already does that.
+down average completion. The history that counts is the real format, posted steadily, and the pipeline already does that.
 Optional one-off: 15 minutes at setup scrolling #studytok and #focus on the account, liking a few posts, so the account
 gets an interest profile. Nothing after that.
 
