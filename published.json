@@ -1062,5 +1062,25 @@
     "url": "https://www.instagram.com/reel/DfTLnqUifuv/",
     "at": "2026-11-03T20:00:00Z",
     "postedAt": "2026-11-04T00:35:32.308Z"
+  },
+  {
+    "file": "queue/2026-W45/wildfocus-focus-rabbit-canvas-tiktok.md",
+    "platform": "tiktok",
+    "id": "6aecc0407c2c23ac24c5dff1",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-11-05T18:00:00.000Z",
+    "at": "2026-11-05T18:00:00Z",
+    "postedAt": "2026-11-05T17:43:28.786Z"
+  },
+  {
+    "file": "queue/2026-W46/wildfocus-last25-canvas-tiktok.md",
+    "platform": "tiktok",
+    "id": "6aecc0417c2c23ac24c5e05a",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-11-10T20:00:00.000Z",
+    "at": "2026-11-10T20:00:00Z",
+    "postedAt": "2026-11-05T17:43:29.624Z"
   }
 ]
