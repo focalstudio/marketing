@@ -1082,5 +1082,35 @@
     "dueAt": "2026-11-10T20:00:00.000Z",
     "at": "2026-11-10T20:00:00Z",
     "postedAt": "2026-11-05T17:43:29.624Z"
+  },
+  {
+    "file": "queue/2026-W47/wildfocus-picnic-for-four-pixel.md",
+    "platform": "x",
+    "id": "6af2843ee261c09acc95c232",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-11-16T20:00:00.000Z",
+    "at": "2026-11-16T20:00:00Z",
+    "postedAt": "2026-11-10T02:41:02.861Z"
+  },
+  {
+    "file": "queue/2026-W47/wildfocus-picnic-for-four-pixel.md",
+    "platform": "youtube",
+    "id": "6af2843fd35dff5701d3f85d",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-11-16T20:00:00.000Z",
+    "at": "2026-11-16T20:00:00Z",
+    "postedAt": "2026-11-10T02:41:03.469Z"
+  },
+  {
+    "file": "queue/2026-W47/wildfocus-picnic-for-four-pixel.md",
+    "platform": "tiktok",
+    "id": "6af28440d35dff5701d3f8a3",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-11-16T20:00:00.000Z",
+    "at": "2026-11-16T20:00:00Z",
+    "postedAt": "2026-11-10T02:41:04.257Z"
   }
 ]
