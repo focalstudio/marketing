@@ -1112,5 +1112,51 @@
     "dueAt": "2026-11-16T20:00:00.000Z",
     "at": "2026-11-16T20:00:00Z",
     "postedAt": "2026-11-10T02:41:04.257Z"
+  },
+  {
+    "file": "queue/2026-W47/wildfocus-picnic-for-four-flat.md",
+    "platform": "x",
+    "id": "6af3b8a5850477b0c2802179",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-11-17T20:00:00.000Z",
+    "at": "2026-11-17T20:00:00Z",
+    "postedAt": "2026-11-11T00:36:53.174Z"
+  },
+  {
+    "file": "queue/2026-W47/wildfocus-picnic-for-four-flat.md",
+    "platform": "youtube",
+    "id": "6af3b8a50b1f930b45513955",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-11-17T20:00:00.000Z",
+    "at": "2026-11-17T20:00:00Z",
+    "postedAt": "2026-11-11T00:36:53.861Z"
+  },
+  {
+    "file": "queue/2026-W47/wildfocus-picnic-for-four-flat.md",
+    "platform": "tiktok",
+    "id": "6af3b8a8b1cf2566f7b8b1a9",
+    "url": null,
+    "status": "scheduled",
+    "dueAt": "2026-11-17T20:00:00.000Z",
+    "at": "2026-11-17T20:00:00Z",
+    "postedAt": "2026-11-11T00:36:56.435Z"
+  },
+  {
+    "file": "queue/2026-W46/wildfocus-last25-canvas.md",
+    "platform": "threads",
+    "id": "18116121170122378",
+    "url": "https://www.threads.com/@focalstudiohq/post/DflNahrgcNK",
+    "at": "2026-11-10T20:00:00Z",
+    "postedAt": "2026-11-11T00:37:32.100Z"
+  },
+  {
+    "file": "queue/2026-W46/wildfocus-last25-canvas.md",
+    "platform": "instagram",
+    "id": "17944358025383040",
+    "url": "https://www.instagram.com/reel/DflNesbDqb0/",
+    "at": "2026-11-10T20:00:00Z",
+    "postedAt": "2026-11-11T00:38:06.381Z"
   }
 ]
