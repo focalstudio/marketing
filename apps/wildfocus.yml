@@ -119,6 +119,16 @@ clips:
       - "Pomodoro break timer: five minutes off, with company | WildFocus"
       - "Take a 5 minute break: someone is already here | WildFocus"
       - "5 minute break: five minutes is enough | WildFocus"
+  golden_hour:
+    styles: [paper, storybook]
+    hooks:
+      - One focus session, and the day winds down around you.
+      - Work until the light goes golden. The farm comes to keep you company.
+      - Evening focus, with a goat, a chicken, a sheep and a goose.
+    titles:
+      - "Evening focus timer: one 25 minute session as the day winds down | WildFocus"
+      - "Cozy focus timer: work until the light goes golden | WildFocus"
+      - "Study with me this evening: a goat, a chicken, a sheep and a goose | WildFocus"
 caption_cta: Free on iOS and Android.
 links:
   app_store: https://apps.apple.com/us/app/pomodoro-timer-wild-focus/id6768295599
