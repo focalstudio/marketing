@@ -119,6 +119,16 @@ clips:
       - "Pomodoro break timer: five minutes off, with company | WildFocus"
       - "Take a 5 minute break: someone is already here | WildFocus"
       - "5 minute break: five minutes is enough | WildFocus"
+  see_you_tomorrow:
+    styles: [paper, storybook]
+    hooks:
+      - Done for today? The meadow winds down with you.
+      - Close the app. They'll all be here tomorrow.
+      - The sun goes down and everyone heads home.
+    titles:
+      - "Focus timer for the end of the day: they'll be here tomorrow | WildFocus"
+      - "Wind down after studying: a cozy evening meadow | WildFocus"
+      - "End of day routine: finish your focus and log off | WildFocus"
 caption_cta: Free on iOS and Android.
 links:
   app_store: https://apps.apple.com/us/app/pomodoro-timer-wild-focus/id6768295599
